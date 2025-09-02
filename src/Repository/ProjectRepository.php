@@ -151,6 +151,8 @@ class ProjectRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    // Ajoutez ces méthodes au ProjectRepository existant
+
     /**
      * Pagination des projets pour l'admin
      */
@@ -193,7 +195,7 @@ class ProjectRepository extends ServiceEntityRepository
     public function getProjectsByMonthStats(): array
     {
         $result = $this->createQueryBuilder('p')
-            ->select("DATE_FORMAT(p.createdAt, '%Y-%m') as month, COUNT(p.id) as count")
+            ->select("SUBSTRING(p.createdAt, 1, 7) as month, COUNT(p.id) as count")
             ->where('p.createdAt >= :sixMonthsAgo')
             ->setParameter('sixMonthsAgo', new \DateTime('-6 months'))
             ->groupBy('month')

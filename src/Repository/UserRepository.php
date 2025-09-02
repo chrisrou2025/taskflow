@@ -102,7 +102,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     public function getUserGrowthStats(): array
     {
         $result = $this->createQueryBuilder('u')
-            ->select("DATE_FORMAT(u.createdAt, '%Y-%m') as month, COUNT(u.id) as count")
+            ->select("SUBSTRING(u.createdAt, 1, 7) as month, COUNT(u.id) as count")
             ->where('u.createdAt >= :sixMonthsAgo')
             ->setParameter('sixMonthsAgo', new \DateTime('-6 months'))
             ->groupBy('month')

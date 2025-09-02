@@ -90,17 +90,17 @@ class TaskRepository extends ServiceEntityRepository
 
         if ($status) {
             $qb->andWhere('t.status = :status')
-                ->setParameter('status', $status);
+               ->setParameter('status', $status);
         }
 
         if ($priority) {
             $qb->andWhere('t.priority = :priority')
-                ->setParameter('priority', $priority);
+               ->setParameter('priority', $priority);
         }
 
         return $qb->orderBy('t.createdAt', 'DESC')
-            ->getQuery()
-            ->getResult();
+                  ->getQuery()
+                  ->getResult();
     }
 
     /**
@@ -148,6 +148,58 @@ class TaskRepository extends ServiceEntityRepository
     }
 
     /**
+     * Statistiques avancées pour un projet
+     */
+    public function getProjectStatistics(Project $project): array
+    {
+        // Nombre de tâches par statut
+        $statusStats = $this->createQueryBuilder('t')
+            ->select('t.status, COUNT(t.id) as count')
+            ->where('t.project = :project')
+            ->setParameter('project', $project)
+            ->groupBy('t.status')
+            ->getQuery()
+            ->getResult();
+
+        // Nombre de tâches par priorité
+        $priorityStats = $this->createQueryBuilder('t')
+            ->select('t.priority, COUNT(t.id) as count')
+            ->where('t.project = :project')
+            ->setParameter('project', $project)
+            ->groupBy('t.priority')
+            ->getQuery()
+            ->getResult();
+
+        // Temps moyen de completion (calculé en PHP)
+        $completedTasks = $this->createQueryBuilder('t')
+            ->where('t.project = :project')
+            ->andWhere('t.status = :completed')
+            ->andWhere('t.completedAt IS NOT NULL')
+            ->setParameter('project', $project)
+            ->setParameter('completed', Task::STATUS_COMPLETED)
+            ->getQuery()
+            ->getResult();
+
+        $totalDays = 0;
+        $count = 0;
+        foreach ($completedTasks as $task) {
+            if ($task->getCompletedAt() && $task->getCreatedAt()) {
+                $diff = $task->getCreatedAt()->diff($task->getCompletedAt());
+                $totalDays += $diff->days;
+                $count++;
+            }
+        }
+
+        $avgCompletionDays = $count > 0 ? round($totalDays / $count, 1) : 0;
+
+        return [
+            'status_stats' => $statusStats,
+            'priority_stats' => $priorityStats,
+            'avg_completion_days' => $avgCompletionDays,
+        ];
+    }
+
+    /**
      * Statistiques globales des tâches par statut
      */
     public function getGlobalTasksByStatus(): array
@@ -185,12 +237,12 @@ class TaskRepository extends ServiceEntityRepository
 
         if (!empty($status)) {
             $qb->andWhere('t.status = :status')
-                ->setParameter('status', $status);
+               ->setParameter('status', $status);
         }
 
         if (!empty($priority)) {
             $qb->andWhere('t.priority = :priority')
-                ->setParameter('priority', $priority);
+               ->setParameter('priority', $priority);
         }
 
         return $qb->getQuery()->getResult();
@@ -206,12 +258,12 @@ class TaskRepository extends ServiceEntityRepository
 
         if (!empty($status)) {
             $qb->andWhere('t.status = :status')
-                ->setParameter('status', $status);
+               ->setParameter('status', $status);
         }
 
         if (!empty($priority)) {
             $qb->andWhere('t.priority = :priority')
-                ->setParameter('priority', $priority);
+               ->setParameter('priority', $priority);
         }
 
         return (int) $qb->getQuery()->getSingleScalarResult();
@@ -245,9 +297,9 @@ class TaskRepository extends ServiceEntityRepository
     public function getCompletionRateStats(): array
     {
         $result = $this->createQueryBuilder('t')
-            ->select("DATE_FORMAT(t.createdAt, '%Y-%m') as month, 
-                 COUNT(t.id) as total,
-                 SUM(CASE WHEN t.status = 'completed' THEN 1 ELSE 0 END) as completed")
+            ->select("SUBSTRING(t.createdAt, 1, 7) as month, 
+                     COUNT(t.id) as total,
+                     SUM(CASE WHEN t.status = 'completed' THEN 1 ELSE 0 END) as completed")
             ->where('t.createdAt >= :sixMonthsAgo')
             ->setParameter('sixMonthsAgo', new \DateTime('-6 months'))
             ->groupBy('month')
@@ -289,42 +341,72 @@ class TaskRepository extends ServiceEntityRepository
     }
 
     /**
-     * Statistiques avancées pour un projet
+     * Recherche de tâches par titre pour un utilisateur
      */
-    public function getProjectStatistics(Project $project): array
+    public function searchByTitleForUser(string $query, User $user): array
     {
-        // Nombre de tâches par statut
-        $statusStats = $this->createQueryBuilder('t')
-            ->select('t.status, COUNT(t.id) as count')
-            ->where('t.project = :project')
-            ->setParameter('project', $project)
-            ->groupBy('t.status')
+        return $this->createQueryBuilder('t')
+            ->innerJoin('t.project', 'p')
+            ->where('p.owner = :user')
+            ->andWhere('t.title LIKE :query OR t.description LIKE :query')
+            ->setParameter('user', $user)
+            ->setParameter('query', '%' . $query . '%')
+            ->orderBy('t.title', 'ASC')
             ->getQuery()
             ->getResult();
+    }
 
-        // Nombre de tâches par priorité
-        $priorityStats = $this->createQueryBuilder('t')
-            ->select('t.priority, COUNT(t.id) as count')
-            ->where('t.project = :project')
-            ->setParameter('project', $project)
-            ->groupBy('t.priority')
+    /**
+     * Tâches récemment mises à jour pour un utilisateur
+     */
+    public function findRecentlyUpdatedByUser(User $user, int $limit = 10): array
+    {
+        return $this->createQueryBuilder('t')
+            ->innerJoin('t.project', 'p')
+            ->where('p.owner = :user')
+            ->andWhere('t.updatedAt IS NOT NULL')
+            ->setParameter('user', $user)
+            ->orderBy('t.updatedAt', 'DESC')
+            ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+    }
 
-        // Temps moyen de completion (en jours)
-        $completionTime = $this->createQueryBuilder('t')
-            ->select('AVG(DATEDIFF(t.completedAt, t.createdAt)) as avg_days')
-            ->where('t.project = :project')
+    /**
+     * Tâches complétées cette semaine pour un utilisateur
+     */
+    public function findCompletedThisWeekByUser(User $user): array
+    {
+        $startOfWeek = new \DateTime();
+        $startOfWeek->modify('monday this week')->setTime(0, 0, 0);
+        
+        return $this->createQueryBuilder('t')
+            ->innerJoin('t.project', 'p')
+            ->where('p.owner = :user')
             ->andWhere('t.status = :completed')
-            ->setParameter('project', $project)
+            ->andWhere('t.completedAt >= :startOfWeek')
+            ->setParameter('user', $user)
             ->setParameter('completed', Task::STATUS_COMPLETED)
+            ->setParameter('startOfWeek', $startOfWeek)
+            ->orderBy('t.completedAt', 'DESC')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getResult();
+    }
 
-        return [
-            'status_stats' => $statusStats,
-            'priority_stats' => $priorityStats,
-            'avg_completion_days' => $completionTime ? round($completionTime, 1) : 0,
-        ];
+    /**
+     * Tâches sans échéance pour un utilisateur
+     */
+    public function findWithoutDueDateByUser(User $user): array
+    {
+        return $this->createQueryBuilder('t')
+            ->innerJoin('t.project', 'p')
+            ->where('p.owner = :user')
+            ->andWhere('t.dueDate IS NULL')
+            ->andWhere('t.status != :completed')
+            ->setParameter('user', $user)
+            ->setParameter('completed', Task::STATUS_COMPLETED)
+            ->orderBy('t.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 }
