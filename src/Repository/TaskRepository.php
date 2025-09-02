@@ -148,6 +148,147 @@ class TaskRepository extends ServiceEntityRepository
     }
 
     /**
+     * Statistiques globales des tâches par statut
+     */
+    public function getGlobalTasksByStatus(): array
+    {
+        $result = $this->createQueryBuilder('t')
+            ->select('t.status, COUNT(t.id) as count')
+            ->groupBy('t.status')
+            ->getQuery()
+            ->getResult();
+
+        $counts = [
+            'todo' => 0,
+            'in_progress' => 0,
+            'completed' => 0,
+        ];
+
+        foreach ($result as $row) {
+            $counts[$row['status']] = (int) $row['count'];
+        }
+
+        return $counts;
+    }
+
+    /**
+     * Pagination des tâches pour l'admin
+     */
+    public function findTasksWithPaginationForAdmin(int $page, int $limit, string $status = '', string $priority = ''): array
+    {
+        $qb = $this->createQueryBuilder('t')
+            ->innerJoin('t.project', 'p')
+            ->innerJoin('p.owner', 'u')
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit)
+            ->orderBy('t.createdAt', 'DESC');
+
+        if (!empty($status)) {
+            $qb->andWhere('t.status = :status')
+                ->setParameter('status', $status);
+        }
+
+        if (!empty($priority)) {
+            $qb->andWhere('t.priority = :priority')
+                ->setParameter('priority', $priority);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Compte des tâches avec filtres pour l'admin
+     */
+    public function countTasksWithFiltersForAdmin(string $status = '', string $priority = ''): int
+    {
+        $qb = $this->createQueryBuilder('t')
+            ->select('COUNT(t.id)');
+
+        if (!empty($status)) {
+            $qb->andWhere('t.status = :status')
+                ->setParameter('status', $status);
+        }
+
+        if (!empty($priority)) {
+            $qb->andWhere('t.priority = :priority')
+                ->setParameter('priority', $priority);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * Statistiques des tâches par priorité
+     */
+    public function getTasksByPriorityStats(): array
+    {
+        $result = $this->createQueryBuilder('t')
+            ->select('t.priority, COUNT(t.id) as count')
+            ->groupBy('t.priority')
+            ->getQuery()
+            ->getResult();
+
+        $formatted = [];
+        foreach ($result as $row) {
+            $formatted[] = [
+                'priority' => ucfirst($row['priority']),
+                'count' => (int) $row['count']
+            ];
+        }
+
+        return $formatted;
+    }
+
+    /**
+     * Statistiques de taux de completion
+     */
+    public function getCompletionRateStats(): array
+    {
+        $result = $this->createQueryBuilder('t')
+            ->select("DATE_FORMAT(t.createdAt, '%Y-%m') as month, 
+                 COUNT(t.id) as total,
+                 SUM(CASE WHEN t.status = 'completed' THEN 1 ELSE 0 END) as completed")
+            ->where('t.createdAt >= :sixMonthsAgo')
+            ->setParameter('sixMonthsAgo', new \DateTime('-6 months'))
+            ->groupBy('month')
+            ->orderBy('month', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        $formatted = [];
+        foreach ($result as $row) {
+            $total = (int) $row['total'];
+            $completed = (int) $row['completed'];
+            $rate = $total > 0 ? round(($completed / $total) * 100, 1) : 0;
+
+            $formatted[] = [
+                'period' => \DateTime::createFromFormat('Y-m', $row['month'])->format('M Y'),
+                'rate' => $rate,
+                'total' => $total,
+                'completed' => $completed
+            ];
+        }
+
+        return $formatted;
+    }
+
+    /**
+     * Moyenne des tâches par projet
+     */
+    public function getAverageTasksPerProject(): float
+    {
+        $result = $this->createQueryBuilder('t')
+            ->select('COUNT(t.id) as total_tasks, COUNT(DISTINCT t.project) as total_projects')
+            ->getQuery()
+            ->getSingleResult();
+
+        $totalTasks = (int) $result['total_tasks'];
+        $totalProjects = (int) $result['total_projects'];
+
+        return $totalProjects > 0 ? round($totalTasks / $totalProjects, 1) : 0;
+    }
+
+    /**
      * Statistiques avancées pour un projet
      */
     public function getProjectStatistics(Project $project): array

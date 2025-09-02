@@ -1,0 +1,300 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord - TaskFlow
+{% endblock %}
+
+{% block body %}
+	<div
+		class="container-fluid">
+		<!-- Header du dashboard -->
+		<div class="row mb-4">
+			<div class="col-12">
+				<div class="d-flex justify-content-between align-items-center">
+					<div>
+						<h1 class="h3 mb-2">📊 Tableau de bord</h1>
+						<p class="text-muted mb-0">Bonjour
+							{{ app.user.firstName }}
+							! Voici un aperçu de vos projets</p>
+					</div>
+					<div>
+						<a href="{{ path('project_new') }}" class="btn btn-primary">
+							<i class="fas fa-plus me-2"></i>Nouveau projet
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Statistiques principales -->
+		<div class="row mb-4">
+			<div class="col-md-3 mb-3">
+				<div class="card border-0 bg-primary text-white h-100">
+					<div class="card-body">
+						<div class="d-flex align-items-center">
+							<div class="flex-grow-1">
+								<h5 class="card-title mb-1">Projets</h5>
+								<h2 class="mb-0">{{ total_projects }}</h2>
+							</div>
+							<div class="ms-3">
+								<i class="fas fa-folder fa-2x opacity-75"></i>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-3 mb-3">
+				<div class="card border-0 bg-success text-white h-100">
+					<div class="card-body">
+						<div class="d-flex align-items-center">
+							<div class="flex-grow-1">
+								<h5 class="card-title mb-1">Tâches terminées</h5>
+								<h2 class="mb-0">{{ tasks_by_status.completed ?? 0 }}</h2>
+							</div>
+							<div class="ms-3">
+								<i class="fas fa-check-circle fa-2x opacity-75"></i>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-3 mb-3">
+				<div class="card border-0 bg-warning text-white h-100">
+					<div class="card-body">
+						<div class="d-flex align-items-center">
+							<div class="flex-grow-1">
+								<h5 class="card-title mb-1">En cours</h5>
+								<h2 class="mb-0">{{ tasks_by_status.in_progress ?? 0 }}</h2>
+							</div>
+							<div class="ms-3">
+								<i class="fas fa-clock fa-2x opacity-75"></i>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-3 mb-3">
+				<div class="card border-0 bg-danger text-white h-100">
+					<div class="card-body">
+						<div class="d-flex align-items-center">
+							<div class="flex-grow-1">
+								<h5 class="card-title mb-1">En retard</h5>
+								<h2 class="mb-0">{{ overdue_tasks|length }}</h2>
+							</div>
+							<div class="ms-3">
+								<i class="fas fa-exclamation-triangle fa-2x opacity-75"></i>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Contenu principal en deux colonnes -->
+		<div
+			class="row">
+			<!-- Projets récents -->
+			<div class="col-lg-8 mb-4">
+				<div class="card border-0 shadow-sm h-100">
+					<div class="card-header bg-white border-bottom">
+						<div class="d-flex justify-content-between align-items-center">
+							<h5 class="card-title mb-0">
+								<i class="fas fa-folder me-2 text-primary"></i>Mes projets récents
+							</h5>
+							<a href="{{ path('project_index') }}" class="btn btn-outline-primary btn-sm">
+								Voir tous
+							</a>
+						</div>
+					</div>
+					<div class="card-body p-0">
+						{% if projects is empty %}
+							<div class="text-center py-5">
+								<i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+								<h6 class="text-muted">Aucun projet pour le moment</h6>
+								<p class="text-muted mb-3">Commencez par créer votre premier projet !</p>
+								<a href="{{ path('project_new') }}" class="btn btn-primary">
+									<i class="fas fa-plus me-2"></i>Créer un projet
+								</a>
+							</div>
+						{% else %}
+							<div class="table-responsive">
+								<table class="table table-hover mb-0">
+									<thead class="table-light">
+										<tr>
+											<th>Projet</th>
+											<th>Progression</th>
+											<th>Tâches</th>
+											<th>Créé le</th>
+											<th>Actions</th>
+										</tr>
+									</thead>
+									<tbody>
+										{% for project in projects %}
+											<tr>
+												<td>
+													<div>
+														<h6 class="mb-1">{{ project.title }}</h6>
+														{% if project.description %}
+															<small class="text-muted">{{ project.description|length > 50 ? project.description|slice(0, 50) ~ '...' : project.description }}</small>
+														{% endif %}
+													</div>
+												</td>
+												<td>
+													{% set progress = project.progressPercentage %}
+													<div class="d-flex align-items-center">
+														<div class="progress flex-grow-1 me-2" style="height: 6px;">
+															<div class="progress-bar bg-{{ progress == 100 ? 'success' : (progress > 50 ? 'primary' : 'warning') }}" style="width: {{ progress }}%"></div>
+														</div>
+														<small class="text-muted">{{ progress }}%</small>
+													</div>
+												</td>
+												<td>
+													<span class="badge bg-light text-dark">
+														{{ project.completedTasksCount }}/{{ project.tasksCount }}
+													</span>
+												</td>
+												<td>
+													<small class="text-muted">{{ project.createdAt|date('d/m/Y') }}</small>
+												</td>
+												<td>
+													<div class="btn-group btn-group-sm">
+														<a href="{{ path('project_show', {id: project.id}) }}" class="btn btn-outline-primary btn-sm">
+															<i class="fas fa-eye"></i>
+														</a>
+														<a href="{{ path('task_index', {project: project.id}) }}" class="btn btn-outline-success btn-sm">
+															<i class="fas fa-tasks"></i>
+														</a>
+													</div>
+												</td>
+											</tr>
+										{% endfor %}
+									</tbody>
+								</table>
+							</div>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+
+			<!-- Sidebar droite avec tâches récentes et en retard -->
+			<div
+				class="col-lg-4">
+				<!-- Tâches en retard -->
+				{% if overdue_tasks is not empty %}
+					<div class="card border-0 shadow-sm mb-4">
+						<div class="card-header bg-danger text-white">
+							<h6 class="card-title mb-0">
+								<i class="fas fa-exclamation-triangle me-2"></i>Tâches en retard ({{ overdue_tasks|length }})
+							</h6>
+						</div>
+						<div class="card-body p-0">
+							<div class="list-group list-group-flush">
+								{% for task in overdue_tasks|slice(0, 5) %}
+									<div class="list-group-item">
+										<div class="d-flex justify-content-between align-items-start">
+											<div class="flex-grow-1">
+												<h6 class="mb-1">{{ task.title }}</h6>
+												<small class="text-muted">{{ task.project.title }}</small>
+											</div>
+											<small class="text-danger">
+												<i class="fas fa-calendar-times"></i>
+												{{ task.dueDate|date('d/m') }}
+											</small>
+										</div>
+									</div>
+								{% endfor %}
+							</div>
+							{% if overdue_tasks|length > 5 %}
+								<div class="card-footer text-center">
+									<small class="text-muted">{{ overdue_tasks|length - 5 }}
+										autre(s) tâche(s) en retard</small>
+								</div>
+							{% endif %}
+						</div>
+					</div>
+				{% endif %}
+
+				<!-- Tâches récentes -->
+				<div class="card border-0 shadow-sm">
+					<div class="card-header bg-white border-bottom">
+						<h6 class="card-title mb-0">
+							<i class="fas fa-clock me-2 text-primary"></i>Activité récente
+						</h6>
+					</div>
+					<div class="card-body p-0">
+						{% if recent_tasks is empty %}
+							<div class="text-center py-4">
+								<i class="fas fa-tasks fa-2x text-muted mb-2"></i>
+								<p class="text-muted mb-0">Aucune tâche récente</p>
+							</div>
+						{% else %}
+							<div class="list-group list-group-flush">
+								{% for task in recent_tasks %}
+									<div class="list-group-item">
+										<div class="d-flex justify-content-between align-items-start">
+											<div class="flex-grow-1">
+												<h6 class="mb-1">{{ task.title }}</h6>
+												<div class="d-flex align-items-center">
+													<small class="text-muted me-2">{{ task.project.title }}</small>
+													<span class="badge badge-{{ task.status }} badge-sm">
+														{{ task.statusLabel }}
+													</span>
+												</div>
+											</div>
+											<div class="text-end">
+												<span class="badge bg-{{ task.priority == 'high' ? 'danger' : (task.priority == 'medium' ? 'warning' : 'secondary') }} badge-sm">
+													{{ task.priorityLabel }}
+												</span>
+												<br>
+												<small class="text-muted">{{ task.createdAt|date('d/m H:i') }}</small>
+											</div>
+										</div>
+									</div>
+								{% endfor %}
+							</div>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<style>
+		.card {
+			transition: transform 0.2s ease, box-shadow 0.2s ease;
+		}
+
+		.progress {
+			background-color: rgba(0, 0, 0, 0.1);
+		}
+
+		.badge-todo {
+			background-color: #6c757d;
+		}
+		.badge-progress {
+			background-color: #fd7e14;
+		}
+		.badge-completed {
+			background-color: #198754;
+		}
+
+		.table td {
+			vertical-align: middle;
+		}
+
+		.list-group-item {
+			border-left: none;
+			border-right: none;
+		}
+
+		.list-group-item:first-child {
+			border-top: none;
+		}
+
+		.list-group-item:last-child {
+			border-bottom: none;
+		}
+	</style>
+{% endblock %}

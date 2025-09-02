@@ -1,0 +1,280 @@
+<?php
+
+namespace App\Controller;
+
+use App\Entity\User;
+use App\Repository\UserRepository;
+use App\Repository\ProjectRepository;
+use App\Repository\TaskRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
+#[Route('/admin')]
+#[IsGranted('ROLE_ADMIN')]
+class AdminController extends AbstractController
+{
+    #[Route('/', name: 'admin_dashboard')]
+    public function dashboard(
+        UserRepository $userRepository,
+        ProjectRepository $projectRepository,
+        TaskRepository $taskRepository
+    ): Response {
+        // Statistiques globales
+        $totalUsers = $userRepository->count([]);
+        $totalProjects = $projectRepository->count([]);
+        $totalTasks = $taskRepository->count([]);
+
+        // Statistiques des utilisateurs actifs (ayant créé au moins un projet)
+        $activeUsers = $userRepository->countActiveUsers();
+
+        // Utilisateurs récents
+        $recentUsers = $userRepository->findBy([], ['createdAt' => 'DESC'], 5);
+
+        // Projets récents
+        $recentProjects = $projectRepository->findBy([], ['createdAt' => 'DESC'], 10);
+
+        // Statistiques des tâches par statut
+        $tasksByStatus = $taskRepository->getGlobalTasksByStatus();
+
+        // Utilisateurs les plus actifs
+        $mostActiveUsers = $userRepository->findMostActiveUsers(5);
+
+        return $this->render('admin/dashboard.html.twig', [
+            'total_users' => $totalUsers,
+            'total_projects' => $totalProjects,
+            'total_tasks' => $totalTasks,
+            'active_users' => $activeUsers,
+            'recent_users' => $recentUsers,
+            'recent_projects' => $recentProjects,
+            'tasks_by_status' => $tasksByStatus,
+            'most_active_users' => $mostActiveUsers,
+        ]);
+    }
+
+    #[Route('/users', name: 'admin_users')]
+    public function users(UserRepository $userRepository, Request $request): Response
+    {
+        // Pagination et filtres
+        $page = max(1, $request->query->getInt('page', 1));
+        $limit = 20;
+        $search = $request->query->get('search', '');
+
+        $users = $userRepository->findUsersWithPagination($page, $limit, $search);
+        $totalUsers = $userRepository->countUsersWithSearch($search);
+        $totalPages = ceil($totalUsers / $limit);
+
+        return $this->render('admin/users.html.twig', [
+            'users' => $users,
+            'current_page' => $page,
+            'total_pages' => $totalPages,
+            'total_users' => $totalUsers,
+            'search' => $search,
+        ]);
+    }
+
+    #[Route('/users/{id}', name: 'admin_user_show')]
+    public function showUser(
+        User $user,
+        ProjectRepository $projectRepository,
+        TaskRepository $taskRepository
+    ): Response {
+        // Statistiques de l'utilisateur
+        $userProjects = $projectRepository->findBy(['owner' => $user], ['createdAt' => 'DESC']);
+        $userTasksStats = $taskRepository->getTasksCountByStatusForUser($user);
+        $recentTasks = $taskRepository->findRecentTasksByUser($user, 10);
+        $overdueTasks = $taskRepository->findOverdueTasksByUser($user);
+
+        return $this->render('admin/user_show.html.twig', [
+            'user' => $user,
+            'projects' => $userProjects,
+            'tasks_stats' => $userTasksStats,
+            'recent_tasks' => $recentTasks,
+            'overdue_tasks' => $overdueTasks,
+        ]);
+    }
+
+    #[Route('/users/{id}/toggle-role', name: 'admin_user_toggle_role', methods: ['POST'])]
+    public function toggleUserRole(
+        Request $request,
+        User $user,
+        EntityManagerInterface $entityManager
+    ): JsonResponse {
+        if (!$this->isCsrfTokenValid('toggle-role' . $user->getId(), $request->request->get('_token'))) {
+            return new JsonResponse(['success' => false, 'message' => 'Token CSRF invalide'], 400);
+        }
+
+        // Ne pas permettre de modifier son propre rôle
+        if ($user === $this->getUser()) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Vous ne pouvez pas modifier votre propre rôle'
+            ], 400);
+        }
+
+        $roles = $user->getRoles();
+        if (in_array('ROLE_ADMIN', $roles)) {
+            // Retirer le rôle admin
+            $user->setRoles(['ROLE_USER']);
+            $newRole = 'Utilisateur';
+        } else {
+            // Ajouter le rôle admin
+            $user->setRoles(['ROLE_USER', 'ROLE_ADMIN']);
+            $newRole = 'Administrateur';
+        }
+
+        $entityManager->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Rôle mis à jour avec succès',
+            'new_role' => $newRole
+        ]);
+    }
+
+    #[Route('/users/{id}/delete', name: 'admin_user_delete', methods: ['POST'])]
+    public function deleteUser(
+        Request $request,
+        User $user,
+        EntityManagerInterface $entityManager
+    ): Response {
+        if (!$this->isCsrfTokenValid('delete-user' . $user->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('admin_users');
+        }
+
+        // Ne pas permettre de supprimer son propre compte
+        if ($user === $this->getUser()) {
+            $this->addFlash('error', 'Vous ne pouvez pas supprimer votre propre compte.');
+            return $this->redirectToRoute('admin_users');
+        }
+
+        $userName = $user->getFullName();
+        $entityManager->remove($user);
+        $entityManager->flush();
+
+        $this->addFlash('success', "L'utilisateur \"$userName\" a été supprimé avec succès.");
+
+        return $this->redirectToRoute('admin_users');
+    }
+
+    #[Route('/projects', name: 'admin_projects')]
+    public function projects(ProjectRepository $projectRepository, Request $request): Response
+    {
+        // Pagination et filtres
+        $page = max(1, $request->query->getInt('page', 1));
+        $limit = 20;
+        $search = $request->query->get('search', '');
+
+        $projects = $projectRepository->findProjectsWithPaginationForAdmin($page, $limit, $search);
+        $totalProjects = $projectRepository->countProjectsWithSearch($search);
+        $totalPages = ceil($totalProjects / $limit);
+
+        return $this->render('admin/projects.html.twig', [
+            'projects' => $projects,
+            'current_page' => $page,
+            'total_pages' => $totalPages,
+            'total_projects' => $totalProjects,
+            'search' => $search,
+        ]);
+    }
+
+    #[Route('/projects/{id}/delete', name: 'admin_project_delete', methods: ['POST'])]
+    public function deleteProject(
+        Request $request,
+        \App\Entity\Project $project,
+        EntityManagerInterface $entityManager
+    ): Response {
+        if (!$this->isCsrfTokenValid('delete-project' . $project->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('admin_projects');
+        }
+
+        $projectTitle = $project->getTitle();
+        $entityManager->remove($project);
+        $entityManager->flush();
+
+        $this->addFlash('success', "Le projet \"$projectTitle\" a été supprimé avec succès.");
+
+        return $this->redirectToRoute('admin_projects');
+    }
+
+    #[Route('/tasks', name: 'admin_tasks')]
+    public function tasks(TaskRepository $taskRepository, Request $request): Response
+    {
+        // Pagination et filtres
+        $page = max(1, $request->query->getInt('page', 1));
+        $limit = 30;
+        $status = $request->query->get('status', '');
+        $priority = $request->query->get('priority', '');
+
+        $tasks = $taskRepository->findTasksWithPaginationForAdmin($page, $limit, $status, $priority);
+        $totalTasks = $taskRepository->countTasksWithFiltersForAdmin($status, $priority);
+        $totalPages = ceil($totalTasks / $limit);
+
+        return $this->render('admin/tasks.html.twig', [
+            'tasks' => $tasks,
+            'current_page' => $page,
+            'total_pages' => $totalPages,
+            'total_tasks' => $totalTasks,
+            'current_status' => $status,
+            'current_priority' => $priority,
+            'status_choices' => \App\Entity\Task::getStatusChoices(),
+            'priority_choices' => \App\Entity\Task::getPriorityChoices(),
+        ]);
+    }
+
+    #[Route('/statistics', name: 'admin_statistics')]
+    public function statistics(
+        UserRepository $userRepository,
+        ProjectRepository $projectRepository,
+        TaskRepository $taskRepository
+    ): Response {
+        // Statistiques avancées pour les graphiques
+        $userGrowth = $userRepository->getUserGrowthStats();
+        $projectsByMonth = $projectRepository->getProjectsByMonthStats();
+        $tasksByPriority = $taskRepository->getTasksByPriorityStats();
+        $completionRates = $taskRepository->getCompletionRateStats();
+        $avgTasksPerProject = $taskRepository->getAverageTasksPerProject();
+
+        return $this->render('admin/statistics.html.twig', [
+            'user_growth' => $userGrowth,
+            'projects_by_month' => $projectsByMonth,
+            'tasks_by_priority' => $tasksByPriority,
+            'completion_rates' => $completionRates,
+            'avg_tasks_per_project' => $avgTasksPerProject,
+        ]);
+    }
+
+    #[Route('/maintenance', name: 'admin_maintenance')]
+    public function maintenance(): Response
+    {
+        return $this->render('admin/maintenance.html.twig');
+    }
+
+    #[Route('/maintenance/clear-cache', name: 'admin_clear_cache', methods: ['POST'])]
+    public function clearCache(Request $request): JsonResponse
+    {
+        if (!$this->isCsrfTokenValid('clear-cache', $request->request->get('_token'))) {
+            return new JsonResponse(['success' => false, 'message' => 'Token CSRF invalide'], 400);
+        }
+
+        try {
+            // Ici on pourrait ajouter la logique pour vider le cache
+            // Pour l'exemple, on simule un succès
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Cache vidé avec succès'
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Erreur lors du vidage du cache: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+}

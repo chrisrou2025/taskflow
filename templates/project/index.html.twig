@@ -1,0 +1,239 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Projets - TaskFlow
+{% endblock %}
+
+{% block body %}
+	<div
+		class="container-fluid">
+		<!-- Header -->
+		<div class="row mb-4">
+			<div class="col-12">
+				<div class="d-flex justify-content-between align-items-center">
+					<div>
+						<h1 class="h3 mb-2">📁 Mes Projets</h1>
+						<p class="text-muted mb-0">Gérez et organisez tous vos projets</p>
+					</div>
+					<div>
+						<a href="{{ path('project_new') }}" class="btn btn-primary">
+							<i class="fas fa-plus me-2"></i>Nouveau projet
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		{% if projects is empty %}
+			<!-- État vide -->
+			<div class="row justify-content-center">
+				<div class="col-md-8 col-lg-6">
+					<div class="text-center py-5">
+						<div class="mb-4">
+							<i class="fas fa-folder-open fa-5x text-muted"></i>
+						</div>
+						<h4 class="mb-3">Aucun projet pour le moment</h4>
+						<p class="text-muted mb-4">
+							Commencez par créer votre premier projet pour organiser vos tâches 
+							                        et suivre votre progression.
+						</p>
+						<a href="{{ path('project_new') }}" class="btn btn-primary btn-lg">
+							<i class="fas fa-plus me-2"></i>Créer mon premier projet
+						</a>
+					</div>
+				</div>
+			</div>
+		{% else %}
+			<!-- Grille des projets -->
+			<div class="row">
+				{% for project in projects %}
+					<div class="col-xl-4 col-lg-6 mb-4">
+						<div class="card border-0 shadow-sm h-100 project-card">
+							<div
+								class="card-body">
+								<!-- Header du projet -->
+								<div class="d-flex justify-content-between align-items-start mb-3">
+									<h5 class="card-title mb-0">{{ project.title }}</h5>
+									<div class="dropdown">
+										<button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+											<i class="fas fa-ellipsis-v"></i>
+										</button>
+										<ul class="dropdown-menu dropdown-menu-end">
+											<li>
+												<a class="dropdown-item" href="{{ path('project_show', {id: project.id}) }}">
+													<i class="fas fa-eye me-2"></i>Voir le détail
+												</a>
+											</li>
+											<li>
+												<a class="dropdown-item" href="{{ path('task_index', {project: project.id}) }}">
+													<i class="fas fa-tasks me-2"></i>Gérer les tâches
+												</a>
+											</li>
+											<li>
+												<a class="dropdown-item" href="{{ path('project_edit', {id: project.id}) }}">
+													<i class="fas fa-edit me-2"></i>Modifier
+												</a>
+											</li>
+											<li><hr class="dropdown-divider"></li>
+											<li>
+												<form method="post" action="{{ path('project_duplicate', {id: project.id}) }}" class="d-inline">
+													<input type="hidden" name="_token" value="{{ csrf_token('duplicate' ~ project.id) }}">
+													<button type="submit" class="dropdown-item">
+														<i class="fas fa-copy me-2"></i>Dupliquer
+													</button>
+												</form>
+											</li>
+											<li><hr class="dropdown-divider"></li>
+											<li>
+												<button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ project.id }}">
+													<i class="fas fa-trash me-2"></i>Supprimer
+												</button>
+											</li>
+										</ul>
+									</div>
+								</div>
+
+								<!-- Description -->
+								{% if project.description %}
+									<p class="card-text text-muted mb-3">
+										{{ project.description|length > 120 ? project.description|slice(0, 120) ~ '...' : project.description }}
+									</p>
+								{% else %}
+									<p class="card-text text-muted mb-3 fst-italic">Aucune description</p>
+								{% endif %}
+
+								<!-- Statistiques -->
+								<div class="row text-center mb-3">
+									<div class="col-4">
+										<div class="border-end">
+											<h6 class="mb-0 text-primary">{{ project.tasksCount }}</h6>
+											<small class="text-muted">Tâches</small>
+										</div>
+									</div>
+									<div class="col-4">
+										<div class="border-end">
+											<h6 class="mb-0 text-success">{{ project.completedTasksCount }}</h6>
+											<small class="text-muted">Terminées</small>
+										</div>
+									</div>
+									<div class="col-4">
+										<h6 class="mb-0 text-warning">{{ project.inProgressTasksCount }}</h6>
+										<small class="text-muted">En cours</small>
+									</div>
+								</div>
+
+								<!-- Barre de progression -->
+								{% set progress = project.progressPercentage %}
+								<div class="mb-3">
+									<div class="d-flex justify-content-between mb-1">
+										<small class="text-muted">Progression</small>
+										<small class="text-muted">{{ progress }}%</small>
+									</div>
+									<div class="progress" style="height: 8px;">
+										<div class="progress-bar bg-{{ progress == 100 ? 'success' : (progress > 50 ? 'primary' : 'warning') }}" style="width: {{ progress }}%"></div>
+									</div>
+								</div>
+
+								<!-- Footer avec date -->
+								<div class="d-flex justify-content-between align-items-center">
+									<small class="text-muted">
+										<i class="fas fa-calendar-alt me-1"></i>
+										Créé le
+										{{ project.createdAt|date('d/m/Y') }}
+									</small>
+									<a href="{{ path('project_show', {id: project.id}) }}" class="btn btn-outline-primary btn-sm">
+										<i class="fas fa-arrow-right"></i>
+									</a>
+								</div>
+							</div>
+
+							<!-- Modal de suppression -->
+							<div class="modal fade" id="deleteModal{{ project.id }}" tabindex="-1">
+								<div class="modal-dialog">
+									<div class="modal-content">
+										<div class="modal-header">
+											<h5 class="modal-title">
+												<i class="fas fa-exclamation-triangle text-danger me-2"></i>
+												Confirmer la suppression
+											</h5>
+											<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+										</div>
+										<div class="modal-body">
+											<p>Êtes-vous sûr de vouloir supprimer le projet
+												<strong>"{{ project.title }}"</strong>
+												?</p>
+											<div class="alert alert-warning">
+												<i class="fas fa-exclamation-triangle me-2"></i>
+												<strong>Attention :</strong>
+												Cette action est irréversible et supprimera également 
+												                                            toutes les tâches associées à ce projet ({{ project.tasksCount }}
+												tâche(s)).
+											</div>
+										</div>
+										<div class="modal-footer">
+											<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+												Annuler
+											</button>
+											<form method="post" action="{{ path('project_delete', {id: project.id}) }}" class="d-inline">
+												<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ project.id) }}">
+												<button type="submit" class="btn btn-danger">
+													<i class="fas fa-trash me-2"></i>Supprimer définitivement
+												</button>
+											</form>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				{% endfor %}
+			</div>
+
+			<!-- Pagination si nécessaire -->
+			<div class="row mt-4">
+				<div class="col-12 text-center">
+					<p class="text-muted">
+						{{ projects|length }}
+						projet(s) au total
+					</p>
+				</div>
+			</div>
+		{% endif %}
+	</div>
+
+	<style>
+		.project-card {
+			transition: transform 0.2s ease, box-shadow 0.2s ease;
+			cursor: pointer;
+		}
+
+		.project-card:hover {
+			transform: translateY(-3px);
+			box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+		}
+
+		.progress {
+			background-color: rgba(0, 0, 0, 0.1);
+			border-radius: 4px;
+		}
+
+		.border-end:last-child {
+			border-right: none !important;
+		}
+
+		.dropdown-toggle::after {
+			display: none;
+		}
+	</style>
+
+	<script>
+		document.addEventListener('DOMContentLoaded', function () { // Confirmation de duplication
+document.querySelectorAll('form[action*="duplicate"]').forEach(form => {
+form.addEventListener('submit', function (e) {
+if (!confirm('Voulez-vous vraiment dupliquer ce projet ?')) {
+e.preventDefault();
+}
+});
+});
+});
+	</script>
+{% endblock %}

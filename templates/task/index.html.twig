@@ -1,0 +1,450 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	{% if project %}
+		Tâches de
+		{{ project.title }}
+		- TaskFlow
+	{% else %}
+		Mes Tâches - TaskFlow
+	{% endif %}
+{% endblock %}
+
+{% block body %}
+	<div
+		class="container-fluid">
+		<!-- Header avec breadcrumb -->
+		<nav aria-label="breadcrumb" class="mb-3">
+			<ol class="breadcrumb">
+				{% if project %}
+					<li class="breadcrumb-item">
+						<a href="{{ path('project_index') }}" class="text-decoration-none">
+							<i class="fas fa-folder me-1"></i>Mes Projets
+						</a>
+					</li>
+					<li class="breadcrumb-item">
+						<a href="{{ path('project_show', {id: project.id}) }}" class="text-decoration-none">
+							{{ project.title }}
+						</a>
+					</li>
+					<li class="breadcrumb-item active">Tâches</li>
+				{% else %}
+					<li class="breadcrumb-item active">
+						<i class="fas fa-tasks me-1"></i>Mes Tâches
+					</li>
+				{% endif %}
+			</ol>
+		</nav>
+
+		<!-- Header principal -->
+		<div class="row mb-4">
+			<div class="col-12">
+				<div class="d-flex justify-content-between align-items-center">
+					<div>
+						<h1 class="h3 mb-2">
+							✅
+							{% if project %}Tâches de
+								{{ project.title }}{% else %}Mes Tâches
+							{% endif %}
+						</h1>
+						<p class="text-muted mb-0">
+							{% if project %}
+								Gérez les tâches de ce projet
+							{% else %}
+								Vue d'ensemble de toutes vos tâches
+							{% endif %}
+						</p>
+					</div>
+					<div class="d-flex gap-2">
+						{% if project %}
+							<!-- Ajout rapide de tâche -->
+							<div class="dropdown">
+								<button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+									<i class="fas fa-plus me-2"></i>Ajout rapide
+								</button>
+								<div class="dropdown-menu p-3" style="min-width: 300px;">
+									<form id="quickAddForm" method="post" action="{{ path('task_quick_add', {id: project.id}) }}">
+										<input type="hidden" name="_token" value="{{ csrf_token('quick-add') }}">
+										<div class="mb-2">
+											<input type="text" name="title" class="form-control" placeholder="Titre de la tâche" required>
+										</div>
+										<button type="submit" class="btn btn-success btn-sm w-100">
+											<i class="fas fa-plus me-1"></i>Ajouter
+										</button>
+									</form>
+								</div>
+							</div>
+						{% endif %}
+						<a href="{{ path('task_new', project ? {project: project.id} : {}) }}" class="btn btn-success">
+							<i class="fas fa-plus me-2"></i>Nouvelle tâche
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Filtres -->
+		<div class="row mb-4">
+			<div class="col-12">
+				<div class="card border-0 shadow-sm">
+					<div class="card-body">
+						<form method="get" class="row g-3">
+							{% if project %}
+								<input type="hidden" name="project" value="{{ project.id }}">
+							{% endif %}
+
+							<!-- Filtre par projet (seulement si pas de projet spécifié) -->
+							{% if not project %}
+								<div class="col-md-4">
+									<label for="projectFilter" class="form-label">
+										<i class="fas fa-folder me-1"></i>Projet
+									</label>
+									<select class="form-select" name="project" id="projectFilter">
+										<option value="">Tous les projets</option>
+										{% for proj in projects %}
+											<option value="{{ proj.id }}" {{ app.request.get('project') == proj.id ? 'selected' : '' }}>
+												{{ proj.title }}
+											</option>
+										{% endfor %}
+									</select>
+								</div>
+							{% endif %}
+
+							<!-- Filtre par statut -->
+							<div class="col-md-4">
+								<label for="statusFilter" class="form-label">
+									<i class="fas fa-flag me-1"></i>Statut
+								</label>
+								<select class="form-select" name="status" id="statusFilter">
+									<option value="">Tous les statuts</option>
+									{% for label, value in status_choices %}
+										<option value="{{ value }}" {{ current_status == value ? 'selected' : '' }}>
+											{{ label }}
+										</option>
+									{% endfor %}
+								</select>
+							</div>
+
+							<!-- Filtre par priorité -->
+							<div class="col-md-4">
+								<label for="priorityFilter" class="form-label">
+									<i class="fas fa-exclamation me-1"></i>Priorité
+								</label>
+								<select class="form-select" name="priority" id="priorityFilter">
+									<option value="">Toutes les priorités</option>
+									{% for label, value in priority_choices %}
+										<option value="{{ value }}" {{ current_priority == value ? 'selected' : '' }}>
+											{{ label }}
+										</option>
+									{% endfor %}
+								</select>
+							</div>
+
+							<!-- Boutons d'action -->
+							<div class="col-12">
+								<button type="submit" class="btn btn-primary">
+									<i class="fas fa-filter me-2"></i>Filtrer
+								</button>
+								<a href="{{ path('task_index', project ? {project: project.id} : {}) }}" class="btn btn-outline-secondary">
+									<i class="fas fa-times me-2"></i>Réinitialiser
+								</a>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Liste des tâches -->
+		{% if tasks is empty %}
+			<!-- État vide -->
+			<div class="row justify-content-center">
+				<div class="col-md-8 col-lg-6">
+					<div class="text-center py-5">
+						<div class="mb-4">
+							<i class="fas fa-tasks fa-5x text-muted"></i>
+						</div>
+						<h4 class="mb-3">
+							{% if current_status or current_priority %}
+								Aucune tâche ne correspond aux filtres
+							{% else %}
+								Aucune tâche pour le moment
+							{% endif %}
+						</h4>
+						<p class="text-muted mb-4">
+							{% if current_status or current_priority %}
+								Essayez de modifier vos critères de filtrage ou créez une nouvelle tâche.
+							{% else %}
+								{% if project %}
+									Commencez par créer votre première tâche dans ce projet.
+								{% else %}
+									Commencez par créer votre première tâche.
+								{% endif %}
+							{% endif %}
+						</p>
+						<a href="{{ path('task_new', project ? {project: project.id} : {}) }}" class="btn btn-success btn-lg">
+							<i class="fas fa-plus me-2"></i>
+							{% if project %}Créer ma première tâche{% else %}Nouvelle tâche
+							{% endif %}
+						</a>
+					</div>
+				</div>
+			</div>
+		{% else %}
+			<!-- Vue en cartes pour les tâches -->
+			<div class="row">
+				{% for task in tasks %}
+					<div class="col-xl-4 col-lg-6 mb-4">
+						<div class="card border-0 shadow-sm h-100 task-card {{ task.isOverdue and not task.isCompleted ? 'border-danger' : '' }}">
+							{% if task.isOverdue and not task.isCompleted %}
+								<div class="card-header bg-danger text-white py-2">
+									<small>
+										<i class="fas fa-exclamation-triangle me-1"></i>En retard</small>
+								</div>
+							{% endif %}
+
+							<div
+								class="card-body">
+								<!-- Header de la tâche -->
+								<div class="d-flex justify-content-between align-items-start mb-3">
+									<h5 class="card-title mb-0 flex-grow-1">
+										<a href="{{ path('task_show', {id: task.id}) }}" class="text-decoration-none">
+											{{ task.title }}
+										</a>
+									</h5>
+									<div class="dropdown">
+										<button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+											<i class="fas fa-ellipsis-v"></i>
+										</button>
+										<ul class="dropdown-menu dropdown-menu-end">
+											<li>
+												<a class="dropdown-item" href="{{ path('task_show', {id: task.id}) }}">
+													<i class="fas fa-eye me-2"></i>Voir le détail
+												</a>
+											</li>
+											<li>
+												<a class="dropdown-item" href="{{ path('task_edit', {id: task.id}) }}">
+													<i class="fas fa-edit me-2"></i>Modifier
+												</a>
+											</li>
+											<li><hr class="dropdown-divider"></li>
+											<li>
+												<form method="post" action="{{ path('task_duplicate', {id: task.id}) }}" class="d-inline">
+													<input type="hidden" name="_token" value="{{ csrf_token('duplicate' ~ task.id) }}">
+													<button type="submit" class="dropdown-item">
+														<i class="fas fa-copy me-2"></i>Dupliquer
+													</button>
+												</form>
+											</li>
+											<li><hr class="dropdown-divider"></li>
+											<li>
+												<button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ task.id }}">
+													<i class="fas fa-trash me-2"></i>Supprimer
+												</button>
+											</li>
+										</ul>
+									</div>
+								</div>
+
+								<!-- Projet (si vue globale) -->
+								{% if not project %}
+									<p class="text-muted small mb-2">
+										<i class="fas fa-folder me-1"></i>
+										<a href="{{ path('project_show', {id: task.project.id}) }}" class="text-decoration-none">
+											{{ task.project.title }}
+										</a>
+									</p>
+								{% endif %}
+
+								<!-- Description -->
+								{% if task.description %}
+									<p class="card-text text-muted mb-3">
+										{{ task.description|length > 120 ? task.description|slice(0, 120) ~ '...' : task.description }}
+									</p>
+								{% endif %}
+
+								<!-- Badges de statut et priorité -->
+								<div class="d-flex gap-2 mb-3">
+									<span class="badge bg-{{ task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">
+										{{ task.statusLabel }}
+									</span>
+									<span class="badge bg-{{ task.priority == 'high' ? 'danger' : (task.priority == 'medium' ? 'warning' : 'secondary') }}">
+										{{ task.priorityLabel }}
+									</span>
+								</div>
+
+								<!-- Échéance -->
+								{% if task.dueDate %}
+									<div class="mb-3">
+										<small class="{{ task.isOverdue and not task.isCompleted ? 'text-danger fw-bold' : 'text-muted' }}">
+											<i class="fas fa-calendar-alt me-1"></i>
+											{% if task.isOverdue and not task.isCompleted %}
+												<i class="fas fa-exclamation-triangle me-1"></i>
+											{% endif %}
+											Échéance :
+											{{ task.dueDate|date('d/m/Y à H:i') }}
+										</small>
+									</div>
+								{% endif %}
+
+								<!-- Actions rapides -->
+								<div class="d-flex justify-content-between align-items-center">
+									<small class="text-muted">
+										<i class="fas fa-clock me-1"></i>
+										{{ task.createdAt|date('d/m/Y') }}
+									</small>
+									<div
+										class="btn-group btn-group-sm">
+										<!-- Bouton de changement de statut -->
+										<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline toggle-status-form">
+											<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
+											<button type="submit" class="btn btn-sm btn-{{ task.status == 'completed' ? 'success' : 'outline-success' }}">
+												{% if task.status == 'completed' %}
+													<i class="fas fa-check"></i>
+												{% elseif task.status == 'in_progress' %}
+													<i class="fas fa-play"></i>
+												{% else %}
+													<i class="fas fa-circle"></i>
+												{% endif %}
+											</button>
+										</form>
+										<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-outline-primary btn-sm">
+											<i class="fas fa-arrow-right"></i>
+										</a>
+									</div>
+								</div>
+							</div>
+
+							<!-- Modal de suppression -->
+							<div class="modal fade" id="deleteModal{{ task.id }}" tabindex="-1">
+								<div class="modal-dialog">
+									<div class="modal-content">
+										<div class="modal-header">
+											<h5 class="modal-title">
+												<i class="fas fa-exclamation-triangle text-danger me-2"></i>
+												Confirmer la suppression
+											</h5>
+											<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+										</div>
+										<div class="modal-body">
+											<p>Êtes-vous sûr de vouloir supprimer la tâche
+												<strong>"{{ task.title }}"</strong>
+												?</p>
+											<div class="alert alert-warning">
+												<i class="fas fa-exclamation-triangle me-2"></i>
+												Cette action est irréversible.
+											</div>
+										</div>
+										<div class="modal-footer">
+											<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+												Annuler
+											</button>
+											<form method="post" action="{{ path('task_delete', {id: task.id}) }}" class="d-inline">
+												<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ task.id) }}">
+												<button type="submit" class="btn btn-danger">
+													<i class="fas fa-trash me-2"></i>Supprimer
+												</button>
+											</form>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				{% endfor %}
+			</div>
+
+			<!-- Résumé -->
+			<div class="row mt-4">
+				<div class="col-12 text-center">
+					<p class="text-muted">
+						{{ tasks|length }}
+						tâche(s)
+						{% if current_status or current_priority %}
+							(avec filtres appliqués)
+						{% endif %}
+					</p>
+				</div>
+			</div>
+		{% endif %}
+	</div>
+
+	<style>
+		.task-card {
+			transition: transform 0.2s ease, box-shadow 0.2s ease;
+			cursor: pointer;
+		}
+
+		.task-card:hover {
+			transform: translateY(-3px);
+			box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+		}
+
+		.task-card.border-danger {
+			border-left: 4px solid #dc3545 !important;
+		}
+
+		.dropdown-menu {
+			box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+		}
+	</style>
+
+	<script>
+		document.addEventListener('DOMContentLoaded', function () { // Gestion de l'ajout rapide de tâche
+const quickAddForm = document.getElementById('quickAddForm');
+if (quickAddForm) {
+quickAddForm.addEventListener('submit', function (e) {
+e.preventDefault();
+
+const formData = new FormData(this);
+const button = this.querySelector('button[type="submit"]');
+const originalText = button.innerHTML;
+
+button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Ajout...';
+button.disabled = true;
+
+fetch(this.action, {
+method: 'POST',
+body: formData
+}).then(response => response.json()).then(data => {
+if (data.success) {
+location.reload();
+} else {
+alert('Erreur : ' + data.message);
+}
+}).catch(error => {
+console.error('Erreur:', error);
+alert('Une erreur est survenue');
+}). finally(() => {
+button.innerHTML = originalText;
+button.disabled = false;
+});
+});
+}
+
+// Gestion du changement de statut via AJAX
+document.querySelectorAll('.toggle-status-form').forEach(form => {
+form.addEventListener('submit', function (e) {
+e.preventDefault();
+
+const formData = new FormData(this);
+const button = this.querySelector('button[type="submit"]');
+
+fetch(this.action, {
+method: 'POST',
+body: formData
+}).then(response => response.json()).then(data => {
+if (data.success) {
+location.reload();
+} else {
+alert('Erreur : ' + data.message);
+}
+}).catch(error => {
+console.error('Erreur:', error);
+alert('Une erreur est survenue');
+});
+});
+});
+});
+	</script>
+{% endblock %}
