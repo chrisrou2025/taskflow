@@ -174,7 +174,7 @@ class TaskController extends AbstractController
     }
 
     #[Route('/{id}/toggle-status', name: 'task_toggle_status', methods: ['POST'])]
-    public function toggleStatus(Request $request, Task $task, EntityManagerInterface $entityManager): JsonResponse
+    public function toggleStatus(Request $request, Task $task, EntityManagerInterface $entityManager): Response
     {
         // Vérification que l'utilisateur est propriétaire de la tâche
         $this->denyAccessUnlessGranted('TASK_EDIT', $task);
@@ -200,18 +200,38 @@ class TaskController extends AbstractController
 
             $entityManager->flush();
 
-            return new JsonResponse([
-                'success' => true,
-                'status' => $newStatus,
-                'status_label' => $task->getStatusLabel(),
-                'message' => 'Statut mis à jour avec succès'
-            ]);
+            // Vérifier si c'est une requête AJAX
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse([
+                    'success' => true,
+                    'status' => $newStatus,
+                    'status_label' => $task->getStatusLabel(),
+                    'message' => 'Statut mis à jour avec succès'
+                ]);
+            }
+
+            // Pour les requêtes normales, ajouter un flash message et rediriger
+            $this->addFlash('success', 'Statut mis à jour avec succès');
+
+            // Rediriger vers la page précédente ou la page de la tâche
+            $referer = $request->headers->get('referer');
+            if ($referer) {
+                return $this->redirect($referer);
+            }
+
+            return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
         }
 
-        return new JsonResponse([
-            'success' => false,
-            'message' => 'Token CSRF invalide'
-        ], 400);
+        // Token CSRF invalide
+        if ($request->isXmlHttpRequest()) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Token CSRF invalide'
+            ], 400);
+        }
+
+        $this->addFlash('error', 'Token CSRF invalide. Le changement de statut a échoué.');
+        return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
     }
 
     #[Route('/{id}/duplicate', name: 'task_duplicate', methods: ['POST'])]

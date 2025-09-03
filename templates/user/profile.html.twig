@@ -1,0 +1,127 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon Profil - TaskFlow{% endblock %}
+
+{% block body %}
+<div class="container">
+    <!-- Header avec breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ path('app_dashboard') }}" class="text-decoration-none">
+                    <i class="fas fa-tachometer-alt me-1"></i>Tableau de bord
+                </a>
+            </li>
+            <li class="breadcrumb-item active">Mon Profil</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-user me-2"></i>Mon Profil
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-4">
+                            <!-- Avatar -->
+                            <div class="bg-primary bg-opacity-10 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
+                                 style="width: 120px; height: 120px;">
+                                <i class="fas fa-user text-primary fa-3x"></i>
+                            </div>
+                            <h5 class="mb-1">{{ user.fullName }}</h5>
+                            <p class="text-muted">{{ user.email }}</p>
+                            
+                            <!-- Badges de rôle -->
+                            {% for role in user.roles %}
+                                {% if role != 'ROLE_USER' %}
+                                    <span class="badge bg-warning mb-2">
+                                        {{ role == 'ROLE_ADMIN' ? 'Administrateur' : role }}
+                                    </span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <!-- Informations personnelles -->
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-info-circle me-2"></i>Informations personnelles
+                            </h6>
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-4 text-muted">Prénom :</div>
+                                <div class="col-sm-8">{{ user.firstName }}</div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-4 text-muted">Nom :</div>
+                                <div class="col-sm-8">{{ user.lastName }}</div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-4 text-muted">Email :</div>
+                                <div class="col-sm-8">{{ user.email }}</div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-4 text-muted">Membre depuis :</div>
+                                <div class="col-sm-8">{{ user.createdAt|date('d/m/Y') }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="d-flex gap-2 justify-content-center mt-4">
+                        <a href="{{ path('user_profile_edit') }}" class="btn btn-primary">
+                            <i class="fas fa-edit me-2"></i>Modifier mes informations
+                        </a>
+                        <a href="{{ path('user_change_password') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-lock me-2"></i>Changer le mot de passe
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistiques personnelles -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-white">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2 text-primary"></i>Mes statistiques
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4 mb-3">
+                            <div class="border-end">
+                                <h4 class="text-primary mb-1">{{ user.projects|length }}</h4>
+                                <small class="text-muted">Projet(s) créé(s)</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="border-end">
+                                {% set totalTasks = 0 %}
+                                {% for project in user.projects %}
+                                    {% set totalTasks = totalTasks + project.tasksCount %}
+                                {% endfor %}
+                                <h4 class="text-success mb-1">{{ totalTasks }}</h4>
+                                <small class="text-muted">Tâche(s) au total</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {% set completedTasks = 0 %}
+                            {% for project in user.projects %}
+                                {% set completedTasks = completedTasks + project.completedTasksCount %}
+                            {% endfor %}
+                            <h4 class="text-warning mb-1">{{ completedTasks }}</h4>
+                            <small class="text-muted">Tâche(s) terminée(s)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

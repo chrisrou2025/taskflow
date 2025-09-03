@@ -1,0 +1,247 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle tâche - TaskFlow{% endblock %}
+
+{% block body %}
+<div class="container">
+    <!-- Header avec breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ path('project_index') }}" class="text-decoration-none">
+                    <i class="fas fa-folder me-1"></i>Mes Projets
+                </a>
+            </li>
+            {% if task.project %}
+                <li class="breadcrumb-item">
+                    <a href="{{ path('project_show', {id: task.project.id}) }}" class="text-decoration-none">
+                        {{ task.project.title }}
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ path('task_index', {project: task.project.id}) }}" class="text-decoration-none">
+                        Tâches
+                    </a>
+                </li>
+            {% else %}
+                <li class="breadcrumb-item">
+                    <a href="{{ path('task_index') }}" class="text-decoration-none">
+                        <i class="fas fa-tasks me-1"></i>Mes Tâches
+                    </a>
+                </li>
+            {% endif %}
+            <li class="breadcrumb-item active">Nouvelle tâche</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-plus me-2"></i>Créer une nouvelle tâche
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    {% if task.project %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Cette tâche sera ajoutée au projet :</strong> {{ task.project.title }}
+                        </div>
+                    {% endif %}
+
+                    <p class="text-muted mb-4">
+                        Remplissez les informations ci-dessous pour créer votre nouvelle tâche. 
+                        Vous pourrez la modifier ultérieurement si nécessaire.
+                    </p>
+
+                    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
+                    
+                    <!-- Titre -->
+                    <div class="mb-4">
+                        {{ form_label(form.title, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="fas fa-tasks text-success"></i>
+                            </span>
+                            {{ form_widget(form.title, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                        </div>
+                        {{ form_errors(form.title) }}
+                        {% if form.title.vars.help %}
+                            <div class="form-text">{{ form.title.vars.help }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        {{ form_label(form.description, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+                        <div class="input-group">
+                            <span class="input-group-text bg-light align-items-start pt-3">
+                                <i class="fas fa-align-left text-success"></i>
+                            </span>
+                            {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
+                        </div>
+                        {{ form_errors(form.description) }}
+                        {% if form.description.vars.help %}
+                            <div class="form-text">{{ form.description.vars.help }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Statut et Priorité sur la même ligne -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            {{ form_label(form.status, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="fas fa-flag text-success"></i>
+                                </span>
+                                {{ form_widget(form.status, {'attr': {'class': 'form-select'}}) }}
+                            </div>
+                            {{ form_errors(form.status) }}
+                            {% if form.status.vars.help %}
+                                <div class="form-text">{{ form.status.vars.help }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_label(form.priority, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="fas fa-exclamation text-success"></i>
+                                </span>
+                                {{ form_widget(form.priority, {'attr': {'class': 'form-select'}}) }}
+                            </div>
+                            {{ form_errors(form.priority) }}
+                            {% if form.priority.vars.help %}
+                                <div class="form-text">{{ form.priority.vars.help }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Date d'échéance -->
+                    <div class="mb-4">
+                        {{ form_label(form.dueDate, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="fas fa-calendar-alt text-success"></i>
+                            </span>
+                            {{ form_widget(form.dueDate, {'attr': {'class': 'form-control'}}) }}
+                        </div>
+                        {{ form_errors(form.dueDate) }}
+                        {% if form.dueDate.vars.help %}
+                            <div class="form-text">{{ form.dueDate.vars.help }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Projet -->
+                    <div class="mb-4">
+                        {{ form_label(form.project, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="fas fa-folder text-success"></i>
+                            </span>
+                            {{ form_widget(form.project, {'attr': {'class': 'form-select'}}) }}
+                        </div>
+                        {{ form_errors(form.project) }}
+                        {% if form.project.vars.help %}
+                            <div class="form-text">{{ form.project.vars.help }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div class="d-flex justify-content-between">
+                        <div class="d-flex gap-2">
+                            {% if task.project %}
+                                <a href="{{ path('project_show', {id: task.project.id}) }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Retour au projet
+                                </a>
+                            {% else %}
+                                <a href="{{ path('task_index') }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Mes tâches
+                                </a>
+                            {% endif %}
+                        </div>
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-save me-2"></i>Créer la tâche
+                        </button>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+
+            <!-- Conseils -->
+            <div class="card border-0 bg-light mt-4">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>Conseils pour une bonne tâche
+                    </h6>
+                    <ul class="mb-0 small">
+                        <li>Utilisez un titre clair et actionnable (ex: "Rédiger le rapport mensuel")</li>
+                        <li>Décrivez précisément ce qui doit être fait</li>
+                        <li>Définissez la priorité selon l'urgence et l'importance</li>
+                        <li>Fixez une échéance réaliste pour maintenir la motivation</li>
+                        <li>Associez la tâche au bon projet pour une meilleure organisation</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Raccourcis utiles -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-white">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-rocket me-2 text-primary"></i>Actions rapides après création
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 text-center">
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded">
+                                <i class="fas fa-plus-circle text-success fa-2x mb-2"></i>
+                                <p class="small mb-0">Créer une autre tâche</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded">
+                                <i class="fas fa-eye text-primary fa-2x mb-2"></i>
+                                <p class="small mb-0">Voir la tâche créée</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded">
+                                <i class="fas fa-list text-info fa-2x mb-2"></i>
+                                <p class="small mb-0">Retour aux tâches</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .input-group-text {
+        border-right: none;
+        background-color: #f8f9fa !important;
+    }
+    
+    .input-group .form-control, 
+    .input-group .form-select {
+        border-left: none;
+    }
+    
+    .input-group .form-control:focus,
+    .input-group .form-select:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    
+    .alert {
+        border-left: 4px solid #0dcaf0;
+    }
+    
+    .bg-light:hover {
+        background-color: #e9ecef !important;
+    }
+</style>
+{% endblock %}
