@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : localhost
--- Généré le : mar. 02 sep. 2025 à 17:32
+-- Généré le : jeu. 04 sep. 2025 à 23:21
 -- Version du serveur : 9.1.0
 -- Version de PHP : 8.3.14
 
@@ -38,7 +38,8 @@ CREATE TABLE `doctrine_migration_versions` (
 --
 
 INSERT INTO `doctrine_migration_versions` (`version`, `executed_at`, `execution_time`) VALUES
-('DoctrineMigrations\\Version20250901124650', '2025-09-01 12:47:07', 430);
+('DoctrineMigrations\\Version20250901124650', '2025-09-01 12:47:07', 430),
+('DoctrineMigrations\\Version20250904075909', '2025-09-04 07:59:22', 29);
 
 -- --------------------------------------------------------
 
@@ -103,11 +104,11 @@ CREATE TABLE `task` (
 --
 
 INSERT INTO `task` (`id`, `project_id`, `title`, `description`, `status`, `priority`, `due_date`, `created_at`, `updated_at`, `completed_at`) VALUES
-(1, 1, 'Figma', NULL, 'todo', 'medium', NULL, '2025-09-02 12:41:55', '2025-09-02 12:42:19', NULL),
-(2, 1, 'Readme', NULL, 'todo', 'medium', NULL, '2025-09-02 12:43:38', '2025-09-02 12:54:36', NULL),
-(3, 2, 'Mettre à jour le CV', NULL, 'todo', 'medium', NULL, '2025-09-02 13:04:56', NULL, NULL),
-(4, 2, 'Postuler', NULL, 'todo', 'medium', NULL, '2025-09-02 13:05:21', NULL, NULL),
-(5, 1, 'Faire le code avec Symfony', NULL, 'in_progress', 'medium', NULL, '2025-09-02 13:07:15', '2025-09-02 13:07:35', NULL);
+(1, 1, 'Figma', NULL, 'in_progress', 'medium', NULL, '2025-09-02 12:41:55', '2025-09-03 23:22:46', NULL),
+(2, 1, 'Readme', NULL, 'todo', 'medium', NULL, '2025-09-02 12:43:38', '2025-09-03 23:23:29', NULL),
+(3, 2, 'Mettre à jour le CV', NULL, 'todo', 'medium', '2025-10-31 12:44:00', '2025-09-02 13:04:56', '2025-09-03 23:34:44', NULL),
+(4, 2, 'Postuler', NULL, 'todo', 'high', '2025-11-03 12:42:00', '2025-09-02 13:05:21', '2025-09-04 17:54:32', NULL),
+(5, 1, 'Faire le code avec Symfony', NULL, 'in_progress', 'medium', NULL, '2025-09-02 13:07:15', '2025-09-03 23:26:43', NULL);
 
 -- --------------------------------------------------------
 
@@ -122,15 +123,17 @@ CREATE TABLE `user` (
   `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `first_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `last_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `created_at` datetime NOT NULL COMMENT '(DC2Type:datetime_immutable)'
+  `created_at` datetime NOT NULL COMMENT '(DC2Type:datetime_immutable)',
+  `reset_token` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `reset_token_expires_at` datetime DEFAULT NULL COMMENT '(DC2Type:datetime_immutable)'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Déchargement des données de la table `user`
 --
 
-INSERT INTO `user` (`id`, `email`, `roles`, `password`, `first_name`, `last_name`, `created_at`) VALUES
-(1, 'c.roupioz@laposte.net', '[\"ROLE_USER\"]', '$2y$13$6l0j4.5VYQ6RANfF1g2wg.7wnxbADP0Bo5oRKFk6jOzv1aIKolw/q', 'christian', 'ROUPIOZ', '2025-09-02 08:26:11');
+INSERT INTO `user` (`id`, `email`, `roles`, `password`, `first_name`, `last_name`, `created_at`, `reset_token`, `reset_token_expires_at`) VALUES
+(1, 'ch.roupioz@laposte.net', '[\"ROLE_USER\", \"ROLE_ADMIN\"]', '$2y$13$fWmbX7naUCebxkiTes3mkuGD1EKsadr5IZlET2cG6afJOIGuIhAeC', 'christian', 'ROUPIOZ', '2025-09-02 08:26:11', NULL, NULL);
 
 --
 -- Index pour les tables déchargées
@@ -192,7 +195,7 @@ ALTER TABLE `project`
 -- AUTO_INCREMENT pour la table `task`
 --
 ALTER TABLE `task`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT pour la table `user`
