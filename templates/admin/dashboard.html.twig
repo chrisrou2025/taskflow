@@ -1,92 +1,325 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Administration - TaskFlow
-{% endblock %}
+{% block title %}Administration - TaskFlow{% endblock %}
 
 {% block body %}
-<div
-	class="container-fluid">
-	<!-- Header Admin -->
-	<div class="row mb-4">
-		<div class="col-12">
-			<div class="d-flex justify-content-between align-items-center">
-				<div>
-					<h1 class="h3 mb-2">🔧 Administration TaskFlow</h1>
-					<p class="text-muted mb-0">Tableau de bord administrateur</p>
-				</div>
-				<div class="d-flex gap-2">
-					<a href="{{ path('admin_statistics') }}" class="btn btn-outline-info">
-						<i class="fas fa-chart-bar me-2"></i>Statistiques
-					</a>
-					<a href="{{ path('admin_maintenance') }}" class="btn btn-outline-warning">
-						<i class="fas fa-tools me-2"></i>Maintenance
-					</a>
-				</div>
-			</div>
-		</div>
-	</div>
+<div class="container-fluid">
+    <!-- Header Admin -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-2">🔧 Administration TaskFlow</h1>
+                    <p class="text-muted mb-0">Tableau de bord administrateur</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ path('admin_statistics') }}" class="btn btn-outline-info">
+                        <i class="fas fa-chart-bar me-2"></i>Statistiques
+                    </a>
+                    <a href="{{ path('admin_maintenance') }}" class="btn btn-outline-warning">
+                        <i class="fas fa-tools me-2"></i>Maintenance
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
-	<!-- Statistiques principales -->
-	<div class="row mb-4">
-		<div class="col-md-3 mb-3">
-			<div class="card border-0 bg-gradient-primary text-white h-100">
-				<div class="card-body">
-					<div class="d-flex align-items-center">
-						<div class="flex-grow-1">
-							<h5 class="card-title mb-1">Utilisateurs</h5>
-							<h2 class="mb-0">{{ total_users }}</h2>
-							<small class="opacity-75">{{ active_users }}
-								actifs</small>
-						</div>
-						<div class="ms-3">
-							<i class="fas fa-users fa-2x opacity-75"></i>
-						</div>
-					</div>
-				</div>
-				<div class="card-footer bg-dark bg-opacity-25 border-0">
-					<a href="{{ path('admin_users') }}" class="text-white text-decoration-none">
-						<small>Gérer les utilisateurs
-							<i class="fas fa-arrow-right ms-1"></i>
-						</small>
-					</a>
-				</div>
-			</div>
-		</div>
+    <!-- Statistiques principales -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 bg-gradient-primary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-1">Utilisateurs</h5>
+                            <h2 class="mb-0">{{ total_users }}</h2>
+                            <small class="opacity-75">{{ active_users }} actifs</small>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-users fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark bg-opacity-25 border-0">
+                    <a href="{{ path('admin_users') }}" class="text-white text-decoration-none">
+                        <small>Gérer les utilisateurs
+                            <i class="fas fa-arrow-right ms-1"></i>
+                        </small>
+                    </a>
+                </div>
+            </div>
+        </div>
 
-		<div class="col-md-3 mb-3">
-			<div class="card border-0 bg-gradient-success text-white h-100">
-				<div class="card-body">
-					<div class="d-flex align-items-center">
-						<div class="flex-grow-1">
-							<h5 class="card-title mb-1">Projets</h5>
-							<h2 class="mb-0">{{ total_projects }}</h2>
-							<small class="opacity-75">Total créés</small>
-						</div>
-						<div class="ms-3">
-							<i class="fas fa-folder fa-2x opacity-75"></i>
-						</div>
-					</div>
-				</div>
-				<div class="card-footer bg-dark bg-opacity-25 border-0">
-					<a href="{{ path('admin_projects') }}" class="text-white text-decoration-none">
-						<small>Gérer les projets
-							<i class="fas fa-arrow-right ms-1"></i>
-						</small>
-					</a>
-				</div>
-			</div>
-		</div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 bg-gradient-success text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-1">Projets</h5>
+                            <h2 class="mb-0">{{ total_projects }}</h2>
+                            <small class="opacity-75">Total créés</small>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-folder fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark bg-opacity-25 border-0">
+                    <a href="{{ path('admin_projects') }}" class="text-white text-decoration-none">
+                        <small>Gérer les projets
+                            <i class="fas fa-arrow-right ms-1"></i>
+                        </small>
+                    </a>
+                </div>
+            </div>
+        </div>
 
-		<div class="col-md-3 mb-3">
-			<div class="card border-0 bg-gradient-warning text-white h-100">
-				<div class="card-body">
-					<div class="d-flex align-items-center">
-						<div class="flex-grow-1">
-							<h5 class="card-title mb-1">Tâches</h5>
-							<h2 class="mb-0">{{ total_tasks }}</h2>
-							<small class="opacity-75">Total créées</small>
-						</div>
-						<div class="ms-3">
-							<i class="fas fa-tasks fa-2x opacity-75"></i>
-						</div>
-					</div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 bg-gradient-warning text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-1">Tâches</h5>
+                            <h2 class="mb-0">{{ total_tasks }}</h2>
+                            <small class="opacity-75">Total créées</small>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-tasks fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark bg-opacity-25 border-0">
+                    <a href="{{ path('admin_tasks') }}" class="text-white text-decoration-none">
+                        <small>Gérer les tâches
+                            <i class="fas fa-arrow-right ms-1"></i>
+                        </small>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 bg-gradient-info text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-1">Activité</h5>
+                            <h2 class="mb-0">{{ (total_users > 0) ? ((active_users / total_users * 100)|round) : 0 }}%</h2>
+                            <small class="opacity-75">Taux d'activité</small>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-chart-line fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark bg-opacity-25 border-0">
+                    <a href="{{ path('admin_statistics') }}" class="text-white text-decoration-none">
+                        <small>Voir les statistiques
+                            <i class="fas fa-arrow-right ms-1"></i>
+                        </small>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="row">
+        <!-- Utilisateurs récents -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user-plus me-2 text-primary"></i>Utilisateurs récents
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_users is empty %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Aucun utilisateur récent</p>
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Utilisateur</th>
+                                        <th>Email</th>
+                                        <th>Inscription</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in recent_users %}
+                                        <tr>
+                                            <td>
+                                                <div>
+                                                    <strong>{{ user.fullName }}</strong>
+                                                    {% if 'ROLE_ADMIN' in user.roles %}
+                                                        <span class="badge bg-warning text-dark">Admin</span>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                            <td>{{ user.email }}</td>
+                                            <td>{{ user.createdAt|date('d/m/Y') }}</td>
+                                            <td>
+                                                <a href="{{ path('admin_user_show', {id: user.id}) }}" class="btn btn-outline-primary btn-sm">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Projets récents -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-folder me-2 text-success"></i>Projets récents
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_projects is empty %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-folder fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Aucun projet récent</p>
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Projet</th>
+                                        <th>Propriétaire</th>
+                                        <th>Tâches</th>
+                                        <th>Créé le</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for project in recent_projects|slice(0, 10) %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ project.title }}</strong>
+                                                {% if project.description %}
+                                                    <br><small class="text-muted">{{ project.description|slice(0, 50) }}...</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ project.owner.fullName }}</td>
+                                            <td>
+                                                <span class="badge bg-light text-dark">{{ project.tasksCount }}</span>
+                                            </td>
+                                            <td>{{ project.createdAt|date('d/m/Y') }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques des tâches -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tasks me-2 text-info"></i>Répartition des tâches
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="border-end">
+                                <h4 class="text-secondary mb-1">{{ tasks_by_status.todo ?? 0 }}</h4>
+                                <small class="text-muted">À faire</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border-end">
+                                <h4 class="text-warning mb-1">{{ tasks_by_status.in_progress ?? 0 }}</h4>
+                                <small class="text-muted">En cours</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-success mb-1">{{ tasks_by_status.completed ?? 0 }}</h4>
+                            <small class="text-muted">Terminées</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Utilisateurs actifs -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-trophy me-2 text-warning"></i>Utilisateurs les plus actifs
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if most_active_users is empty %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Aucune donnée d'activité</p>
+                        </div>
+                    {% else %}
+                        <div class="list-group list-group-flush">
+                            {% for activeUser in most_active_users %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>{{ activeUser[0].fullName }}</strong>
+                                            <br><small class="text-muted">{{ activeUser[0].email }}</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-primary">{{ activeUser.projectCount }} projets</span>
+                                            <br><small class="text-muted">{{ activeUser.taskCount }} tâches</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-gradient-primary {
+        background: linear-gradient(45deg, #007bff, #0056b3);
+    }
+    
+    .bg-gradient-success {
+        background: linear-gradient(45deg, #28a745, #1e7e34);
+    }
+    
+    .bg-gradient-warning {
+        background: linear-gradient(45deg, #ffc107, #e0a800);
+    }
+    
+    .bg-gradient-info {
+        background: linear-gradient(45deg, #17a2b8, #138496);
+    }
+    
+    .card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+</style>
+{% endblock %}

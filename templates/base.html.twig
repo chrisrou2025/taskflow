@@ -205,7 +205,7 @@
 								</li>
 								{% if is_granted('ROLE_ADMIN') %}
 									<li>
-										<a class="dropdown-item" href="#">
+										<a class="dropdown-item" href="{{ path('admin_dashboard') }}">
 											<i class="fas fa-cogs"></i>
 											Administration</a>
 									</li>
@@ -257,14 +257,22 @@
 	<!-- Footer -->
 	<footer class="mt-5 py-4 text-center text-muted">
 		<div class="container">
-				<a class="dropdown-item" href="{{ path('legal_terms') }}">
-					<i class="fas fa-file-contract"></i>
-					Mentions légales
-				</a>
-			<p>&copy;
-				{{ 'now'|date('Y') }}
-				TaskFlow - Application de gestion de tâches collaboratives</p>
-			<small>Développé avec Symfony et beaucoup de ☕</small>
+			<div class="row">
+				<div class="col-md-6">
+					<p>&copy;
+						{{ 'now'|date('Y') }}
+						TaskFlow - Application de gestion de tâches</p>
+				</div>
+				<div class="col-md-6">
+					<div class="d-flex justify-content-center gap-3">
+						<a href="{{ path('legal_terms') }}" class="text-muted text-decoration-none">CGU</a>
+						<a href="{{ path('legal_privacy') }}" class="text-muted text-decoration-none">Confidentialité</a>
+						<a href="{{ path('legal_gdpr') }}" class="text-muted text-decoration-none">RGPD</a>
+						<a href="{{ path('legal_cookies') }}" class="text-muted text-decoration-none">Cookies</a>
+					</div>
+				</div>
+			</div>
+			<small>Développé avec Symfony</small>
 		</div>
 	</footer>
 

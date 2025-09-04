@@ -1,178 +1,331 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Inscription - TaskFlow
-{% endblock %}
+{% block title %}Inscription - TaskFlow{% endblock %}
 
 {% block body %}
-	<div class="container">
-		<div class="row justify-content-center align-items-center min-vh-100">
-			<div class="col-md-8 col-lg-6">
-				<div class="card border-0 shadow-lg">
-					<div
-						class="card-body p-5">
-						<!-- Header -->
-						<div class="text-center mb-4">
-							<div class="mb-3">
-								<i class="fas fa-user-plus text-primary fa-3x"></i>
-							</div>
-							<h2 class="h3 mb-2">Bienvenue ! 🎉</h2>
-							<p class="text-muted">Créez votre compte TaskFlow et commencez à organiser vos projets</p>
-						</div>
+<div class="container">
+    <div class="row justify-content-center align-items-center min-vh-100">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body p-5">
+                    <!-- Header -->
+                    <div class="text-center mb-4">
+                        <div class="mb-3">
+                            <i class="fas fa-user-plus text-primary fa-3x"></i>
+                        </div>
+                        <h2 class="h3 mb-2">Bienvenue !</h2>
+                        <p class="text-muted">Créez votre compte TaskFlow et commencez à organiser vos projets</p>
+                    </div>
 
-						<!-- Formulaire d'inscription -->
-						{{ form_start(registrationForm, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
+                    <!-- Formulaire d'inscription -->
+                    {{ form_start(registrationForm, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
 
-						<div class="row">
-							<div class="col-md-6">
-								<div class="mb-3">
-									{{ form_label(registrationForm.firstName, null, {'label_attr': {'class': 'form-label'}}) }}
-									<div class="input-group">
-										<span class="input-group-text bg-light">
-											<i class="fas fa-user text-muted"></i>
-										</span>
-										{{ form_widget(registrationForm.firstName, {'attr': {'class': 'form-control'}}) }}
-									</div>
-									{{ form_errors(registrationForm.firstName) }}
-								</div>
-							</div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(registrationForm.firstName, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">
+                                        <i class="fas fa-user text-muted"></i>
+                                    </span>
+                                    {{ form_widget(registrationForm.firstName, {'attr': {'class': 'form-control'}}) }}
+                                </div>
+                                {{ form_errors(registrationForm.firstName) }}
+                            </div>
+                        </div>
 
-							<div class="col-md-6">
-								<div class="mb-3">
-									{{ form_label(registrationForm.lastName, null, {'label_attr': {'class': 'form-label'}}) }}
-									<div class="input-group">
-										<span class="input-group-text bg-light">
-											<i class="fas fa-user-tag text-muted"></i>
-										</span>
-										{{ form_widget(registrationForm.lastName, {'attr': {'class': 'form-control'}}) }}
-									</div>
-									{{ form_errors(registrationForm.lastName) }}
-								</div>
-							</div>
-						</div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(registrationForm.lastName, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">
+                                        <i class="fas fa-user-tag text-muted"></i>
+                                    </span>
+                                    {{ form_widget(registrationForm.lastName, {'attr': {'class': 'form-control'}}) }}
+                                </div>
+                                {{ form_errors(registrationForm.lastName) }}
+                            </div>
+                        </div>
+                    </div>
 
-						<div class="mb-3">
-							{{ form_label(registrationForm.email, null, {'label_attr': {'class': 'form-label'}}) }}
-							<div class="input-group">
-								<span class="input-group-text bg-light">
-									<i class="fas fa-envelope text-muted"></i>
-								</span>
-								{{ form_widget(registrationForm.email, {'attr': {'class': 'form-control'}}) }}
-							</div>
-							{{ form_errors(registrationForm.email) }}
-						</div>
+                    <div class="mb-3">
+                        {{ form_label(registrationForm.email, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="fas fa-envelope text-muted"></i>
+                            </span>
+                            {{ form_widget(registrationForm.email, {'attr': {'class': 'form-control'}}) }}
+                        </div>
+                        {{ form_errors(registrationForm.email) }}
+                    </div>
 
-						<div class="mb-3">
-							{{ form_label(registrationForm.plainPassword.first, null, {'label_attr': {'class': 'form-label'}}) }}
-							<div class="input-group">
-								<span class="input-group-text bg-light">
-									<i class="fas fa-lock text-muted"></i>
-								</span>
-								{{ form_widget(registrationForm.plainPassword.first, {'attr': {'class': 'form-control'}}) }}
-							</div>
-							<div class="form-text">
-								<small class="text-muted">
-									<i class="fas fa-info-circle"></i>
-									Le mot de passe doit contenir au moins 6 caractères
-								</small>
-							</div>
-							{{ form_errors(registrationForm.plainPassword.first) }}
-						</div>
+                    <!-- Premier mot de passe -->
+                    <div class="mb-3">
+                        {{ form_label(registrationForm.plainPassword.first, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="fas fa-lock text-muted"></i>
+                            </span>
+                            {{ form_widget(registrationForm.plainPassword.first, {'attr': {'class': 'form-control', 'id': 'password_first'}}) }}
+                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password_first')">
+                                <i class="fas fa-eye" id="password_first_icon"></i>
+                            </button>
+                        </div>
+                        <!-- Indicateur de force du mot de passe -->
+                        <div class="progress mt-2" style="height: 5px;">
+                            <div id="password_strength" class="progress-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="form-text" id="password_help">
+                            <i class="fas fa-info-circle"></i>
+                            Le mot de passe doit contenir au moins 6 caractères
+                        </div>
+                        {{ form_errors(registrationForm.plainPassword.first) }}
+                    </div>
 
-						<div class="mb-4">
-							{{ form_label(registrationForm.plainPassword.second, null, {'label_attr': {'class': 'form-label'}}) }}
-							<div class="input-group">
-								<span class="input-group-text bg-light">
-									<i class="fas fa-lock text-muted"></i>
-								</span>
-								{{ form_widget(registrationForm.plainPassword.second, {'attr': {'class': 'form-control'}}) }}
-							</div>
-							{{ form_errors(registrationForm.plainPassword.second) }}
-						</div>
+                    <!-- Confirmation mot de passe -->
+                    <div class="mb-4">
+                        {{ form_label(registrationForm.plainPassword.second, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="fas fa-lock text-muted"></i>
+                            </span>
+                            {{ form_widget(registrationForm.plainPassword.second, {'attr': {'class': 'form-control', 'id': 'password_second'}}) }}
+                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password_second')">
+                                <i class="fas fa-eye" id="password_second_icon"></i>
+                            </button>
+                        </div>
+                        <div class="form-text" id="confirm_help">Les mots de passe doivent être identiques</div>
+                        {{ form_errors(registrationForm.plainPassword.second) }}
+                    </div>
 
-						<!-- Conditions d'utilisation -->
-						<div class="form-check mb-4">
-							<input class="form-check-input" type="checkbox" id="terms" required>
-							<label class="form-check-label" for="terms">
-								J'accepte les
-								<a href="{{ path('legal_terms') }}" class="text-primary" target="_blank">conditions d'utilisation</a>
-								et la
-								<a href="{{ path('legal_privacy') }}" class="text-primary" target="_blank">politique de confidentialité</a>
-							</label>
-						</div>
+                    <!-- Conditions d'utilisation -->
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="terms" required>
+                        <label class="form-check-label" for="terms">
+                            J'accepte les
+                            <a href="{{ path('legal_terms') }}" class="text-primary" target="_blank">conditions d'utilisation</a>
+                            et la
+                            <a href="{{ path('legal_privacy') }}" class="text-primary" target="_blank">politique de confidentialité</a>
+                        </label>
+                    </div>
 
-						<button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
-							<i class="fas fa-user-plus me-2"></i>
-							Créer mon compte
-						</button>
+                    <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
+                        <i class="fas fa-user-plus me-2"></i>
+                        Créer mon compte
+                    </button>
 
-						{{ form_end(registrationForm) }}
+                    {{ form_end(registrationForm) }}
 
-						<!-- Liens utiles -->
-						<div class="text-center">
-							<hr class="my-4">
-							<p class="mb-0 text-muted">
-								Déjà inscrit ?
-								<a href="{{ path('app_login') }}" class="text-primary text-decoration-none fw-semibold">
-									Se connecter
-								</a>
-							</p>
-						</div>
-					</div>
-				</div>
+                    <!-- Liens utiles -->
+                    <div class="text-center">
+                        <hr class="my-4">
+                        <p class="mb-0 text-muted">
+                            Déjà inscrit ?
+                            <a href="{{ path('app_login') }}" class="text-primary text-decoration-none fw-semibold">
+                                Se connecter
+                            </a>
+                        </p>
+                    </div>
 
-				<!-- Lien retour à l'accueil -->
-				<div class="text-center mt-3">
-					<a href="{{ path('app_home') }}" class="text-white text-decoration-none">
-						<i class="fas fa-arrow-left me-1"></i>
-						Retour à l'accueil
-					</a>
-				</div>
-			</div>
-		</div>
-	</div>
+                    <!-- Section confidentialité -->
+                    <div class="text-center mt-4">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <i class="fas fa-shield-alt text-success fa-2x mb-2"></i>
+                                <p class="small mb-0">Sécurisé</p>
+                            </div>
+                            <div class="col-4">
+                                <i class="fas fa-user-shield text-primary fa-2x mb-2"></i>
+                                <p class="small mb-0">RGPD</p>
+                            </div>
+                            <div class="col-4">
+                                <i class="fas fa-eye-slash text-info fa-2x mb-2"></i>
+                                <p class="small mb-0">Privé</p>
+                            </div>
+                        </div>
+                        <p class="small text-white mt-2">
+                            Vos données sont protégées selon nos 
+                            <a href="{{ path('legal_privacy') }}" class="text-white text-decoration-none" target="_blank">
+                                politiques de confidentialité
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
 
-	<style>
-		.min-vh-100 {
-			min-height: calc(100vh - 200px);
-		}
+            <!-- Lien retour à l'accueil -->
+            <div class="text-center mt-3">
+                <a href="{{ path('app_home') }}" class="text-white text-decoration-none">
+                    <i class="fas fa-arrow-left me-1"></i>
+                    Retour à l'accueil
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 
-		.card {
-			border-radius: 16px;
-			backdrop-filter: blur(10px);
-		}
+<style>
+    .min-vh-100 {
+        min-height: calc(100vh - 200px);
+    }
 
-		.form-control:focus {
-			border-color: var(--primary-color);
-			box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
-		}
+    .card {
+        border-radius: 16px;
+        backdrop-filter: blur(10px);
+    }
 
-		.btn-primary {
-			border-radius: 10px;
-			font-weight: 600;
-			padding: 12px;
-		}
+    .input-group-text {
+        border-right: none;
+        background-color: #f8f9fa !important;
+    }
 
-		.input-group-text {
-			border-right: none;
-		}
+    .input-group .form-control {
+        border-left: none;
+        border-right: none;
+    }
 
-		.input-group .form-control {
-			border-left: none;
-		}
+    .input-group .btn {
+        border-left: none;
+    }
 
-		body {
-			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-			background-attachment: fixed;
-		}
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+    }
 
-		.card {
-			background: rgba(255, 255, 255, 0.95);
-		}
+    .btn-primary {
+        border-radius: 10px;
+        font-weight: 600;
+        padding: 12px;
+    }
 
-		.form-errors {
-			color: var(--danger-color);
-			font-size: 0.875rem;
-			margin-top: 0.25rem;
-		}
-	</style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background-attachment: fixed;
+    }
+
+    .card {
+        background: rgba(255, 255, 255, 0.95);
+    }
+
+    .form-errors {
+        color: var(--danger-color);
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .progress-bar {
+        transition: width 0.3s ease, background-color 0.3s ease;
+    }
+</style>
+
+<script>
+// Fonction pour afficher/masquer les mots de passe
+function togglePassword(fieldId) {
+    const field = document.getElementById(fieldId);
+    const icon = document.getElementById(fieldId + '_icon');
+    
+    if (field.type === 'password') {
+        field.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        field.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+
+// Indicateur de force du mot de passe et validation
+document.addEventListener('DOMContentLoaded', function() {
+    const passwordField = document.getElementById('password_first');
+    const confirmPasswordField = document.getElementById('password_second');
+    const strengthBar = document.getElementById('password_strength');
+    const passwordHelp = document.getElementById('password_help');
+    const confirmHelp = document.getElementById('confirm_help');
+
+    // Vérification de la force du mot de passe
+    if (passwordField && strengthBar && passwordHelp) {
+        passwordField.addEventListener('input', function() {
+            const password = this.value;
+            let strength = 0;
+            let message = '';
+            let color = '';
+
+            if (password.length >= 6) strength++;
+            if (password.length >= 8) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/[a-z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+            const percentage = (strength / 6) * 100;
+
+            if (strength < 2) {
+                color = 'bg-danger';
+                message = 'Mot de passe faible';
+            } else if (strength < 4) {
+                color = 'bg-warning';
+                message = 'Mot de passe moyen';
+            } else {
+                color = 'bg-success';
+                message = 'Mot de passe fort';
+            }
+
+            strengthBar.className = `progress-bar ${color}`;
+            strengthBar.style.width = percentage + '%';
+            passwordHelp.innerHTML = password.length === 0 ? 
+                '<i class="fas fa-info-circle"></i> Le mot de passe doit contenir au moins 6 caractères' : 
+                `<i class="fas fa-shield-alt"></i> ${message}`;
+        });
+    }
+
+    // Vérification de la confirmation du mot de passe
+    if (confirmPasswordField && confirmHelp) {
+        confirmPasswordField.addEventListener('input', function() {
+            const newPassword = passwordField ? passwordField.value : '';
+            const confirmPassword = this.value;
+
+            if (confirmPassword.length === 0) {
+                confirmHelp.textContent = 'Les mots de passe doivent être identiques';
+                confirmHelp.className = 'form-text';
+            } else if (newPassword === confirmPassword) {
+                confirmHelp.innerHTML = '<i class="fas fa-check-circle text-success"></i> Les mots de passe correspondent !';
+                confirmHelp.className = 'form-text text-success';
+            } else {
+                confirmHelp.innerHTML = '<i class="fas fa-times-circle text-danger"></i> Les mots de passe ne correspondent pas';
+                confirmHelp.className = 'form-text text-danger';
+            }
+        });
+    }
+
+    // Validation du formulaire
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const password = passwordField ? passwordField.value : '';
+            const confirmPassword = confirmPasswordField ? confirmPasswordField.value : '';
+
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                alert('Les mots de passe ne correspondent pas.');
+                return false;
+            }
+
+            if (password.length < 6) {
+                e.preventDefault();
+                alert('Le mot de passe doit contenir au moins 6 caractères.');
+                return false;
+            }
+
+            const termsCheckbox = document.getElementById('terms');
+            if (termsCheckbox && !termsCheckbox.checked) {
+                e.preventDefault();
+                alert('Vous devez accepter les conditions d\'utilisation pour créer un compte.');
+                return false;
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

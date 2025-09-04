@@ -1,0 +1,323 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ user.fullName }} - Gestion des utilisateurs - TaskFlow{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('admin_dashboard') }}" class="text-decoration-none">Administration</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('admin_users') }}" class="text-decoration-none">Utilisateurs</a>
+                    </li>
+                    <li class="breadcrumb-item active">{{ user.fullName }}</li>
+                </ol>
+            </nav>
+            
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h1 class="h3 mb-2">{{ user.fullName }}</h1>
+                    <p class="text-muted mb-0">Détails de l'utilisateur #{{ user.id }}</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ path('admin_users') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Informations utilisateur -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user me-2"></i>Informations personnelles
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Avatar -->
+                    <div class="text-center mb-4">
+                        <div class="bg-primary bg-opacity-10 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
+                             style="width: 100px; height: 100px;">
+                            <i class="fas fa-user text-primary fa-3x"></i>
+                        </div>
+                        <h5 class="mb-1">{{ user.fullName }}</h5>
+                        <p class="text-muted">{{ user.email }}</p>
+                        
+                        <!-- Badge rôle -->
+                        {% if 'ROLE_ADMIN' in user.roles %}
+                            <span class="badge bg-warning text-dark">Administrateur</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Utilisateur</span>
+                        {% endif %}
+                        
+                        {% if user.id == app.user.id %}
+                            <span class="badge bg-info">Votre compte</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Détails -->
+                    <div class="row mb-3">
+                        <div class="col-sm-5 text-muted">Prénom :</div>
+                        <div class="col-sm-7">{{ user.firstName }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-5 text-muted">Nom :</div>
+                        <div class="col-sm-7">{{ user.lastName }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-5 text-muted">Email :</div>
+                        <div class="col-sm-7">{{ user.email }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-5 text-muted">Inscription :</div>
+                        <div class="col-sm-7">{{ user.createdAt|date('d/m/Y à H:i') }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions administrateur -->
+            {% if user.id != app.user.id %}
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-cogs me-2"></i>Actions administrateur
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-primary" onclick="toggleUserRole({{ user.id }}, '{{ user.fullName }}')">
+                                <i class="fas fa-user-cog me-2"></i>
+                                {% if 'ROLE_ADMIN' in user.roles %}
+                                    Retirer les droits admin
+                                {% else %}
+                                    Donner les droits admin
+                                {% endif %}
+                            </button>
+                            
+                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                <i class="fas fa-trash me-2"></i>Supprimer l'utilisateur
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Statistiques et activité -->
+        <div class="col-lg-8">
+            <!-- Statistiques générales -->
+            <div class="row mb-4">
+                <div class="col-md-4 mb-3">
+                    <div class="card border-0 bg-primary text-white">
+                        <div class="card-body text-center">
+                            <h3 class="mb-1">{{ projects|length }}</h3>
+                            <small>Projet(s)</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card border-0 bg-success text-white">
+                        <div class="card-body text-center">
+                            {% set totalTasks = 0 %}
+                            {% for project in projects %}
+                                {% set totalTasks = totalTasks + project.tasksCount %}
+                            {% endfor %}
+                            <h3 class="mb-1">{{ totalTasks }}</h3>
+                            <small>Tâche(s) totale(s)</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card border-0 bg-warning text-white">
+                        <div class="card-body text-center">
+                            <h3 class="mb-1">{{ (tasks_stats.completed ?? 0) }}</h3>
+                            <small>Tâche(s) terminée(s)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projets de l'utilisateur -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-folder me-2 text-primary"></i>Projets ({{ projects|length }})
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if projects is empty %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Aucun projet créé</p>
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Projet</th>
+                                        <th>Tâches</th>
+                                        <th>Progression</th>
+                                        <th>Créé le</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for project in projects %}
+                                        <tr>
+                                            <td>
+                                                <div>
+                                                    <strong>{{ project.title }}</strong>
+                                                    {% if project.description %}
+                                                        <br><small class="text-muted">{{ project.description|slice(0, 60) }}...</small>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary">{{ project.tasksCount }}</span>
+                                            </td>
+                                            <td>
+                                                {% set progress = project.progressPercentage %}
+                                                <div class="d-flex align-items-center">
+                                                    <div class="progress flex-grow-1 me-2" style="height: 6px;">
+                                                        <div class="progress-bar bg-{{ progress == 100 ? 'success' : (progress > 50 ? 'primary' : 'warning') }}" 
+                                                             style="width: {{ progress }}%"></div>
+                                                    </div>
+                                                    <small class="text-muted">{{ progress }}%</small>
+                                                </div>
+                                            </td>
+                                            <td>{{ project.createdAt|date('d/m/Y') }}</td>
+                                            <td>
+                                                <a href="{{ path('project_show', {id: project.id}) }}" 
+                                                   class="btn btn-outline-primary btn-sm" 
+                                                   target="_blank">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Tâches récentes -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tasks me-2 text-success"></i>Activité récente
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_tasks is empty %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Aucune tâche récente</p>
+                        </div>
+                    {% else %}
+                        <div class="list-group list-group-flush">
+                            {% for task in recent_tasks|slice(0, 10) %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">{{ task.title }}</h6>
+                                            <small class="text-muted">{{ task.project.title }}</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-{{ task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">
+                                                {{ task.statusLabel }}
+                                            </span>
+                                            <br><small class="text-muted">{{ task.createdAt|date('d/m') }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de suppression -->
+{% if user.id != app.user.id %}
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                        Confirmer la suppression
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Êtes-vous sûr de vouloir supprimer l'utilisateur <strong>"{{ user.fullName }}"</strong> ?</p>
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Attention :</strong> Cette action supprimera définitivement :
+                        <ul class="mb-0 mt-2">
+                            <li>Le compte de {{ user.fullName }}</li>
+                            <li>Tous ses {{ projects|length }} projet(s)</li>
+                            <li>Toutes les tâches associées</li>
+                            <li>Tout l'historique</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <form method="post" action="{{ path('admin_user_delete', {id: user.id}) }}" class="d-inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete-user' ~ user.id) }}">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-2"></i>Supprimer définitivement
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<script>
+function toggleUserRole(userId, userName) {
+    if (confirm(`Voulez-vous changer le rôle de ${userName} ?`)) {
+        fetch(`/admin/users/${userId}/toggle-role`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: `_token=${document.querySelector('input[name="_token"]')?.value || ''}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                window.location.reload();
+            } else {
+                alert('Erreur : ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Une erreur est survenue');
+            console.error('Error:', error);
+        });
+    }
+}
+</script>
+{% endblock %}
