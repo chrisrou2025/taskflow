@@ -1,0 +1,240 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}RGPD - Mes droits sur les données - TaskFlow{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-user-shield me-2"></i>
+                        RGPD - Vos droits sur vos données
+                    </h1>
+                </div>
+                <div class="card-body p-5">
+                    <div class="alert alert-info">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        <strong>Protection maximale :</strong> TaskFlow respecte le Règlement Général sur la Protection des Données (RGPD) en vigueur depuis mai 2018.
+                    </div>
+
+                    <h2>Vos droits fondamentaux</h2>
+                    <p>En tant qu'utilisateur de TaskFlow, vous disposez de droits fondamentaux concernant vos données personnelles :</p>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <i class="fas fa-eye me-2"></i>Droit d'accès
+                                </div>
+                                <div class="card-body">
+                                    <p class="small mb-2"><strong>Vous pouvez :</strong></p>
+                                    <ul class="small">
+                                        <li>Demander une copie de toutes vos données</li>
+                                        <li>Connaître l'usage fait de vos informations</li>
+                                        <li>Savoir combien de temps elles sont conservées</li>
+                                    </ul>
+                                    <button class="btn btn-outline-primary btn-sm w-100">Demander mes données</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 border-warning">
+                                <div class="card-header bg-warning text-dark">
+                                    <i class="fas fa-edit me-2"></i>Droit de rectification
+                                </div>
+                                <div class="card-body">
+                                    <p class="small mb-2"><strong>Vous pouvez :</strong></p>
+                                    <ul class="small">
+                                        <li>Corriger vos données inexactes</li>
+                                        <li>Compléter des informations manquantes</li>
+                                        <li>Mettre à jour vos informations</li>
+                                    </ul>
+                                    <a href="{{ path('user_profile_edit') }}" class="btn btn-outline-warning btn-sm w-100">Modifier mon profil</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 border-danger">
+                                <div class="card-header bg-danger text-white">
+                                    <i class="fas fa-trash me-2"></i>Droit à l'effacement
+                                </div>
+                                <div class="card-body">
+                                    <p class="small mb-2"><strong>Vous pouvez demander :</strong></p>
+                                    <ul class="small">
+                                        <li>La suppression de vos données</li>
+                                        <li>La suppression de votre compte</li>
+                                        <li>L'effacement définitif de vos projets</li>
+                                    </ul>
+                                    <button class="btn btn-outline-danger btn-sm w-100">Supprimer mon compte</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 border-success">
+                                <div class="card-header bg-success text-white">
+                                    <i class="fas fa-download me-2"></i>Droit à la portabilité
+                                </div>
+                                <div class="card-body">
+                                    <p class="small mb-2"><strong>Vous pouvez :</strong></p>
+                                    <ul class="small">
+                                        <li>Récupérer vos données (format JSON/CSV)</li>
+                                        <li>Transférer vos projets vers un autre service</li>
+                                        <li>Exporter votre historique complet</li>
+                                    </ul>
+                                    <button class="btn btn-outline-success btn-sm w-100">Exporter mes données</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2>Droits supplémentaires</h2>
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-secondary">
+                                <div class="card-header bg-secondary text-white">
+                                    <i class="fas fa-pause-circle me-2"></i>Droit à la limitation
+                                </div>
+                                <div class="card-body">
+                                    <p class="small">Vous pouvez demander la limitation du traitement de vos données en cas de :</p>
+                                    <ul class="small">
+                                        <li>Contestation de l'exactitude des données</li>
+                                        <li>Traitement illicite</li>
+                                        <li>Opposition au traitement</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card border-dark">
+                                <div class="card-header bg-dark text-white">
+                                    <i class="fas fa-ban me-2"></i>Droit d'opposition
+                                </div>
+                                <div class="card-body">
+                                    <p class="small">Vous pouvez vous opposer :</p>
+                                    <ul class="small">
+                                        <li>Au traitement à des fins de marketing</li>
+                                        <li>Au profilage automatique</li>
+                                        <li>À l'utilisation pour des intérêts légitimes</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2>Comment exercer vos droits ?</h2>
+                    <div class="alert alert-primary">
+                        <h5><i class="fas fa-envelope me-2"></i>Contact direct</h5>
+                        <p>Pour exercer l'un de ces droits, contactez-nous :</p>
+                        <ul>
+                            <li><strong>Email :</strong> privacy@taskflow.app</li>
+                            <li><strong>Délai de réponse :</strong> Maximum 30 jours</li>
+                            <li><strong>Gratuit :</strong> L'exercice de vos droits est toujours gratuit</li>
+                        </ul>
+                    </div>
+
+                    <h2>Base légale de nos traitements</h2>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Type de données</th>
+                                    <th>Base légale</th>
+                                    <th>Finalité</th>
+                                    <th>Durée de conservation</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Données d'inscription</td>
+                                    <td>Contrat</td>
+                                    <td>Fourniture du service</td>
+                                    <td>Durée du compte + 1 an</td>
+                                </tr>
+                                <tr>
+                                    <td>Projets et tâches</td>
+                                    <td>Contrat</td>
+                                    <td>Fonctionnement de l'application</td>
+                                    <td>Durée du compte</td>
+                                </tr>
+                                <tr>
+                                    <td>Logs de connexion</td>
+                                    <td>Intérêt légitime</td>
+                                    <td>Sécurité et support</td>
+                                    <td>1 an maximum</td>
+                                </tr>
+                                <tr>
+                                    <td>Cookies techniques</td>
+                                    <td>Intérêt légitime</td>
+                                    <td>Fonctionnement du site</td>
+                                    <td>Durée de la session</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h2>Réclamation et recours</h2>
+                    <div class="alert alert-warning">
+                        <h5><i class="fas fa-balance-scale me-2"></i>Vos recours</h5>
+                        <p>Si vous estimez que vos droits ne sont pas respectés :</p>
+                        <ol>
+                            <li><strong>Contactez-nous d'abord</strong> à privacy@taskflow.app</li>
+                            <li><strong>Saisissez la CNIL</strong> si notre réponse ne vous satisfait pas</li>
+                            <li><strong>Déposez une plainte</strong> auprès de l'autorité de contrôle de votre pays</li>
+                        </ol>
+                    </div>
+
+                    <h2>Transferts hors UE</h2>
+                    <p>Vos données sont traitées et stockées exclusivement dans l'Union Européenne. En cas de transfert exceptionnel hors UE, nous garantissons :</p>
+                    <ul>
+                        <li>Un niveau de protection équivalent au RGPD</li>
+                        <li>Des clauses contractuelles types approuvées par la Commission européenne</li>
+                        <li>Votre information préalable</li>
+                    </ul>
+
+                    <div class="alert alert-success mt-4">
+                        <h5><i class="fas fa-certificate me-2"></i>Notre engagement</h5>
+                        <p class="mb-0">TaskFlow s'engage à respecter vos droits fondamentaux et à assurer la protection maximale de vos données personnelles. Notre équipe dédiée à la protection des données est à votre disposition pour répondre à toutes vos questions.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions utilisateur -->
+            <div class="text-center mt-4">
+                <div class="btn-group">
+                    <a href="{{ path('legal_privacy') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-shield-alt"></i> Politique de confidentialité
+                    </a>
+                    <a href="{{ path('legal_terms') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-file-contract"></i> Conditions d'utilisation
+                    </a>
+                    {% if app.user %}
+                        <a href="{{ path('user_profile') }}" class="btn btn-primary">
+                            <i class="fas fa-user-cog"></i> Mon compte
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion des boutons d'actions RGPD (à implémenter selon vos besoins)
+    document.querySelectorAll('.btn-outline-primary, .btn-outline-danger, .btn-outline-success').forEach(button => {
+        if (button.textContent.includes('Demander') || button.textContent.includes('Supprimer') || button.textContent.includes('Exporter')) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('Fonctionnalité à implémenter. Contactez privacy@taskflow.app pour exercer ce droit.');
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

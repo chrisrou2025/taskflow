@@ -1,0 +1,352 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Politique de cookies - TaskFlow{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-cookie-bite me-2"></i>
+                        Politique de cookies
+                    </h1>
+                </div>
+                <div class="card-body p-5">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Dernière mise à jour :</strong> {{ 'now'|date('d/m/Y') }}
+                    </div>
+
+                    <h2>Qu'est-ce qu'un cookie ?</h2>
+                    <p>Un cookie est un petit fichier texte déposé sur votre appareil lors de votre navigation sur TaskFlow. Les cookies nous permettent de vous reconnaître, de mémoriser vos préférences et d'améliorer votre expérience utilisateur.</p>
+
+                    <h2>Types de cookies utilisés</h2>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white">
+                                    <i class="fas fa-shield-alt me-2"></i>Cookies essentiels
+                                </div>
+                                <div class="card-body">
+                                    <p class="small"><strong>Obligatoires pour le fonctionnement du site</strong></p>
+                                    <ul class="small">
+                                        <li>Session de connexion (PHPSESSID)</li>
+                                        <li>Protection CSRF (_csrf_token)</li>
+                                        <li>Préférences de langue</li>
+                                        <li>Panier temporaire</li>
+                                    </ul>
+                                    <span class="badge bg-success">Toujours actifs</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <i class="fas fa-cog me-2"></i>Cookies fonctionnels
+                                </div>
+                                <div class="card-body">
+                                    <p class="small"><strong>Améliorent votre expérience</strong></p>
+                                    <ul class="small">
+                                        <li>Mémorisation des préférences</li>
+                                        <li>Thème sombre/clair</li>
+                                        <li>Taille de police préférée</li>
+                                        <li>Dernière page visitée</li>
+                                    </ul>
+                                    <span class="badge bg-primary">Optionnels</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white">
+                                    <i class="fas fa-chart-bar me-2"></i>Cookies analytiques
+                                </div>
+                                <div class="card-body">
+                                    <p class="small"><strong>Nous aident à améliorer TaskFlow</strong></p>
+                                    <ul class="small">
+                                        <li>Pages les plus visitées</li>
+                                        <li>Temps passé sur le site</li>
+                                        <li>Erreurs rencontrées</li>
+                                        <li>Performance des fonctionnalités</li>
+                                    </ul>
+                                    <span class="badge bg-info">Avec votre accord</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-secondary">
+                                <div class="card-header bg-secondary text-white">
+                                    <i class="fas fa-ban me-2"></i>Cookies publicitaires
+                                </div>
+                                <div class="card-body">
+                                    <p class="small"><strong>Non utilisés sur TaskFlow</strong></p>
+                                    <ul class="small">
+                                        <li>Aucun tracking publicitaire</li>
+                                        <li>Pas de profilage commercial</li>
+                                        <li>Aucun partage avec des tiers</li>
+                                        <li>Respect de votre vie privée</li>
+                                    </ul>
+                                    <span class="badge bg-secondary">Désactivés</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2>Durée de conservation</h2>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Type de cookie</th>
+                                    <th>Nom</th>
+                                    <th>Durée</th>
+                                    <th>Finalité</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="badge bg-success">Essentiel</span></td>
+                                    <td>PHPSESSID</td>
+                                    <td>Fin de session</td>
+                                    <td>Maintien de la connexion</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">Essentiel</span></td>
+                                    <td>_csrf_token</td>
+                                    <td>24 heures</td>
+                                    <td>Protection contre les attaques</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-primary">Fonctionnel</span></td>
+                                    <td>remember_me</td>
+                                    <td>30 jours</td>
+                                    <td>Connexion automatique</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-primary">Fonctionnel</span></td>
+                                    <td>theme_preference</td>
+                                    <td>1 an</td>
+                                    <td>Mémoriser le thème choisi</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h2>Gestion de vos préférences</h2>
+                    <div class="card border-primary">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="fas fa-sliders-h me-2"></i>Centre de préférences cookies</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>Cookies essentiels</strong>
+                                            <p class="small text-muted mb-0">Nécessaires au fonctionnement</p>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="essential" checked disabled>
+                                            <label class="form-check-label" for="essential">Toujours actifs</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>Cookies fonctionnels</strong>
+                                            <p class="small text-muted mb-0">Amélioration de l'expérience</p>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="functional" checked>
+                                            <label class="form-check-label" for="functional"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>Cookies analytiques</strong>
+                                            <p class="small text-muted mb-0">Statistiques anonymes</p>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="analytics">
+                                            <label class="form-check-label" for="analytics"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>Cookies marketing</strong>
+                                            <p class="small text-muted mb-0">Non utilisés sur TaskFlow</p>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="marketing" disabled>
+                                            <label class="form-check-label" for="marketing">Désactivés</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mt-3">
+                                <button class="btn btn-primary me-2" onclick="savePreferences()">
+                                    <i class="fas fa-save me-2"></i>Sauvegarder mes préférences
+                                </button>
+                                <button class="btn btn-outline-secondary" onclick="acceptAll()">
+                                    <i class="fas fa-check me-2"></i>Tout accepter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2>Comment supprimer les cookies ?</h2>
+                    <div class="accordion" id="browserAccordion">
+                        <div class="accordion-item">
+                            <h3 class="accordion-header" id="chromeHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#chromeCollapse">
+                                    <i class="fab fa-chrome me-2"></i>Google Chrome
+                                </button>
+                            </h3>
+                            <div id="chromeCollapse" class="accordion-collapse collapse" data-bs-parent="#browserAccordion">
+                                <div class="accordion-body">
+                                    <ol class="small">
+                                        <li>Cliquez sur les trois points en haut à droite</li>
+                                        <li>Sélectionnez "Paramètres"</li>
+                                        <li>Dans "Confidentialité et sécurité", cliquez "Cookies et autres données de site"</li>
+                                        <li>Cliquez "Afficher tous les cookies et données de site"</li>
+                                        <li>Recherchez "taskflow" et supprimez</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h3 class="accordion-header" id="firefoxHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#firefoxCollapse">
+                                    <i class="fab fa-firefox me-2"></i>Mozilla Firefox
+                                </button>
+                            </h3>
+                            <div id="firefoxCollapse" class="accordion-collapse collapse" data-bs-parent="#browserAccordion">
+                                <div class="accordion-body">
+                                    <ol class="small">
+                                        <li>Cliquez sur le menu hamburger (trois barres)</li>
+                                        <li>Sélectionnez "Paramètres"</li>
+                                        <li>Allez dans "Vie privée et sécurité"</li>
+                                        <li>Dans "Cookies et données de sites", cliquez "Gérer les données"</li>
+                                        <li>Recherchez "taskflow" et supprimez</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h3 class="accordion-header" id="safariHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#safariCollapse">
+                                    <i class="fab fa-safari me-2"></i>Safari
+                                </button>
+                            </h3>
+                            <div id="safariCollapse" class="accordion-collapse collapse" data-bs-parent="#browserAccordion">
+                                <div class="accordion-body">
+                                    <ol class="small">
+                                        <li>Cliquez sur "Safari" dans la barre de menu</li>
+                                        <li>Sélectionnez "Préférences"</li>
+                                        <li>Allez dans l'onglet "Confidentialité"</li>
+                                        <li>Cliquez "Gérer les données de sites web"</li>
+                                        <li>Recherchez "taskflow" et supprimez</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mt-4">
+                        <h5><i class="fas fa-question-circle me-2"></i>Questions fréquentes</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="small"><strong>Les cookies ralentissent-ils mon navigateur ?</strong><br>
+                                Non, nos cookies sont très légers et n'affectent pas les performances.</p>
+                                
+                                <p class="small"><strong>Puis-je utiliser TaskFlow sans cookies ?</strong><br>
+                                Les cookies essentiels sont nécessaires pour la connexion et la sécurité.</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="small"><strong>Mes données sont-elles vendues ?</strong><br>
+                                Jamais. Nous ne vendons aucune donnée à des tiers.</p>
+                                
+                                <p class="small"><strong>Comment modifier mes préférences ?</strong><br>
+                                Utilisez le centre de préférences ci-dessus ou contactez-nous.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions utilisateur -->
+            <div class="text-center mt-4">
+                <div class="btn-group">
+                    <a href="{{ path('legal_privacy') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-shield-alt"></i> Politique de confidentialité
+                    </a>
+                    <a href="{{ path('legal_gdpr') }}" class="btn btn-outline-info">
+                        <i class="fas fa-user-shield"></i> Mes droits RGPD
+                    </a>
+                    <button class="btn btn-warning" onclick="showCookieBanner()">
+                        <i class="fas fa-cookie-bite"></i> Gérer les cookies
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Gestion des préférences cookies (exemple d'implémentation)
+function savePreferences() {
+    const functional = document.getElementById('functional').checked;
+    const analytics = document.getElementById('analytics').checked;
+    
+    // Sauvegarder dans localStorage (remplacer par votre système)
+    localStorage.setItem('cookie_functional', functional);
+    localStorage.setItem('cookie_analytics', analytics);
+    
+    alert('Vos préférences ont été sauvegardées !');
+    
+    // Recharger la page pour appliquer les changements
+    window.location.reload();
+}
+
+function acceptAll() {
+    document.getElementById('functional').checked = true;
+    document.getElementById('analytics').checked = true;
+    savePreferences();
+}
+
+function showCookieBanner() {
+    // Afficher votre bannière de cookies (à implémenter selon votre système)
+    alert('Bannière de cookies à implémenter selon votre système de gestion des cookies.');
+}
+
+// Charger les préférences existantes
+document.addEventListener('DOMContentLoaded', function() {
+    const functional = localStorage.getItem('cookie_functional');
+    const analytics = localStorage.getItem('cookie_analytics');
+    
+    if (functional !== null) {
+        document.getElementById('functional').checked = functional === 'true';
+    }
+    if (analytics !== null) {
+        document.getElementById('analytics').checked = analytics === 'true';
+    }
+});
+</script>
+{% endblock %}
