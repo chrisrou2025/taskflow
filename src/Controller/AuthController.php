@@ -30,13 +30,21 @@ class AuthController extends AbstractController
         // Récupération des erreurs de connexion éventuelles
         $error = $authenticationUtils->getLastAuthenticationError();
 
-        // Dernier nom d'utilisateur saisi
-        $lastUsername = $authenticationUtils->getLastUsername();
+        // CORRECTION : Ne pas passer le dernier nom d'utilisateur pour avoir des champs vides
+        // $lastUsername = $authenticationUtils->getLastUsername();
 
-        return $this->render('auth/login.html.twig', [
-            'last_username' => $lastUsername,
+        // Créer une réponse avec des en-têtes pour empêcher la mise en cache
+        $response = $this->render('auth/login.html.twig', [
+            'last_username' => '', // Toujours vide
             'error' => $error,
         ]);
+
+        // Ajouter des en-têtes pour empêcher la mise en cache
+        $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', '0');
+
+        return $response;
     }
 
     #[Route('/register', name: 'app_register')]
@@ -50,6 +58,7 @@ class AuthController extends AbstractController
             return $this->redirectToRoute('app_dashboard');
         }
 
+        // CORRECTION : Toujours créer un nouvel utilisateur pour avoir des champs vides
         $user = new User();
         $form = $this->createForm(RegistrationType::class, $user);
         $form->handleRequest($request);
@@ -76,9 +85,17 @@ class AuthController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        return $this->render('auth/register.html.twig', [
+        // Créer une réponse avec des en-têtes pour empêcher la mise en cache
+        $response = $this->render('auth/register.html.twig', [
             'registrationForm' => $form->createView(),
         ]);
+
+        // Ajouter des en-têtes pour empêcher la mise en cache
+        $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', '0');
+
+        return $response;
     }
 
     #[Route('/forgot-password', name: 'app_forgot_password')]
