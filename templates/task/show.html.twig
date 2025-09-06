@@ -1,11 +1,13 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}
-	{{ task.title }} - TaskFlow
+	{{ task.title }}
+	- TaskFlow
 {% endblock %}
 
 {% block body %}
-	<div class="container-fluid">
+	<div
+		class="container-fluid">
 		<!-- Header avec breadcrumb -->
 		<nav aria-label="breadcrumb" class="mb-3">
 			<ol class="breadcrumb">
@@ -50,18 +52,21 @@
 						<div class="d-flex gap-3 text-muted">
 							<small>
 								<i class="fas fa-calendar-plus me-1"></i>
-								Créée le {{ task.createdAt|date('d/m/Y à H:i') }}
+								Créée le
+								{{ task.createdAt|date('d/m/Y à H:i') }}
 							</small>
 							{% if task.updatedAt %}
 								<small>
 									<i class="fas fa-edit me-1"></i>
-									Modifiée le {{ task.updatedAt|date('d/m/Y à H:i') }}
+									Modifiée le
+									{{ task.updatedAt|date('d/m/Y à H:i') }}
 								</small>
 							{% endif %}
 							{% if task.completedAt %}
 								<small>
 									<i class="fas fa-check-circle me-1 text-success"></i>
-									Terminée le {{ task.completedAt|date('d/m/Y à H:i') }}
+									Terminée le
+									{{ task.completedAt|date('d/m/Y à H:i') }}
 								</small>
 							{% endif %}
 						</div>
@@ -106,7 +111,8 @@
 
 		<!-- Contenu principal -->
 		<div class="row">
-			<div class="col-lg-8">
+			<div
+				class="col-lg-8">
 				<!-- Description -->
 				<div class="card border-0 shadow-sm mb-4">
 					<div class="card-header bg-white">
@@ -148,8 +154,7 @@
 								<small class="text-muted">{{ task.project.progressPercentage }}%</small>
 							</div>
 							<div class="progress" style="height: 6px;">
-								<div class="progress-bar bg-{{ task.project.progressPercentage == 100 ? 'success' : (task.project.progressPercentage > 50 ? 'primary' : 'warning') }}" 
-									 style="width: {{ task.project.progressPercentage }}%"></div>
+								<div class="progress-bar bg-{{ task.project.progressPercentage == 100 ? 'success' : (task.project.progressPercentage > 50 ? 'primary' : 'warning') }}" style="width: {{ task.project.progressPercentage }}%"></div>
 							</div>
 						</div>
 					</div>
@@ -157,7 +162,8 @@
 			</div>
 
 			<!-- Sidebar avec informations détaillées -->
-			<div class="col-lg-4">
+			<div
+				class="col-lg-4">
 				<!-- Détails de la tâche -->
 				<div class="card border-0 shadow-sm mb-4">
 					<div class="card-header bg-white">
@@ -247,10 +253,13 @@
 					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 				</div>
 				<div class="modal-body">
-					<p>Êtes-vous sûr de vouloir supprimer la tâche <strong>"{{ task.title }}"</strong> ?</p>
+					<p>Êtes-vous sûr de vouloir supprimer la tâche
+						<strong>"{{ task.title }}"</strong>
+						?</p>
 					<div class="alert alert-warning">
 						<i class="fas fa-exclamation-triangle me-2"></i>
-						<strong>Attention :</strong> Cette action est irréversible.
+						<strong>Attention :</strong>
+						Cette action est irréversible.
 					</div>
 				</div>
 				<div class="modal-footer">
@@ -270,7 +279,7 @@
 		.progress {
 			background-color: rgba(0, 0, 0, 0.1);
 		}
-		
+
 		.card-header {
 			border-bottom: 1px solid #dee2e6;
 		}

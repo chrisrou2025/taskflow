@@ -31,7 +31,7 @@ class ProjectVoter extends Voter
         /** @var Project $project */
         $project = $subject;
 
-        return match($attribute) {
+        return match ($attribute) {
             self::VIEW => $this->canView($project, $user),
             self::EDIT => $this->canEdit($project, $user),
             self::DELETE => $this->canDelete($project, $user),
@@ -60,4 +60,3 @@ class ProjectVoter extends Voter
         return $project->getOwner() === $user || in_array('ROLE_ADMIN', $user->getRoles());
     }
 }
-

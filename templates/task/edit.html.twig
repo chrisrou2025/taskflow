@@ -1,273 +1,281 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier {{ task.title }} - TaskFlow{% endblock %}
+{% block title %}Modifier
+	{{ task.title }}
+	- TaskFlow
+{% endblock %}
 
 {% block body %}
-<div class="container">
-    <!-- Header avec breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a href="{{ path('project_index') }}" class="text-decoration-none">
-                    <i class="fas fa-folder me-1"></i>Mes Projets
-                </a>
-            </li>
-            <li class="breadcrumb-item">
-                <a href="{{ path('project_show', {id: task.project.id}) }}" class="text-decoration-none">
-                    {{ task.project.title }}
-                </a>
-            </li>
-            <li class="breadcrumb-item">
-                <a href="{{ path('task_show', {id: task.id}) }}" class="text-decoration-none">
-                    {{ task.title }}
-                </a>
-            </li>
-            <li class="breadcrumb-item active">Modification</li>
-        </ol>
-    </nav>
+	<div
+		class="container">
+		<!-- Header avec breadcrumb -->
+		<nav aria-label="breadcrumb" class="mb-4">
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item">
+					<a href="{{ path('project_index') }}" class="text-decoration-none">
+						<i class="fas fa-folder me-1"></i>Mes Projets
+					</a>
+				</li>
+				<li class="breadcrumb-item">
+					<a href="{{ path('project_show', {id: task.project.id}) }}" class="text-decoration-none">
+						{{ task.project.title }}
+					</a>
+				</li>
+				<li class="breadcrumb-item">
+					<a href="{{ path('task_show', {id: task.id}) }}" class="text-decoration-none">
+						{{ task.title }}
+					</a>
+				</li>
+				<li class="breadcrumb-item active">Modification</li>
+			</ol>
+		</nav>
 
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="card-title mb-0">
-                        <i class="fas fa-edit me-2"></i>Modifier la tâche
-                    </h4>
-                </div>
-                <div class="card-body p-4">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>
-                        <strong>Projet :</strong> {{ task.project.title }}
-                    </div>
+		<div class="row justify-content-center">
+			<div class="col-lg-8">
+				<div class="card border-0 shadow-sm">
+					<div class="card-header bg-primary text-white">
+						<h4 class="card-title mb-0">
+							<i class="fas fa-edit me-2"></i>Modifier la tâche
+						</h4>
+					</div>
+					<div class="card-body p-4">
+						<div class="alert alert-info">
+							<i class="fas fa-info-circle me-2"></i>
+							<strong>Projet :</strong>
+							{{ task.project.title }}
+						</div>
 
-                    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
-                    
-                    <!-- Titre -->
-                    <div class="mb-4">
-                        {{ form_label(form.title, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
-                        <div class="input-group">
-                            <span class="input-group-text bg-light">
-                                <i class="fas fa-tasks text-primary"></i>
-                            </span>
-                            {{ form_widget(form.title, {'attr': {'class': 'form-control form-control-lg'}}) }}
-                        </div>
-                        {{ form_errors(form.title) }}
-                        {% if form.title.vars.help %}
-                            <div class="form-text">{{ form.title.vars.help }}</div>
-                        {% endif %}
-                    </div>
+						{{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
 
-                    <!-- Description -->
-                    <div class="mb-4">
-                        {{ form_label(form.description, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
-                        <div class="input-group">
-                            <span class="input-group-text bg-light align-items-start pt-3">
-                                <i class="fas fa-align-left text-primary"></i>
-                            </span>
-                            {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
-                        </div>
-                        {{ form_errors(form.description) }}
-                        {% if form.description.vars.help %}
-                            <div class="form-text">{{ form.description.vars.help }}</div>
-                        {% endif %}
-                    </div>
+						<!-- Titre -->
+						<div class="mb-4">
+							{{ form_label(form.title, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+							<div class="input-group">
+								<span class="input-group-text bg-light">
+									<i class="fas fa-tasks text-primary"></i>
+								</span>
+								{{ form_widget(form.title, {'attr': {'class': 'form-control form-control-lg'}}) }}
+							</div>
+							{{ form_errors(form.title) }}
+							{% if form.title.vars.help %}
+								<div class="form-text">{{ form.title.vars.help }}</div>
+							{% endif %}
+						</div>
 
-                    <!-- Statut et Priorité sur la même ligne -->
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            {{ form_label(form.status, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
-                            <div class="input-group">
-                                <span class="input-group-text bg-light">
-                                    <i class="fas fa-flag text-primary"></i>
-                                </span>
-                                {{ form_widget(form.status, {'attr': {'class': 'form-select'}}) }}
-                            </div>
-                            {{ form_errors(form.status) }}
-                            {% if form.status.vars.help %}
-                                <div class="form-text">{{ form.status.vars.help }}</div>
-                            {% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            {{ form_label(form.priority, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
-                            <div class="input-group">
-                                <span class="input-group-text bg-light">
-                                    <i class="fas fa-exclamation text-primary"></i>
-                                </span>
-                                {{ form_widget(form.priority, {'attr': {'class': 'form-select'}}) }}
-                            </div>
-                            {{ form_errors(form.priority) }}
-                            {% if form.priority.vars.help %}
-                                <div class="form-text">{{ form.priority.vars.help }}</div>
-                            {% endif %}
-                        </div>
-                    </div>
+						<!-- Description -->
+						<div class="mb-4">
+							{{ form_label(form.description, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+							<div class="input-group">
+								<span class="input-group-text bg-light align-items-start pt-3">
+									<i class="fas fa-align-left text-primary"></i>
+								</span>
+								{{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
+							</div>
+							{{ form_errors(form.description) }}
+							{% if form.description.vars.help %}
+								<div class="form-text">{{ form.description.vars.help }}</div>
+							{% endif %}
+						</div>
 
-                    <!-- Date d'échéance -->
-                    <div class="mb-4">
-                        {{ form_label(form.dueDate, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
-                        <div class="input-group">
-                            <span class="input-group-text bg-light">
-                                <i class="fas fa-calendar-alt text-primary"></i>
-                            </span>
-                            {{ form_widget(form.dueDate, {'attr': {'class': 'form-control'}}) }}
-                        </div>
-                        {{ form_errors(form.dueDate) }}
-                        {% if form.dueDate.vars.help %}
-                            <div class="form-text">{{ form.dueDate.vars.help }}</div>
-                        {% endif %}
-                    </div>
+						<!-- Statut et Priorité sur la même ligne -->
+						<div class="row mb-4">
+							<div class="col-md-6">
+								{{ form_label(form.status, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+								<div class="input-group">
+									<span class="input-group-text bg-light">
+										<i class="fas fa-flag text-primary"></i>
+									</span>
+									{{ form_widget(form.status, {'attr': {'class': 'form-select'}}) }}
+								</div>
+								{{ form_errors(form.status) }}
+								{% if form.status.vars.help %}
+									<div class="form-text">{{ form.status.vars.help }}</div>
+								{% endif %}
+							</div>
+							<div class="col-md-6">
+								{{ form_label(form.priority, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+								<div class="input-group">
+									<span class="input-group-text bg-light">
+										<i class="fas fa-exclamation text-primary"></i>
+									</span>
+									{{ form_widget(form.priority, {'attr': {'class': 'form-select'}}) }}
+								</div>
+								{{ form_errors(form.priority) }}
+								{% if form.priority.vars.help %}
+									<div class="form-text">{{ form.priority.vars.help }}</div>
+								{% endif %}
+							</div>
+						</div>
 
-                    <!-- Projet -->
-                    <div class="mb-4">
-                        {{ form_label(form.project, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
-                        <div class="input-group">
-                            <span class="input-group-text bg-light">
-                                <i class="fas fa-folder text-primary"></i>
-                            </span>
-                            {{ form_widget(form.project, {'attr': {'class': 'form-select'}}) }}
-                        </div>
-                        {{ form_errors(form.project) }}
-                        {% if form.project.vars.help %}
-                            <div class="form-text">{{ form.project.vars.help }}</div>
-                        {% endif %}
-                    </div>
+						<!-- Date d'échéance -->
+						<div class="mb-4">
+							{{ form_label(form.dueDate, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+							<div class="input-group">
+								<span class="input-group-text bg-light">
+									<i class="fas fa-calendar-alt text-primary"></i>
+								</span>
+								{{ form_widget(form.dueDate, {'attr': {'class': 'form-control'}}) }}
+							</div>
+							{{ form_errors(form.dueDate) }}
+							{% if form.dueDate.vars.help %}
+								<div class="form-text">{{ form.dueDate.vars.help }}</div>
+							{% endif %}
+						</div>
 
-                    <!-- Boutons d'action -->
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex gap-2">
-                            <a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-outline-secondary">
-                                <i class="fas fa-arrow-left me-2"></i>Retour
-                            </a>
-                            <a href="{{ path('task_index', {project: task.project.id}) }}" class="btn btn-outline-info">
-                                <i class="fas fa-list me-2"></i>Toutes les tâches
-                            </a>
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-save me-2"></i>Enregistrer les modifications
-                        </button>
-                    </div>
+						<!-- Projet -->
+						<div class="mb-4">
+							{{ form_label(form.project, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+							<div class="input-group">
+								<span class="input-group-text bg-light">
+									<i class="fas fa-folder text-primary"></i>
+								</span>
+								{{ form_widget(form.project, {'attr': {'class': 'form-select'}}) }}
+							</div>
+							{{ form_errors(form.project) }}
+							{% if form.project.vars.help %}
+								<div class="form-text">{{ form.project.vars.help }}</div>
+							{% endif %}
+						</div>
 
-                    {{ form_end(form) }}
-                </div>
-            </div>
+						<!-- Boutons d'action -->
+						<div class="d-flex justify-content-between align-items-center">
+							<div class="d-flex gap-2">
+								<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-outline-secondary">
+									<i class="fas fa-arrow-left me-2"></i>Retour
+								</a>
+								<a href="{{ path('task_index', {project: task.project.id}) }}" class="btn btn-outline-info">
+									<i class="fas fa-list me-2"></i>Toutes les tâches
+								</a>
+							</div>
+							<button type="submit" class="btn btn-primary btn-lg">
+								<i class="fas fa-save me-2"></i>Enregistrer les modifications
+							</button>
+						</div>
 
-            <!-- Informations sur la tâche -->
-            <div class="card border-0 bg-light mt-4">
-                <div class="card-body">
-                    <div class="row g-3 text-center">
-                        <div class="col-md-3">
-                            <small class="text-muted d-block">Créée le</small>
-                            <strong>{{ task.createdAt|date('d/m/Y') }}</strong>
-                        </div>
-                        {% if task.updatedAt %}
-                        <div class="col-md-3">
-                            <small class="text-muted d-block">Dernière modification</small>
-                            <strong>{{ task.updatedAt|date('d/m/Y') }}</strong>
-                        </div>
-                        {% endif %}
-                        {% if task.completedAt %}
-                        <div class="col-md-3">
-                            <small class="text-muted d-block">Terminée le</small>
-                            <strong class="text-success">{{ task.completedAt|date('d/m/Y') }}</strong>
-                        </div>
-                        {% endif %}
-                        <div class="col-md-3">
-                            <small class="text-muted d-block">Statut actuel</small>
-                            <span class="badge bg-{{ task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">
-                                {{ task.statusLabel }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+						{{ form_end(form) }}
+					</div>
+				</div>
 
-            <!-- Actions rapides -->
-            <div class="card border-0 shadow-sm mt-4">
-                <div class="card-header bg-white">
-                    <h6 class="card-title mb-0">
-                        <i class="fas fa-bolt me-2 text-warning"></i>Actions rapides
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="row g-2">
-                        <div class="col-md-4">
-                            <form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline w-100">
-                                <input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
-                                <button type="submit" class="btn btn-outline-primary btn-sm w-100">
-                                    <i class="fas fa-sync me-1"></i>Changer le statut
-                                </button>
-                            </form>
-                        </div>
-                        <div class="col-md-4">
-                            <form method="post" action="{{ path('task_duplicate', {id: task.id}) }}" class="d-inline w-100">
-                                <input type="hidden" name="_token" value="{{ csrf_token('duplicate' ~ task.id) }}">
-                                <button type="submit" class="btn btn-outline-success btn-sm w-100">
-                                    <i class="fas fa-copy me-1"></i>Dupliquer
-                                </button>
-                            </form>
-                        </div>
-                        <div class="col-md-4">
-                            <button type="button" class="btn btn-outline-danger btn-sm w-100" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                                <i class="fas fa-trash me-1"></i>Supprimer
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+				<!-- Informations sur la tâche -->
+				<div class="card border-0 bg-light mt-4">
+					<div class="card-body">
+						<div class="row g-3 text-center">
+							<div class="col-md-3">
+								<small class="text-muted d-block">Créée le</small>
+								<strong>{{ task.createdAt|date('d/m/Y') }}</strong>
+							</div>
+							{% if task.updatedAt %}
+								<div class="col-md-3">
+									<small class="text-muted d-block">Dernière modification</small>
+									<strong>{{ task.updatedAt|date('d/m/Y') }}</strong>
+								</div>
+							{% endif %}
+							{% if task.completedAt %}
+								<div class="col-md-3">
+									<small class="text-muted d-block">Terminée le</small>
+									<strong class="text-success">{{ task.completedAt|date('d/m/Y') }}</strong>
+								</div>
+							{% endif %}
+							<div class="col-md-3">
+								<small class="text-muted d-block">Statut actuel</small>
+								<span class="badge bg-{{ task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">
+									{{ task.statusLabel }}
+								</span>
+							</div>
+						</div>
+					</div>
+				</div>
 
-<!-- Modal de suppression -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-exclamation-triangle text-danger me-2"></i>
-                    Confirmer la suppression
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Êtes-vous sûr de vouloir supprimer la tâche <strong>"{{ task.title }}"</strong> ?</p>
-                <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    <strong>Attention :</strong> Cette action est irréversible.
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <form method="post" action="{{ path('task_delete', {id: task.id}) }}" class="d-inline">
-                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ task.id) }}">
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-trash me-2"></i>Supprimer définitivement
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+				<!-- Actions rapides -->
+				<div class="card border-0 shadow-sm mt-4">
+					<div class="card-header bg-white">
+						<h6 class="card-title mb-0">
+							<i class="fas fa-bolt me-2 text-warning"></i>Actions rapides
+						</h6>
+					</div>
+					<div class="card-body">
+						<div class="row g-2">
+							<div class="col-md-4">
+								<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline w-100">
+									<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
+									<button type="submit" class="btn btn-outline-primary btn-sm w-100">
+										<i class="fas fa-sync me-1"></i>Changer le statut
+									</button>
+								</form>
+							</div>
+							<div class="col-md-4">
+								<form method="post" action="{{ path('task_duplicate', {id: task.id}) }}" class="d-inline w-100">
+									<input type="hidden" name="_token" value="{{ csrf_token('duplicate' ~ task.id) }}">
+									<button type="submit" class="btn btn-outline-success btn-sm w-100">
+										<i class="fas fa-copy me-1"></i>Dupliquer
+									</button>
+								</form>
+							</div>
+							<div class="col-md-4">
+								<button type="button" class="btn btn-outline-danger btn-sm w-100" data-bs-toggle="modal" data-bs-target="#deleteModal">
+									<i class="fas fa-trash me-1"></i>Supprimer
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 
-<style>
-    .input-group-text {
-        border-right: none;
-        background-color: #f8f9fa !important;
-    }
-    
-    .input-group .form-control, 
-    .input-group .form-select {
-        border-left: none;
-    }
-    
-    .input-group .form-control:focus,
-    .input-group .form-select:focus {
-        border-color: #86b7fe;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-    }
-    
-    .alert {
-        border-left: 4px solid #0dcaf0;
-    }
-</style>
+	<!-- Modal de suppression -->
+	<div class="modal fade" id="deleteModal" tabindex="-1">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">
+						<i class="fas fa-exclamation-triangle text-danger me-2"></i>
+						Confirmer la suppression
+					</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<p>Êtes-vous sûr de vouloir supprimer la tâche
+						<strong>"{{ task.title }}"</strong>
+						?</p>
+					<div class="alert alert-warning">
+						<i class="fas fa-exclamation-triangle me-2"></i>
+						<strong>Attention :</strong>
+						Cette action est irréversible.
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+					<form method="post" action="{{ path('task_delete', {id: task.id}) }}" class="d-inline">
+						<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ task.id) }}">
+						<button type="submit" class="btn btn-danger">
+							<i class="fas fa-trash me-2"></i>Supprimer définitivement
+						</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<style>
+		.input-group-text {
+			border-right: none;
+			background-color: #f8f9fa !important;
+		}
+
+		.input-group .form-control,
+		.input-group .form-select {
+			border-left: none;
+		}
+
+		.input-group .form-control:focus,
+		.input-group .form-select:focus {
+			border-color: #86b7fe;
+			box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+		}
+
+		.alert {
+			border-left: 4px solid #0dcaf0;
+		}
+	</style>
 {% endblock %}

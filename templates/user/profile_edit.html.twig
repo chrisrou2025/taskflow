@@ -1,170 +1,172 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier mon profil - TaskFlow{% endblock %}
+{% block title %}Modifier mon profil - TaskFlow
+{% endblock %}
 
 {% block body %}
-<div class="container">
-    <!-- Header avec breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a href="{{ path('app_dashboard') }}" class="text-decoration-none">
-                    <i class="fas fa-tachometer-alt me-1"></i>Tableau de bord
-                </a>
-            </li>
-            <li class="breadcrumb-item">
-                <a href="{{ path('user_profile') }}" class="text-decoration-none">
-                    Mon Profil
-                </a>
-            </li>
-            <li class="breadcrumb-item active">Modifier</li>
-        </ol>
-    </nav>
+	<div
+		class="container">
+		<!-- Header avec breadcrumb -->
+		<nav aria-label="breadcrumb" class="mb-4">
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item">
+					<a href="{{ path('app_dashboard') }}" class="text-decoration-none">
+						<i class="fas fa-tachometer-alt me-1"></i>Tableau de bord
+					</a>
+				</li>
+				<li class="breadcrumb-item">
+					<a href="{{ path('user_profile') }}" class="text-decoration-none">
+						Mon Profil
+					</a>
+				</li>
+				<li class="breadcrumb-item active">Modifier</li>
+			</ol>
+		</nav>
 
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-warning text-dark">
-                    <h4 class="card-title mb-0">
-                        <i class="fas fa-user-edit me-2"></i>Modifier mes informations
-                    </h4>
-                </div>
-                <div class="card-body p-4">
-                    <div class="text-center mb-4">
-                        <!-- Avatar -->
-                        <div class="bg-warning bg-opacity-10 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
-                             style="width: 80px; height: 80px;">
-                            <i class="fas fa-user text-warning fa-2x"></i>
-                        </div>
-                        <p class="text-muted">Modifiez vos informations personnelles</p>
-                    </div>
+		<div class="row justify-content-center">
+			<div class="col-md-8 col-lg-6">
+				<div class="card border-0 shadow-sm">
+					<div class="card-header bg-warning text-dark">
+						<h4 class="card-title mb-0">
+							<i class="fas fa-user-edit me-2"></i>Modifier mes informations
+						</h4>
+					</div>
+					<div class="card-body p-4">
+						<div
+							class="text-center mb-4">
+							<!-- Avatar -->
+							<div class="bg-warning bg-opacity-10 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+								<i class="fas fa-user text-warning fa-2x"></i>
+							</div>
+							<p class="text-muted">Modifiez vos informations personnelles</p>
+						</div>
 
-                    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
-                    
-                    <!-- Prénom -->
-                    <div class="mb-3">
-                        {{ form_label(form.firstName, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
-                        <div class="input-group">
-                            <span class="input-group-text bg-light">
-                                <i class="fas fa-user text-warning"></i>
-                            </span>
-                            {{ form_widget(form.firstName, {'attr': {'class': 'form-control'}}) }}
-                        </div>
-                        {{ form_errors(form.firstName) }}
-                    </div>
+						{{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
 
-                    <!-- Nom -->
-                    <div class="mb-3">
-                        {{ form_label(form.lastName, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
-                        <div class="input-group">
-                            <span class="input-group-text bg-light">
-                                <i class="fas fa-user-tag text-warning"></i>
-                            </span>
-                            {{ form_widget(form.lastName, {'attr': {'class': 'form-control'}}) }}
-                        </div>
-                        {{ form_errors(form.lastName) }}
-                    </div>
+						<!-- Prénom -->
+						<div class="mb-3">
+							{{ form_label(form.firstName, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+							<div class="input-group">
+								<span class="input-group-text bg-light">
+									<i class="fas fa-user text-warning"></i>
+								</span>
+								{{ form_widget(form.firstName, {'attr': {'class': 'form-control'}}) }}
+							</div>
+							{{ form_errors(form.firstName) }}
+						</div>
 
-                    <!-- Email -->
-                    <div class="mb-4">
-                        {{ form_label(form.email, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
-                        <div class="input-group">
-                            <span class="input-group-text bg-light">
-                                <i class="fas fa-envelope text-warning"></i>
-                            </span>
-                            {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
-                        </div>
-                        {{ form_errors(form.email) }}
-                        <div class="form-text">
-                            <i class="fas fa-info-circle"></i>
-                            Cette adresse email servira pour vous connecter
-                        </div>
-                    </div>
+						<!-- Nom -->
+						<div class="mb-3">
+							{{ form_label(form.lastName, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+							<div class="input-group">
+								<span class="input-group-text bg-light">
+									<i class="fas fa-user-tag text-warning"></i>
+								</span>
+								{{ form_widget(form.lastName, {'attr': {'class': 'form-control'}}) }}
+							</div>
+							{{ form_errors(form.lastName) }}
+						</div>
 
-                    <!-- Boutons d'action -->
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex gap-2">
-                            <a href="{{ path('user_profile') }}" class="btn btn-outline-secondary">
-                                <i class="fas fa-times me-2"></i>Annuler
-                            </a>
-                        </div>
-                        <button type="submit" class="btn btn-warning btn-lg text-dark">
-                            <i class="fas fa-save me-2"></i>Enregistrer les modifications
-                        </button>
-                    </div>
+						<!-- Email -->
+						<div class="mb-4">
+							{{ form_label(form.email, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+							<div class="input-group">
+								<span class="input-group-text bg-light">
+									<i class="fas fa-envelope text-warning"></i>
+								</span>
+								{{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
+							</div>
+							{{ form_errors(form.email) }}
+							<div class="form-text">
+								<i class="fas fa-info-circle"></i>
+								Cette adresse email servira pour vous connecter
+							</div>
+						</div>
 
-                    {{ form_end(form) }}
-                </div>
-            </div>
+						<!-- Boutons d'action -->
+						<div class="d-flex justify-content-between align-items-center">
+							<div class="d-flex gap-2">
+								<a href="{{ path('user_profile') }}" class="btn btn-outline-secondary">
+									<i class="fas fa-times me-2"></i>Annuler
+								</a>
+							</div>
+							<button type="submit" class="btn btn-warning btn-lg text-dark">
+								<i class="fas fa-save me-2"></i>Enregistrer les modifications
+							</button>
+						</div>
 
-            <!-- Informations sur le compte -->
-            <div class="card border-0 bg-light mt-4">
-                <div class="card-body">
-                    <h6 class="card-title">
-                        <i class="fas fa-info-circle text-info me-2"></i>Informations sur votre compte
-                    </h6>
-                    <div class="row text-center">
-                        <div class="col-4">
-                            <strong class="d-block">{{ user.projects|length }}</strong>
-                            <small class="text-muted">Projets</small>
-                        </div>
-                        <div class="col-4">
-                            {% set totalTasks = 0 %}
-                            {% for project in user.projects %}
-                                {% set totalTasks = totalTasks + project.tasksCount %}
-                            {% endfor %}
-                            <strong class="d-block text-primary">{{ totalTasks }}</strong>
-                            <small class="text-muted">Tâches</small>
-                        </div>
-                        <div class="col-4">
-                            <strong class="d-block text-success">{{ user.createdAt|date('d/m/Y') }}</strong>
-                            <small class="text-muted">Membre depuis</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
+						{{ form_end(form) }}
+					</div>
+				</div>
 
-            <!-- Actions supplémentaires -->
-            <div class="card border-0 shadow-sm mt-4">
-                <div class="card-header bg-white">
-                    <h6 class="card-title mb-0">
-                        <i class="fas fa-cogs me-2 text-primary"></i>Actions supplémentaires
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="{{ path('user_change_password') }}" class="btn btn-outline-primary">
-                            <i class="fas fa-lock me-2"></i>Changer mon mot de passe
-                        </a>
-                        <a href="{{ path('user_profile') }}" class="btn btn-outline-info">
-                            <i class="fas fa-eye me-2"></i>Voir mon profil public
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+				<!-- Informations sur le compte -->
+				<div class="card border-0 bg-light mt-4">
+					<div class="card-body">
+						<h6 class="card-title">
+							<i class="fas fa-info-circle text-info me-2"></i>Informations sur votre compte
+						</h6>
+						<div class="row text-center">
+							<div class="col-4">
+								<strong class="d-block">{{ user.projects|length }}</strong>
+								<small class="text-muted">Projets</small>
+							</div>
+							<div class="col-4">
+								{% set totalTasks = 0 %}
+								{% for project in user.projects %}
+									{% set totalTasks = totalTasks + project.tasksCount %}
+								{% endfor %}
+								<strong class="d-block text-primary">{{ totalTasks }}</strong>
+								<small class="text-muted">Tâches</small>
+							</div>
+							<div class="col-4">
+								<strong class="d-block text-success">{{ user.createdAt|date('d/m/Y') }}</strong>
+								<small class="text-muted">Membre depuis</small>
+							</div>
+						</div>
+					</div>
+				</div>
 
-<style>
-    .input-group-text {
-        border-right: none;
-        background-color: #f8f9fa !important;
-    }
-    
-    .input-group .form-control {
-        border-left: none;
-    }
-    
-    .input-group .form-control:focus {
-        border-color: #86b7fe;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-    }
-    
-    .form-errors {
-        color: var(--danger-color);
-        font-size: 0.875rem;
-        margin-top: 0.25rem;
-    }
-</style>
+				<!-- Actions supplémentaires -->
+				<div class="card border-0 shadow-sm mt-4">
+					<div class="card-header bg-white">
+						<h6 class="card-title mb-0">
+							<i class="fas fa-cogs me-2 text-primary"></i>Actions supplémentaires
+						</h6>
+					</div>
+					<div class="card-body">
+						<div class="d-grid gap-2">
+							<a href="{{ path('user_change_password') }}" class="btn btn-outline-primary">
+								<i class="fas fa-lock me-2"></i>Changer mon mot de passe
+							</a>
+							<a href="{{ path('user_profile') }}" class="btn btn-outline-info">
+								<i class="fas fa-eye me-2"></i>Voir mon profil public
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<style>
+		.input-group-text {
+			border-right: none;
+			background-color: #f8f9fa !important;
+		}
+
+		.input-group .form-control {
+			border-left: none;
+		}
+
+		.input-group .form-control:focus {
+			border-color: #86b7fe;
+			box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+		}
+
+		.form-errors {
+			color: var(--danger-color);
+			font-size: 0.875rem;
+			margin-top: 0.25rem;
+		}
+	</style>
 {% endblock %}
