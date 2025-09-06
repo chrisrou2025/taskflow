@@ -2,17 +2,14 @@
 
 {% block title %}
 	{% if project %}
-		Tâches de
-		{{ project.title }}
-		- TaskFlow
+		Tâches de {{ project.title }} - TaskFlow
 	{% else %}
 		Mes Tâches - TaskFlow
 	{% endif %}
 {% endblock %}
 
 {% block body %}
-	<div
-		class="container-fluid">
+	<div class="container-fluid">
 		<!-- Header avec breadcrumb -->
 		<nav aria-label="breadcrumb" class="mb-3">
 			<ol class="breadcrumb">
@@ -43,9 +40,7 @@
 					<div>
 						<h1 class="h3 mb-2">
 							✅
-							{% if project %}Tâches de
-								{{ project.title }}{% else %}Mes Tâches
-							{% endif %}
+							{% if project %}Tâches du {{ project.title }}{% else %}Mes Tâches{% endif %}
 						</h1>
 						<p class="text-muted mb-0">
 							{% if project %}
@@ -184,8 +179,7 @@
 						</p>
 						<a href="{{ path('task_new', project ? {project: project.id} : {}) }}" class="btn btn-success btn-lg">
 							<i class="fas fa-plus me-2"></i>
-							{% if project %}Créer ma première tâche{% else %}Nouvelle tâche
-							{% endif %}
+							{% if project %}Créer ma première tâche{% else %}Nouvelle tâche{% endif %}
 						</a>
 					</div>
 				</div>
@@ -198,13 +192,11 @@
 						<div class="card border-0 shadow-sm h-100 task-card {{ task.isOverdue and not task.isCompleted ? 'border-danger' : '' }}">
 							{% if task.isOverdue and not task.isCompleted %}
 								<div class="card-header bg-danger text-white py-2">
-									<small>
-										<i class="fas fa-exclamation-triangle me-1"></i>En retard</small>
+									<small><i class="fas fa-exclamation-triangle me-1"></i>En retard</small>
 								</div>
 							{% endif %}
 
-							<div
-								class="card-body">
+							<div class="card-body">
 								<!-- Header de la tâche -->
 								<div class="d-flex justify-content-between align-items-start mb-3">
 									<h5 class="card-title mb-0 flex-grow-1">
@@ -213,7 +205,7 @@
 										</a>
 									</h5>
 									<div class="dropdown">
-										<button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+										<button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
 											<i class="fas fa-ellipsis-v"></i>
 										</button>
 										<ul class="dropdown-menu dropdown-menu-end">
@@ -238,7 +230,9 @@
 											</li>
 											<li><hr class="dropdown-divider"></li>
 											<li>
-												<button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ task.id }}">
+												<button type="button" class="dropdown-item text-danger delete-task-btn" 
+													data-task-id="{{ task.id }}" 
+													data-task-title="{{ task.title }}">
 													<i class="fas fa-trash me-2"></i>Supprimer
 												</button>
 											</li>
@@ -281,8 +275,7 @@
 											{% if task.isOverdue and not task.isCompleted %}
 												<i class="fas fa-exclamation-triangle me-1"></i>
 											{% endif %}
-											Échéance :
-											{{ task.dueDate|date('d/m/Y à H:i') }}
+											Échéance : {{ task.dueDate|date('d/m/Y à H:i') }}
 										</small>
 									</div>
 								{% endif %}
@@ -293,8 +286,7 @@
 										<i class="fas fa-clock me-1"></i>
 										{{ task.createdAt|date('d/m/Y') }}
 									</small>
-									<div
-										class="btn-group btn-group-sm">
+									<div class="btn-group btn-group-sm">
 										<!-- Bouton de changement de statut -->
 										<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline toggle-status-form">
 											<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
@@ -314,41 +306,6 @@
 									</div>
 								</div>
 							</div>
-
-							<!-- Modal de suppression -->
-							<div class="modal fade" id="deleteModal{{ task.id }}" tabindex="-1">
-								<div class="modal-dialog">
-									<div class="modal-content">
-										<div class="modal-header">
-											<h5 class="modal-title">
-												<i class="fas fa-exclamation-triangle text-danger me-2"></i>
-												Confirmer la suppression
-											</h5>
-											<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-										</div>
-										<div class="modal-body">
-											<p>Êtes-vous sûr de vouloir supprimer la tâche
-												<strong>"{{ task.title }}"</strong>
-												?</p>
-											<div class="alert alert-warning">
-												<i class="fas fa-exclamation-triangle me-2"></i>
-												Cette action est irréversible.
-											</div>
-										</div>
-										<div class="modal-footer">
-											<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-												Annuler
-											</button>
-											<form method="post" action="{{ path('task_delete', {id: task.id}) }}" class="d-inline">
-												<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ task.id) }}">
-												<button type="submit" class="btn btn-danger">
-													<i class="fas fa-trash me-2"></i>Supprimer
-												</button>
-											</form>
-										</div>
-									</div>
-								</div>
-							</div>
 						</div>
 					</div>
 				{% endfor %}
@@ -358,8 +315,7 @@
 			<div class="row mt-4">
 				<div class="col-12 text-center">
 					<p class="text-muted">
-						{{ tasks|length }}
-						tâche(s)
+						{{ tasks|length }} tâche(s)
 						{% if current_status or current_priority %}
 							(avec filtres appliqués)
 						{% endif %}
@@ -369,10 +325,42 @@
 		{% endif %}
 	</div>
 
+	<!-- Modal de suppression unique (en dehors du container) -->
+	<div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="deleteTaskModalLabel">
+						<i class="fas fa-exclamation-triangle text-danger me-2"></i>
+						Confirmer la suppression
+					</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>Êtes-vous sûr de vouloir supprimer la tâche <strong id="taskToDeleteTitle"></strong> ?</p>
+					<div class="alert alert-warning">
+						<i class="fas fa-exclamation-triangle me-2"></i>
+						<strong>Attention :</strong> Cette action est irréversible.
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+						Annuler
+					</button>
+					<form id="deleteTaskForm" method="post" class="d-inline">
+						<input type="hidden" name="_token" id="deleteTaskToken">
+						<button type="submit" class="btn btn-danger">
+							<i class="fas fa-trash me-2"></i>Supprimer définitivement
+						</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<style>
 		.task-card {
 			transition: transform 0.2s ease, box-shadow 0.2s ease;
-			cursor: pointer;
 		}
 
 		.task-card:hover {
@@ -386,65 +374,246 @@
 
 		.dropdown-menu {
 			box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+			border: 1px solid rgba(0,0,0,.15);
+			z-index: 1020;
+		}
+
+		/* Correction pour éviter les conflits de z-index */
+		.modal {
+			z-index: 1055;
+		}
+
+		.modal-backdrop {
+			z-index: 1050;
+		}
+
+		/* Éviter le scintillement */
+		.dropdown-menu .dropdown-item:focus,
+		.dropdown-menu .dropdown-item:hover {
+			transition: background-color 0.15s ease-in-out;
+		}
+
+		/* Stabiliser l'affichage des modales */
+		.modal-dialog-centered {
+			display: flex;
+			align-items: center;
+			min-height: calc(100% - 1rem);
 		}
 	</style>
 
 	<script>
-		document.addEventListener('DOMContentLoaded', function () { // Gestion de l'ajout rapide de tâche
-const quickAddForm = document.getElementById('quickAddForm');
-if (quickAddForm) {
-quickAddForm.addEventListener('submit', function (e) {
-e.preventDefault();
+		document.addEventListener('DOMContentLoaded', function () {
+			// Gestion de l'ajout rapide de tâche
+			const quickAddForm = document.getElementById('quickAddForm');
+			if (quickAddForm) {
+				quickAddForm.addEventListener('submit', function (e) {
+					e.preventDefault();
 
-const formData = new FormData(this);
-const button = this.querySelector('button[type="submit"]');
-const originalText = button.innerHTML;
+					const formData = new FormData(this);
+					const button = this.querySelector('button[type="submit"]');
+					const originalText = button.innerHTML;
 
-button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Ajout...';
-button.disabled = true;
+					button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Ajout...';
+					button.disabled = true;
 
-fetch(this.action, {
-method: 'POST',
-body: formData
-}).then(response => response.json()).then(data => {
-if (data.success) {
-location.reload();
-} else {
-alert('Erreur : ' + data.message);
-}
-}).catch(error => {
-console.error('Erreur:', error);
-alert('Une erreur est survenue');
-}). finally(() => {
-button.innerHTML = originalText;
-button.disabled = false;
-});
-});
-}
+					fetch(this.action, {
+						method: 'POST',
+						body: formData
+					})
+					.then(response => response.json())
+					.then(data => {
+						if (data.success) {
+							setTimeout(() => {
+								location.reload();
+							}, 300);
+						} else {
+							alert('Erreur : ' + data.message);
+						}
+					})
+					.catch(error => {
+						console.error('Erreur:', error);
+						alert('Une erreur est survenue');
+					})
+					.finally(() => {
+						button.innerHTML = originalText;
+						button.disabled = false;
+					});
+				});
+			}
 
-// Gestion du changement de statut via AJAX
-document.querySelectorAll('.toggle-status-form').forEach(form => {
-form.addEventListener('submit', function (e) {
-e.preventDefault();
+			// Gestion améliorée du changement de statut via AJAX
+			document.querySelectorAll('.toggle-status-form').forEach(form => {
+				form.addEventListener('submit', function (e) {
+					e.preventDefault();
 
-const formData = new FormData(this);
-const button = this.querySelector('button[type="submit"]');
+					const formData = new FormData(this);
+					const button = this.querySelector('button[type="submit"]');
+					const taskCard = this.closest('.task-card');
+					const originalButtonContent = button.innerHTML;
 
-fetch(this.action, {
-method: 'POST',
-body: formData
-}).then(response => response.json()).then(data => {
-if (data.success) {
-location.reload();
-} else {
-alert('Erreur : ' + data.message);
-}
-}).catch(error => {
-console.error('Erreur:', error);
-alert('Une erreur est survenue');
-});
-});
-});
-});
+					button.disabled = true;
+					button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+					fetch(this.action, {
+						method: 'POST',
+						body: formData,
+						headers: {
+							'X-Requested-With': 'XMLHttpRequest'
+						}
+					})
+					.then(response => {
+						if (!response.ok) {
+							throw new Error('Erreur réseau : ' + response.status);
+						}
+						return response.json();
+					})
+					.then(data => {
+						if (data.success) {
+							updateTaskCardStatus(taskCard, data.newStatus);
+							showSuccessNotification('Statut mis à jour avec succès');
+							
+							setTimeout(() => {
+								location.reload();
+							}, 500);
+						} else {
+							alert('Erreur : ' + (data.message || 'Erreur inconnue'));
+							button.innerHTML = originalButtonContent;
+							button.disabled = false;
+						}
+					})
+					.catch(error => {
+						console.error('Erreur:', error);
+						alert('Une erreur est survenue');
+						button.innerHTML = originalButtonContent;
+						button.disabled = false;
+					});
+				});
+			});
+
+			// Gestion des boutons de suppression avec modal unique
+			const deleteModal = new bootstrap.Modal(document.getElementById('deleteTaskModal'));
+			const deleteForm = document.getElementById('deleteTaskForm');
+			const taskTitleElement = document.getElementById('taskToDeleteTitle');
+			const tokenInput = document.getElementById('deleteTaskToken');
+
+			document.querySelectorAll('.delete-task-btn').forEach(button => {
+				button.addEventListener('click', function(e) {
+					e.preventDefault();
+					e.stopPropagation();
+
+					const taskId = this.getAttribute('data-task-id');
+					const taskTitle = this.getAttribute('data-task-title');
+
+					// Fermer le dropdown avant d'ouvrir la modal
+					const dropdown = bootstrap.Dropdown.getInstance(this.closest('.dropdown').querySelector('.dropdown-toggle'));
+					if (dropdown) {
+						dropdown.hide();
+					}
+
+					// Configurer la modal
+					taskTitleElement.textContent = '"' + taskTitle + '"';
+					deleteForm.action = `{{ path('task_delete', {id: '__TASK_ID__'}) }}`.replace('__TASK_ID__', taskId);
+					tokenInput.value = `{{ csrf_token('delete__TASK_ID__') }}`.replace('__TASK_ID__', taskId);
+
+					// Petit délai pour éviter les conflits
+					setTimeout(() => {
+						deleteModal.show();
+					}, 100);
+				});
+			});
+
+			// Met à jour visuellement une carte de tâche
+			function updateTaskCardStatus(taskCard, newStatus) {
+				if (!taskCard || !newStatus) return;
+
+				const statusBadge = taskCard.querySelector('.badge:first-of-type');
+				if (statusBadge) {
+					statusBadge.classList.remove('bg-secondary', 'bg-warning', 'bg-success');
+					
+					switch (newStatus) {
+						case 'todo':
+							statusBadge.classList.add('bg-secondary');
+							statusBadge.textContent = 'À faire';
+							break;
+						case 'in_progress':
+							statusBadge.classList.add('bg-warning');
+							statusBadge.textContent = 'En cours';
+							break;
+						case 'completed':
+							statusBadge.classList.add('bg-success');
+							statusBadge.textContent = 'Terminée';
+							break;
+					}
+				}
+
+				const toggleButton = taskCard.querySelector('.toggle-status-form button');
+				if (toggleButton) {
+					const icon = toggleButton.querySelector('i');
+					if (icon) {
+						icon.classList.remove('fa-circle', 'fa-play', 'fa-check');
+						
+						switch (newStatus) {
+							case 'todo':
+								icon.classList.add('fa-circle');
+								toggleButton.classList.remove('btn-success');
+								toggleButton.classList.add('btn-outline-success');
+								break;
+							case 'in_progress':
+								icon.classList.add('fa-play');
+								toggleButton.classList.remove('btn-success');
+								toggleButton.classList.add('btn-outline-success');
+								break;
+							case 'completed':
+								icon.classList.add('fa-check');
+								toggleButton.classList.remove('btn-outline-success');
+								toggleButton.classList.add('btn-success');
+								break;
+						}
+					}
+				}
+			}
+
+			// Affiche une notification de succès
+			function showSuccessNotification(message) {
+				const notification = document.createElement('div');
+				notification.className = 'alert alert-success alert-dismissible fade show position-fixed';
+				notification.style.cssText = 'top: 20px; right: 20px; z-index: 1060; min-width: 300px;';
+				notification.innerHTML = `
+					<i class="fas fa-check-circle me-2"></i>
+					${message}
+					<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+				`;
+
+				document.body.appendChild(notification);
+
+				setTimeout(() => {
+					if (notification.parentNode) {
+						notification.classList.remove('show');
+						setTimeout(() => {
+							if (notification.parentNode) {
+								notification.remove();
+							}
+						}, 300);
+					}
+				}, 3000);
+			}
+
+			// Gestion des formulaires de duplication avec confirmation
+			document.querySelectorAll('form[action*="duplicate"]').forEach(form => {
+				form.addEventListener('submit', function (e) {
+					e.preventDefault();
+					
+					if (confirm('Voulez-vous vraiment dupliquer cette tâche ?')) {
+						const button = this.querySelector('button[type="submit"]');
+						const originalText = button.innerHTML;
+						
+						button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Duplication...';
+						button.disabled = true;
+						
+						this.submit();
+					}
+				});
+			});
+		});
 	</script>
 {% endblock %}

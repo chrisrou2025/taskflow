@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : localhost
--- Généré le : jeu. 04 sep. 2025 à 23:21
+-- Généré le : sam. 06 sep. 2025 à 09:31
 -- Version du serveur : 9.1.0
 -- Version de PHP : 8.3.14
 
@@ -107,8 +107,8 @@ INSERT INTO `task` (`id`, `project_id`, `title`, `description`, `status`, `prior
 (1, 1, 'Figma', NULL, 'in_progress', 'medium', NULL, '2025-09-02 12:41:55', '2025-09-03 23:22:46', NULL),
 (2, 1, 'Readme', NULL, 'todo', 'medium', NULL, '2025-09-02 12:43:38', '2025-09-03 23:23:29', NULL),
 (3, 2, 'Mettre à jour le CV', NULL, 'todo', 'medium', '2025-10-31 12:44:00', '2025-09-02 13:04:56', '2025-09-03 23:34:44', NULL),
-(4, 2, 'Postuler', NULL, 'todo', 'high', '2025-11-03 12:42:00', '2025-09-02 13:05:21', '2025-09-04 17:54:32', NULL),
-(5, 1, 'Faire le code avec Symfony', NULL, 'in_progress', 'medium', NULL, '2025-09-02 13:07:15', '2025-09-03 23:26:43', NULL);
+(4, 2, 'Postuler', NULL, 'todo', 'high', '2025-11-03 12:42:00', '2025-09-02 13:05:21', '2025-09-05 16:00:01', NULL),
+(5, 1, 'Faire le code avec Symfony', NULL, 'completed', 'medium', NULL, '2025-09-02 13:07:15', '2025-09-05 15:57:50', '2025-09-05 15:57:50');
 
 -- --------------------------------------------------------
 
