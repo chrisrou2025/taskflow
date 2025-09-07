@@ -19,9 +19,54 @@
                     {{ form_errors(registrationForm) }}
 
                     {{ form_start(registrationForm) }}
+                        {# Champ Prénom #}
+                        <div class="mb-3">
+                            <label for="{{ registrationForm.firstName.vars.id }}" class="form-label fw-semibold">
+                                Prénom
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="fas fa-user text-muted"></i>
+                                </span>
+                                {{ form_widget(registrationForm.firstName, {
+                                    'attr': {
+                                        'class': 'form-control form-control-lg',
+                                        'placeholder': 'Votre prénom',
+                                        'autocomplete': 'given-name'
+                                    }
+                                }) }}
+                            </div>
+                            <div class="text-danger mt-1">
+                                {{ form_errors(registrationForm.firstName) }}
+                            </div>
+                        </div>
+
+                        {# Champ Nom #}
+                        <div class="mb-3">
+                            <label for="{{ registrationForm.lastName.vars.id }}" class="form-label fw-semibold">
+                                Nom
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="fas fa-user text-muted"></i>
+                                </span>
+                                {{ form_widget(registrationForm.lastName, {
+                                    'attr': {
+                                        'class': 'form-control form-control-lg',
+                                        'placeholder': 'Votre nom de famille',
+                                        'autocomplete': 'family-name'
+                                    }
+                                }) }}
+                            </div>
+                            <div class="text-danger mt-1">
+                                {{ form_errors(registrationForm.lastName) }}
+                            </div>
+                        </div>
+
+                        {# Champ Email #}
                         <div class="mb-3">
                             <label for="{{ registrationForm.email.vars.id }}" class="form-label fw-semibold">
-                                <i class="fas fa-envelope me-1 text-primary"></i> Adresse email
+                                Adresse email
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light">
@@ -31,7 +76,7 @@
                                     'attr': {
                                         'class': 'form-control form-control-lg',
                                         'placeholder': 'votre.email@exemple.com',
-                                        'autocomplete': 'off'
+                                        'autocomplete': 'email'
                                     }
                                 }) }}
                             </div>
@@ -40,9 +85,10 @@
                             </div>
                         </div>
 
+                        {# Champ Mot de passe #}
                         <div class="mb-3">
                             <label for="{{ registrationForm.plainPassword.first.vars.id }}" class="form-label fw-semibold">
-                                <i class="fas fa-lock me-1 text-primary"></i> Mot de passe
+                                Mot de passe
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light">
@@ -52,7 +98,7 @@
                                     'attr': {
                                         'class': 'form-control form-control-lg',
                                         'placeholder': 'Votre mot de passe',
-                                        'autocomplete': 'off'
+                                        'autocomplete': 'new-password'
                                     }
                                 }) }}
                                 <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('{{ registrationForm.plainPassword.first.vars.id }}')">
@@ -64,9 +110,10 @@
                             </div>
                         </div>
 
+                        {# Champ Confirmation mot de passe #}
                         <div class="mb-4">
                             <label for="{{ registrationForm.plainPassword.second.vars.id }}" class="form-label fw-semibold">
-                                <i class="fas fa-lock me-1 text-primary"></i> Confirmer le mot de passe
+                                Confirmer le mot de passe
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light">
@@ -76,7 +123,7 @@
                                     'attr': {
                                         'class': 'form-control form-control-lg',
                                         'placeholder': 'Confirmez le mot de passe',
-                                        'autocomplete': 'off'
+                                        'autocomplete': 'new-password'
                                     }
                                 }) }}
                                 <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('{{ registrationForm.plainPassword.second.vars.id }}')">

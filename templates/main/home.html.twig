@@ -1,5 +1,11 @@
 {% extends 'base.html.twig' %}
 
+{% block stylesheets %}
+	{{ parent() }}
+	<!-- Font Awesome 6 CDN -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+{% endblock %}
+
 {% block title %}Accueil - TaskFlow
 {% endblock %}
 
@@ -7,208 +13,372 @@
 	<div
 		class="container">
 		<!-- Hero Section -->
-		<div class="row align-items-center min-vh-75 py-5">
-			<div class="col-lg-6">
-				<div class="fade-in">
-					<h1 class="display-4 fw-bold text-primary mb-4">
-						📋 Gérez vos projets avec
-						<span class="text-primary">TaskFlow</span>
-					</h1>
-					<p class="lead mb-4 text-muted">
-						Une solution simple et efficace pour organiser vos projets, gérer vos tâches 
-																														                    et suivre votre progression. TaskFlow vous accompagne dans tous vos projets, 
-																														                    qu'ils soient personnels ou professionnels.
-					</p>
-					<div class="d-flex gap-3 flex-wrap">
-						<a href="{{ path('app_register') }}" class="btn btn-primary btn-lg">
-							<i class="fas fa-rocket"></i>
-							Commencer gratuitement
-						</a>
-						<a href="{{ path('app_login') }}" class="btn btn-outline-primary btn-lg">
-							<i class="fas fa-sign-in-alt"></i>
-							Se connecter
-						</a>
+		<section class="hero-section">
+			<div class="row align-items-center min-vh-75 py-4 py-lg-5">
+				<div class="col-12 col-lg-6 order-2 order-lg-1">
+					<div class="hero-content fade-in text-center text-lg-start">
+						<h1 class="display-6 display-4-lg fw-bold text-primary mb-3 mb-lg-4">
+							📋 Gérez vos projets avec
+							<span class="text-primary d-block d-lg-inline">TaskFlow</span>
+						</h1>
+						<p class="lead mb-4 text-muted px-3 px-lg-0">
+							Une solution simple et efficace pour organiser vos projets, gérer vos tâches 
+														                        et suivre votre progression. TaskFlow vous accompagne dans tous vos projets.
+						</p>
+
+						<!-- CTA Buttons -->
+						<div class="d-grid gap-2 d-lg-flex justify-content-lg-start px-3 px-lg-0">
+							<a href="{{ path('app_register') }}" class="btn btn-primary btn-lg">
+								<i class="fas fa-user-plus me-2"></i>
+								<span class="d-none d-sm-inline">Créer un compte gratuitement</span>
+								<span class="d-sm-none">S'inscrire</span>
+							</a>
+							<a href="#features" class="btn btn-outline-primary btn-lg">
+								<i class="fas fa-info-circle me-2"></i>
+								En savoir plus
+							</a>
+						</div>
 					</div>
 				</div>
-			</div>
-			<div class="col-lg-6">
-				<div
-					class="text-center fade-in">
-					<!-- Illustration simple avec des icônes -->
-					<div class="bg-white rounded-3 shadow-lg p-5">
-						<div class="row g-4">
-							<div class="col-4">
-								<div class="bg-primary bg-opacity-10 rounded-circle p-3 mx-auto" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
-									<i class="fas fa-folder text-primary fa-2x"></i>
+
+				<div class="col-12 col-lg-6 order-1 order-lg-2 mb-4 mb-lg-0">
+					<div class="hero-illustration text-center fade-in">
+						<div class="bg-white rounded-3 shadow-lg p-4 p-lg-5 mx-auto" style="max-width: 400px;">
+							<div class="row g-3 g-lg-4">
+								<div class="col-4">
+									<div class="feature-icon bg-primary bg-opacity-10">
+										<i class="fas fa-folder text-primary fa-lg fa-2x-lg"></i>
+									</div>
+									<small class="d-block mt-2 text-muted fw-medium">Projets</small>
 								</div>
-								<small class="d-block mt-2 text-muted">Projets</small>
-							</div>
-							<div class="col-4">
-								<div class="bg-success bg-opacity-10 rounded-circle p-3 mx-auto" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
-									<i class="fas fa-tasks text-success fa-2x"></i>
+								<div class="col-4">
+									<div class="feature-icon bg-success bg-opacity-10">
+										<i class="fas fa-tasks text-success fa-lg fa-2x-lg"></i>
+									</div>
+									<small class="d-block mt-2 text-muted fw-medium">Tâches</small>
 								</div>
-								<small class="d-block mt-2 text-muted">Tâches</small>
-							</div>
-							<div class="col-4">
-								<div class="bg-warning bg-opacity-10 rounded-circle p-3 mx-auto" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
-									<i class="fas fa-chart-line text-warning fa-2x"></i>
+								<div class="col-4">
+									<div class="feature-icon bg-warning bg-opacity-10">
+										<i class="fas fa-chart-line text-warning fa-lg fa-2x-lg"></i>
+									</div>
+									<small class="d-block mt-2 text-muted fw-medium">Suivi</small>
 								</div>
-								<small class="d-block mt-2 text-muted">Suivi</small>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
-		</div>
+		</section>
 
 		<!-- Features Section -->
-		<div class="row py-5">
-			<div class="col-12">
-				<h2 class="text-center mb-5">✨ Fonctionnalités principales</h2>
+		<section class="features-section py-5" id="features">
+			<div class="text-center mb-5">
+				<h2 class="h3 h2-lg mb-3">✨ Fonctionnalités principales</h2>
+				<p class="text-muted">Tout ce dont vous avez besoin pour gérer efficacement vos projets</p>
 			</div>
 
-			<div class="col-md-4 mb-4">
-				<div class="card h-100 border-0 shadow-sm">
-					<div class="card-body text-center p-4">
-						<div class="bg-primary bg-opacity-10 rounded-circle p-3 mx-auto mb-3" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center;">
-							<i class="fas fa-project-diagram text-primary fa-2x"></i>
+			<div class="row g-4">
+				<div class="col-12 col-md-6 col-lg-4">
+					<div class="feature-card card h-100 border-0 shadow-sm">
+						<div class="card-body text-center p-4 p-lg-4">
+							<div class="feature-icon bg-primary bg-opacity-10 mb-3 mx-auto">
+								<i class="fas fa-project-diagram text-primary fa-lg fa-2x-lg"></i>
+							</div>
+							<h5 class="card-title h6 h5-lg">Gestion de projets</h5>
+							<p class="card-text text-muted small">
+								Créez et organisez vos projets avec une interface intuitive. 
+																                            Ajoutez des descriptions et suivez la progression globale.
+							</p>
 						</div>
-						<h5 class="card-title">Gestion de projets</h5>
-						<p class="card-text text-muted">
-							Créez et organisez vos projets avec une interface intuitive. 
-																																			                        Ajoutez des descriptions et suivez la progression globale.
-						</p>
+					</div>
+				</div>
+
+				<div class="col-12 col-md-6 col-lg-4">
+					<div class="feature-card card h-100 border-0 shadow-sm">
+						<div class="card-body text-center p-4 p-lg-4">
+							<div class="feature-icon bg-success bg-opacity-10 mb-3 mx-auto">
+								<i class="fas fa-list-check text-success fa-lg fa-2x-lg"></i>
+							</div>
+							<h5 class="card-title h6 h5-lg">Suivi des tâches</h5>
+							<p class="card-text text-muted small">
+								Organisez vos tâches par priorité et statut. 
+																                            Définissez des dates limites et ne ratez plus aucune échéance.
+							</p>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-12 col-md-6 col-lg-4 mx-auto mx-lg-0">
+					<div class="feature-card card h-100 border-0 shadow-sm">
+						<div class="card-body text-center p-4 p-lg-4">
+							<div class="feature-icon bg-info bg-opacity-10 mb-3 mx-auto">
+								<i class="fas fa-chart-pie text-info fa-lg fa-2x-lg"></i>
+							</div>
+							<h5 class="card-title h6 h5-lg">Statistiques</h5>
+							<p class="card-text text-muted small">
+								Visualisez vos performances avec des graphiques et statistiques. 
+																                            Identifiez les goulots d'étranglement et optimisez votre productivité.
+							</p>
+						</div>
 					</div>
 				</div>
 			</div>
-
-			<div class="col-md-4 mb-4">
-				<div class="card h-100 border-0 shadow-sm">
-					<div class="card-body text-center p-4">
-						<div class="bg-success bg-opacity-10 rounded-circle p-3 mx-auto mb-3" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center;">
-							<i class="fas fa-list-check text-success fa-2x"></i>
-						</div>
-						<h5 class="card-title">Suivi des tâches</h5>
-						<p class="card-text text-muted">
-							Organisez vos tâches par priorité et statut. 
-																																			                        Définissez des dates limites et ne ratez plus aucune échéance.
-						</p>
-					</div>
-				</div>
-			</div>
-
-			<div class="col-md-4 mb-4">
-				<div class="card h-100 border-0 shadow-sm">
-					<div class="card-body text-center p-4">
-						<div class="bg-info bg-opacity-10 rounded-circle p-3 mx-auto mb-3" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center;">
-							<i class="fas fa-chart-pie text-info fa-2x"></i>
-						</div>
-						<h5 class="card-title">Statistiques</h5>
-						<p class="card-text text-muted">
-							Visualisez vos performances avec des graphiques et statistiques. 
-																																			                        Identifiez les goulots d'étranglement et optimisez votre productivité.
-						</p>
-					</div>
-				</div>
-			</div>
-		</div>
+		</section>
 
 		<!-- Call to Action -->
-		<div class="row py-5">
-			<div class="col-12">
-				<div class="bg-primary bg-opacity-10 rounded-3 p-5 text-center">
-					<h3 class="mb-4">🚀 Prêt à booster votre productivité ?</h3>
-					<p class="lead text-muted mb-4">
-						Rejoignez les utilisateurs qui ont déjà adopté TaskFlow pour organiser leur travail.
-					</p>
-					<div class="d-flex gap-3 justify-content-center flex-wrap">
-						<a href="{{ path('app_register') }}" class="btn btn-primary btn-lg">
-							<i class="fas fa-user-plus"></i>
-							Créer un compte gratuitement
-						</a>
-						<a href="#features" class="btn btn-outline-primary btn-lg">
-							<i class="fas fa-info-circle"></i>
-							En savoir plus
-						</a>
+		<section class="cta-section py-5">
+			<div class="bg-primary bg-opacity-10 rounded-3 p-4 p-lg-5 text-center">
+				<h3 class="h4 h3-lg mb-3 mb-lg-4">🚀 Prêt à booster votre productivité ?</h3>
+				<p class="lead text-muted mb-4 px-2 px-lg-0">
+					Rejoignez les utilisateurs qui ont déjà adopté TaskFlow pour organiser leur travail.
+				</p>
+				<div class="d-grid gap-2 d-lg-flex justify-content-center">
+					<a href="{{ path('app_register') }}" class="btn btn-primary btn-lg">
+						<i class="fas fa-user-plus me-2"></i>
+						<span class="d-none d-sm-inline">Créer un compte gratuitement</span>
+						<span class="d-sm-none">Commencer</span>
+					</a>
+					<a href="#why-choose" class="btn btn-outline-primary btn-lg">
+						<i class="fas fa-info-circle me-2"></i>
+						<span class="d-none d-sm-inline">En savoir plus</span>
+						<span class="d-sm-none">Découvrir</span>
+					</a>
+				</div>
+			</div>
+		</section>
+
+		<!-- Additional Features - Compact mobile layout -->
+		<section class="why-choose-section py-5" id="why-choose">
+			<div class="text-center mb-5">
+				<h3 class="h4 h3-lg mb-3">🎯 Pourquoi choisir TaskFlow ?</h3>
+			</div>
+
+			<div class="row g-4">
+				<div class="col-12 col-lg-6">
+					<div class="d-flex align-items-start p-3 rounded-3 benefit-item">
+						<div class="benefit-icon bg-success bg-opacity-10 me-3 flex-shrink-0">
+							<i class="fas fa-shield-alt text-success"></i>
+						</div>
+						<div>
+							<h5 class="h6 h5-lg mb-2">Sécurisé et privé</h5>
+							<p class="text-muted mb-0 small">
+								Vos données sont protégées et restent privées. 
+																                            Chaque utilisateur ne peut accéder qu'à ses propres projets.
+							</p>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-12 col-lg-6">
+					<div class="d-flex align-items-start p-3 rounded-3 benefit-item">
+						<div class="benefit-icon bg-warning bg-opacity-10 me-3 flex-shrink-0">
+							<i class="fas fa-mobile-alt text-warning"></i>
+						</div>
+						<div>
+							<h5 class="h6 h5-lg mb-2">Interface responsive</h5>
+							<p class="text-muted mb-0 small">
+								Accédez à vos projets depuis n'importe quel appareil. 
+																                            TaskFlow s'adapte parfaitement aux mobiles et tablettes.
+							</p>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-12 col-lg-6">
+					<div class="d-flex align-items-start p-3 rounded-3 benefit-item">
+						<div class="benefit-icon bg-info bg-opacity-10 me-3 flex-shrink-0">
+							<i class="fas fa-bolt text-info"></i>
+						</div>
+						<div>
+							<h5 class="h6 h5-lg mb-2">Rapide et performant</h5>
+							<p class="text-muted mb-0 small">
+								Interface fluide et réactive pour une expérience utilisateur optimale. 
+																                            Pas de temps de chargement inutiles.
+							</p>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-12 col-lg-6">
+					<div class="d-flex align-items-start p-3 rounded-3 benefit-item">
+						<div class="benefit-icon bg-primary bg-opacity-10 me-3 flex-shrink-0">
+							<i class="fas fa-cogs text-primary"></i>
+						</div>
+						<div>
+							<h5 class="h6 h5-lg mb-2">Simple d'utilisation</h5>
+							<p class="text-muted mb-0 small">
+								Interface intuitive qui ne nécessite aucune formation. 
+																                            Commencez à organiser vos projets en quelques clics.
+							</p>
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
+		</section>
 
-		<!-- Additional Features -->
-		<div class="row py-5" id="features">
-			<div class="col-12">
-				<h3 class="text-center mb-5">🎯 Pourquoi choisir TaskFlow ?</h3>
-			</div>
-
-			<div class="col-lg-6 mb-4">
-				<div class="d-flex align-items-start">
-					<div class="bg-success bg-opacity-10 rounded p-2 me-3">
-						<i class="fas fa-shield-alt text-success"></i>
+		<!-- Testimonial ou statistiques simples -->
+		<section class="stats-section py-5 bg-light rounded-3 mx-n3 mx-lg-0">
+			<div class="text-center">
+				<div class="row g-4">
+					<div class="col-6 col-lg-3">
+						<div class="stat-item">
+							<h3 class="h2 h1-lg text-primary mb-1 counter">1000+</h3>
+							<p class="text-muted small mb-0">Utilisateurs</p>
+						</div>
 					</div>
-					<div>
-						<h5>Sécurisé et privé</h5>
-						<p class="text-muted mb-0">
-							Vos données sont protégées et restent privées. 
-																																			                        Chaque utilisateur ne peut accéder qu'à ses propres projets.
-						</p>
+					<div class="col-6 col-lg-3">
+						<div class="stat-item">
+							<h3 class="h2 h1-lg text-success mb-1 counter">5000+</h3>
+							<p class="text-muted small mb-0">Projets créés</p>
+						</div>
+					</div>
+					<div class="col-6 col-lg-3">
+						<div class="stat-item">
+							<h3 class="h2 h1-lg text-info mb-1 counter">15000+</h3>
+							<p class="text-muted small mb-0">Tâches complétées</p>
+						</div>
+					</div>
+					<div class="col-6 col-lg-3">
+						<div class="stat-item">
+							<h3 class="h2 h1-lg text-warning mb-1 counter">99%</h3>
+							<p class="text-muted small mb-0">Satisfaction</p>
+						</div>
 					</div>
 				</div>
 			</div>
+		</section>
 
-			<div class="col-lg-6 mb-4">
-				<div class="d-flex align-items-start">
-					<div class="bg-warning bg-opacity-10 rounded p-2 me-3">
-						<i class="fas fa-mobile-alt text-warning"></i>
-					</div>
-					<div>
-						<h5>Interface responsive</h5>
-						<p class="text-muted mb-0">
-							Accédez à vos projets depuis n'importe quel appareil. 
-																																			                        TaskFlow s'adapte parfaitement aux mobiles et tablettes.
-						</p>
-					</div>
-				</div>
-			</div>
-
-			<div class="col-lg-6 mb-4">
-				<div class="d-flex align-items-start">
-					<div class="bg-info bg-opacity-10 rounded p-2 me-3">
-						<i class="fas fa-bolt text-info"></i>
-					</div>
-					<div>
-						<h5>Rapide et performant</h5>
-						<p class="text-muted mb-0">
-							Interface fluide et réactive pour une expérience utilisateur optimale. 
-																																			                        Pas de temps de chargement inutiles.
-						</p>
-					</div>
-				</div>
-			</div>
-
-			<div class="col-lg-6 mb-4">
-				<div class="d-flex align-items-start">
-					<div class="bg-primary bg-opacity-10 rounded p-2 me-3">
-						<i class="fas fa-cogs text-primary"></i>
-					</div>
-					<div>
-						<h5>Simple d'utilisation</h5>
-						<p class="text-muted mb-0">
-							Interface intuitive qui ne nécessite aucune formation. 
-																																			                        Commencez à organiser vos projets en quelques clics.
-						</p>
-					</div>
-				</div>
-			</div>
-		</div>
+		<!-- Final CTA -->
+		<section class="final-cta py-5 text-center">
+			<h3 class="h4 h3-lg mb-4">Commencez dès maintenant !</h3>
+			<a href="{{ path('app_register') }}" class="btn btn-primary btn-lg">
+				<i class="fas fa-rocket me-2"></i>
+				Créer mon compte gratuit
+			</a>
+		</section>
 	</div>
 
-	<!-- Styles spécifiques à la page d'accueil -->
+	<!-- Styles -->
 	<style>
+		/* Responsive Typography */
+		@media(max-width: 991.98px) {
+			.display-4-lg {
+				font-size: 2.5rem;
+			}
+			.h1-lg {
+				font-size: 2.5rem;
+			}
+			.h2-lg {
+				font-size: 2rem;
+			}
+			.h3-lg {
+				font-size: 1.75rem;
+			}
+			.h4-lg {
+				font-size: 1.5rem;
+			}
+			.h5-lg {
+				font-size: 1.25rem;
+			}
+			.h6-lg {
+				font-size: 1.1rem;
+			}
+			.fa-2x-lg {
+				font-size: 2em;
+			}
+		}
+
+		/* Hero Section */
 		.min-vh-75 {
 			min-height: 75vh;
 		}
 
+		@media(max-width: 768px) {
+			.min-vh-75 {
+				min-height: auto;
+			}
+		}
+
+		.hero-content {
+			animation: fadeInUp 0.8s ease-out;
+		}
+
+		.hero-illustration {
+			animation: fadeInUp 0.8s ease-out 0.2s both;
+		}
+
+		/* Feature Icons */
+		.feature-icon {
+			width: 60px;
+			height: 60px;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		@media(min-width: 992px) {
+			.feature-icon {
+				width: 70px;
+				height: 70px;
+			}
+		}
+
+		/* Benefit Icons */
+		.benefit-icon {
+			width: 40px;
+			height: 40px;
+			border-radius: 8px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.benefit-item {
+			transition: transform 0.3s ease, background-color 0.3s ease;
+		}
+
+		.benefit-item:hover {
+			transform: translateY(-2px);
+			background-color: rgba(0, 0, 0, 0.02);
+		}
+
+		/* Cards */
+		.feature-card {
+			transition: transform 0.3s ease, box-shadow 0.3s ease;
+		}
+
+		.feature-card:hover {
+			transform: translateY(-5px);
+			box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+		}
+
+		@keyframes progressGrow {
+			from {
+				width: 0;
+			}
+			to {
+				width: 75%;
+			}
+		}
+
+		/* Counter Animation */
+		.counter {
+			animation: countUp 2s ease-out;
+		}
+
+		@keyframes countUp {
+			from {
+				opacity: 0;
+				transform: scale(0.8);
+			}
+			to {
+				opacity: 1;
+				transform: scale(1);
+			}
+		}
+
+		/* Fade In Animation */
 		.fade-in {
 			animation: fadeInUp 0.8s ease-out;
 		}
@@ -224,13 +394,119 @@
 			}
 		}
 
-		.card {
-			transition: transform 0.3s ease, box-shadow 0.3s ease;
+		/* Stats Section */
+		.stats-section {
+			background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
 		}
 
-		.card:hover {
-			transform: translateY(-5px);
-			box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+		.stat-item {
+			transition: transform 0.3s ease;
+		}
+
+		.stat-item:hover {
+			transform: scale(1.05);
+		}
+
+		/* Mobile Optimizations */
+		@media(max-width: 768px) {
+			.btn {
+				min-height: 48px;
+				font-weight: 500;
+			}
+
+			.btn-lg {
+				padding: 0.875rem 1.5rem;
+				font-size: 1.1rem;
+			}
+
+			.card-body {
+				padding: 1.5rem;
+			}
+
+			/* Touch friendly spacing */
+			.row.g-4 > * {
+				margin-bottom: 1.5rem;
+			}
+
+			/* Improve text readability */
+			.lead {
+				font-size: 1.1rem;
+				line-height: 1.6;
+			}
+
+			.text-muted {
+				color: #6c757d !important;
+			}
+		}
+
+		/* Smooth scrolling */
+		html {
+			scroll-behavior: smooth;
+		}
+
+		/* Loading states */
+		.btn {
+			position: relative;
+			overflow: hidden;
+		}
+
+		.btn::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: -100%;
+			width: 100%;
+			height: 100%;
+			background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+			transition: left 0.5s;
+		}
+
+		.btn:hover::before {
+			left: 100%;
+		}
+
+		/* Accessibility improvements */
+		@media(prefers-reduced-motion: reduce) {
+			* {
+				animation-duration: 0.01ms !important;
+				animation-iteration-count: 1 !important;
+				transition-duration: 0.01ms !important;
+			}
+
+			.progress-animated {
+				animation: none;
+				width: 75%;
+			}
+		}
+
+		/* High contrast mode */
+		@media(prefers-contrast: high) {
+			.text-muted {
+				color: #495057 !important;
+			}
+
+			.btn-outline-primary {
+				border-width: 2px;
+			}
+		}
+
+		/* Dark mode support (si implémenté plus tard) */
+		@media(prefers-color-scheme: dark) {
+			.bg-white {
+				background-color: #212529 !important;
+				color: #fff;
+			}
+
+			.text-muted {
+				color: #adb5bd !important;
+			}
+		}
+
+		/* Focus states pour l'accessibilité */
+		.btn:focus,
+		.card:focus {
+			outline: 2px solid #0d6efd;
+			outline-offset: 2px;
 		}
 	</style>
 {% endblock %}

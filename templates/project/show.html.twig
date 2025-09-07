@@ -6,9 +6,7 @@
 {% endblock %}
 
 {% block body %}
-	<div
-		class="container-fluid">
-		<!-- Header avec breadcrumb -->
+	<div class="container-fluid">
 		<nav aria-label="breadcrumb" class="mb-3">
 			<ol class="breadcrumb">
 				<li class="breadcrumb-item">
@@ -20,16 +18,15 @@
 			</ol>
 		</nav>
 
-		<!-- Header du projet -->
 		<div class="row mb-4">
 			<div class="col-12">
-				<div class="d-flex justify-content-between align-items-start">
-					<div class="flex-grow-1">
+				<div class="d-flex flex-column flex-md-row justify-content-between align-items-start">
+					<div class="flex-grow-1 mb-3 mb-md-0">
 						<h1 class="h3 mb-2">{{ project.title }}</h1>
 						{% if project.description %}
 							<p class="text-muted mb-3">{{ project.description }}</p>
 						{% endif %}
-						<div class="d-flex gap-3 text-muted">
+						<div class="d-flex flex-wrap gap-3 text-muted">
 							<small>
 								<i class="fas fa-calendar-plus me-1"></i>
 								Créé le
@@ -44,12 +41,12 @@
 							{% endif %}
 						</div>
 					</div>
-					<div class="d-flex gap-2">
-						<a href="{{ path('task_new', {project: project.id}) }}" class="btn btn-success">
+					<div class="d-flex flex-wrap gap-2 justify-content-end w-100 w-md-auto">
+						<a href="{{ path('task_new', {project: project.id}) }}" class="btn btn-success flex-grow-1 flex-md-grow-0">
 							<i class="fas fa-plus me-2"></i>Nouvelle tâche
 						</a>
 						<div class="dropdown">
-							<button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+							<button class="btn btn-outline-secondary dropdown-toggle w-100" type="button" data-bs-toggle="dropdown">
 								<i class="fas fa-cog"></i>
 							</button>
 							<ul class="dropdown-menu dropdown-menu-end">
@@ -79,35 +76,34 @@
 			</div>
 		</div>
 
-		<!-- Statistiques principales -->
 		<div class="row mb-4">
-			<div class="col-md-3 mb-3">
-				<div class="card border-0 bg-primary text-white">
-					<div class="card-body text-center">
+			<div class="col-6 col-md-3 mb-3">
+				<div class="card border-0 bg-primary text-white h-100">
+					<div class="card-body text-center d-flex flex-column justify-content-center">
 						<h3 class="mb-1">{{ project.tasksCount }}</h3>
 						<small>Tâches totales</small>
 					</div>
 				</div>
 			</div>
-			<div class="col-md-3 mb-3">
-				<div class="card border-0 bg-success text-white">
-					<div class="card-body text-center">
+			<div class="col-6 col-md-3 mb-3">
+				<div class="card border-0 bg-success text-white h-100">
+					<div class="card-body text-center d-flex flex-column justify-content-center">
 						<h3 class="mb-1">{{ project.completedTasksCount }}</h3>
 						<small>Terminées</small>
 					</div>
 				</div>
 			</div>
-			<div class="col-md-3 mb-3">
-				<div class="card border-0 bg-warning text-white">
-					<div class="card-body text-center">
+			<div class="col-6 col-md-3 mb-3">
+				<div class="card border-0 bg-warning text-white h-100">
+					<div class="card-body text-center d-flex flex-column justify-content-center">
 						<h3 class="mb-1">{{ project.inProgressTasksCount }}</h3>
 						<small>En cours</small>
 					</div>
 				</div>
 			</div>
-			<div class="col-md-3 mb-3">
-				<div class="card border-0 bg-info text-white">
-					<div class="card-body text-center">
+			<div class="col-6 col-md-3 mb-3">
+				<div class="card border-0 bg-info text-white h-100">
+					<div class="card-body text-center d-flex flex-column justify-content-center">
 						<h3 class="mb-1">{{ project.todoTasksCount }}</h3>
 						<small>À faire</small>
 					</div>
@@ -115,7 +111,6 @@
 			</div>
 		</div>
 
-		<!-- Barre de progression générale -->
 		<div class="row mb-4">
 			<div class="col-12">
 				<div class="card border-0 shadow-sm">
@@ -134,31 +129,13 @@
 								{{ progress }}%
 							</span>
 						</div>
-						{% if progress == 100 %}
-							<p class="text-success mb-0">
-								<i class="fas fa-check-circle me-1"></i>
-								Félicitations ! Ce projet est terminé.
-							</p>
-						{% elseif progress > 50 %}
-							<p class="text-primary mb-0">
-								<i class="fas fa-rocket me-1"></i>
-								Bon travail ! Vous êtes sur la bonne voie.
-							</p>
-						{% else %}
-							<p class="text-muted mb-0">
-								<i class="fas fa-play me-1"></i>
-								{{ progress == 0 ? 'Projet en attente de démarrage.' : 'Projet en cours de développement.' }}
-							</p>
-						{% endif %}
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<!-- Contenu en deux colonnes -->
-		<div
-			class="row">
-			<!-- Tâches récentes -->
+
+		<div class="row">
 			<div class="col-lg-8 mb-4">
 				<div class="card border-0 shadow-sm">
 					<div class="card-header bg-white d-flex justify-content-between align-items-center">
@@ -169,7 +146,7 @@
 							Voir toutes les tâches
 						</a>
 					</div>
-					<div class="card-body p-0">
+					<div class="card-body">
 						{% if recent_tasks is empty %}
 							<div class="text-center py-5">
 								<i class="fas fa-tasks fa-3x text-muted mb-3"></i>
@@ -180,74 +157,48 @@
 								</a>
 							</div>
 						{% else %}
-							<div class="table-responsive">
-								<table class="table table-hover mb-0">
-									<thead class="table-light">
-										<tr>
-											<th>Tâche</th>
-											<th>Statut</th>
-											<th>Priorité</th>
-											<th>Échéance</th>
-											<th>Actions</th>
-										</tr>
-									</thead>
-									<tbody>
-										{% for task in recent_tasks %}
-											<tr class="{{ task.isOverdue and not task.isCompleted ? 'table-danger' : '' }}">
-												<td>
-													<div>
-														<h6 class="mb-1">{{ task.title }}</h6>
-														{% if task.description %}
-															<small class="text-muted">{{ task.description|length > 50 ? task.description|slice(0, 50) ~ '...' : task.description }}</small>
-														{% endif %}
-													</div>
-												</td>
-												<td>
-													<span class="badge bg-{{ task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">
-														{{ task.statusLabel }}
-													</span>
-												</td>
-												<td>
-													<span class="badge bg-{{ task.priority == 'high' ? 'danger' : (task.priority == 'medium' ? 'warning' : 'secondary') }}">
-														{{ task.priorityLabel }}
-													</span>
-												</td>
-												<td>
-													{% if task.dueDate %}
-														<small class="{{ task.isOverdue and not task.isCompleted ? 'text-danger fw-bold' : 'text-muted' }}">
-															{% if task.isOverdue and not task.isCompleted %}
-																<i class="fas fa-exclamation-triangle me-1"></i>
-															{% endif %}
-															{{ task.dueDate|date('d/m/Y') }}
-														</small>
-													{% else %}
-														<small class="text-muted">Aucune</small>
-													{% endif %}
-												</td>
-												<td>
-													<div class="btn-group btn-group-sm">
-														<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-outline-primary btn-sm">
-															<i class="fas fa-eye"></i>
-														</a>
-														<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-outline-secondary btn-sm">
-															<i class="fas fa-edit"></i>
-														</a>
-													</div>
-												</td>
-											</tr>
-										{% endfor %}
-									</tbody>
-								</table>
+							<div class="list-group list-group-flush">
+								{% for task in recent_tasks %}
+									<div class="list-group-item px-0 {{ task.isOverdue and not task.isCompleted ? 'bg-danger-light' : '' }}">
+										<div class="d-flex w-100 justify-content-between">
+											<h6 class="mb-1 flex-grow-1">{{ task.title }}</h6>
+											<div class="btn-group btn-group-sm">
+												<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-outline-primary btn-sm">
+													<i class="fas fa-eye"></i>
+												</a>
+												<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-outline-secondary btn-sm">
+													<i class="fas fa-edit"></i>
+												</a>
+											</div>
+										</div>
+										{% if task.description %}
+											<p class="mb-1 small text-muted">{{ task.description|length > 80 ? task.description|slice(0, 80) ~ '...' : task.description }}</p>
+										{% endif %}
+										<div class="d-flex flex-wrap gap-3 mt-2">
+											<span class="badge {{ 'bg-' ~ (task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary')) }}">
+												{{ task.statusLabel }}
+											</span>
+											<span class="badge {{ 'bg-' ~ (task.priority == 'high' ? 'danger' : (task.priority == 'medium' ? 'warning' : 'secondary')) }}">
+												{{ task.priorityLabel }}
+											</span>
+											{% if task.dueDate %}
+												<small class="{{ task.isOverdue and not task.isCompleted ? 'text-danger fw-bold' : 'text-muted' }}">
+													<i class="fas fa-calendar-times me-1"></i>
+													Échéance :
+													{{ task.dueDate|date('d/m/Y') }}
+												</small>
+											{% endif %}
+										</div>
+									</div>
+								{% endfor %}
 							</div>
 						{% endif %}
 					</div>
 				</div>
 			</div>
 
-			<!-- Statistiques détaillées -->
 			<div class="col-lg-4">
 				{% if statistics %}
-					<!-- Répartition par statut -->
 					<div class="card border-0 shadow-sm mb-4">
 						<div class="card-header bg-white">
 							<h6 class="card-title mb-0">
@@ -263,7 +214,7 @@
 											{% else %}Terminé
 										{% endif %}
 									</span>
-									<span class="badge bg-{{ stat.status == 'completed' ? 'success' : (stat.status == 'in_progress' ? 'warning' : 'secondary') }}">
+									<span class="badge {{ 'bg-' ~ (stat.status == 'completed' ? 'success' : (stat.status == 'in_progress' ? 'warning' : 'secondary')) }}">
 										{{ stat.count }}
 									</span>
 								</div>
@@ -271,7 +222,6 @@
 						</div>
 					</div>
 
-					<!-- Répartition par priorité -->
 					<div class="card border-0 shadow-sm mb-4">
 						<div class="card-header bg-white">
 							<h6 class="card-title mb-0">
@@ -287,36 +237,18 @@
 											{% else %}Haute
 										{% endif %}
 									</span>
-									<span class="badge bg-{{ stat.priority == 'high' ? 'danger' : (stat.priority == 'medium' ? 'warning' : 'secondary') }}">
+									<span class="badge {{ 'bg-' ~ (stat.priority == 'high' ? 'danger' : (stat.priority == 'medium' ? 'warning' : 'secondary')) }}">
 										{{ stat.count }}
 									</span>
 								</div>
 							{% endfor %}
 						</div>
 					</div>
-
-					<!-- Temps moyen de completion -->
-					{% if statistics.avg_completion_days > 0 %}
-						<div class="card border-0 shadow-sm">
-							<div class="card-header bg-white">
-								<h6 class="card-title mb-0">
-									<i class="fas fa-clock me-2 text-info"></i>Performance
-								</h6>
-							</div>
-							<div class="card-body">
-								<div class="text-center">
-									<h4 class="text-info mb-1">{{ statistics.avg_completion_days }}</h4>
-									<small class="text-muted">jours en moyenne pour terminer une tâche</small>
-								</div>
-							</div>
-						</div>
-					{% endif %}
 				{% endif %}
 			</div>
 		</div>
 	</div>
 
-	<!-- Modal de suppression -->
 	<div class="modal fade" id="deleteModal" tabindex="-1">
 		<div class="modal-dialog">
 			<div class="modal-content">
@@ -334,8 +266,8 @@
 					<div class="alert alert-warning">
 						<i class="fas fa-exclamation-triangle me-2"></i>
 						<strong>Attention :</strong>
-						Cette action supprimera définitivement le projet 
-												                    et toutes ses tâches ({{ project.tasksCount }}
+						Cette action supprimera définitivement le projet
+												et toutes ses tâches ({{ project.tasksCount }}
 						tâche(s)).
 					</div>
 				</div>
@@ -353,13 +285,8 @@
 	</div>
 
 	<style>
-		.progress-bar-striped {
-			background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
-			background-size: 1rem 1rem;
-		}
-
-		.table-danger {
-			background-color: rgba(220, 53, 69, 0.1);
+		.bg-danger-light {
+			background-color: rgba(220, 53, 69, 0.05);
 		}
 	</style>
 {% endblock %}
