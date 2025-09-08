@@ -33,8 +33,8 @@
 							Commencez par créer votre premier projet pour organiser vos tâches
 							et suivre votre progression.
 						</p>
-						<a href="{{ path('project_new') }}" class="btn btn-primary btn-lg">
-							<i class="fas fa-plus me-2"></i>Créer mon premier projet
+						<a href="{{ path('project_new') }}" class="btn btn-primary">
+							<i class="fas fa-plus me-2"></i>Créer un projet
 						</a>
 					</div>
 				</div>
@@ -42,124 +42,71 @@
 		{% else %}
 			<div class="row">
 				{% for project in projects %}
-					<div class="col-xl-4 col-lg-6 mb-4">
-						<div class="card border-0 shadow-sm h-100 project-card">
+					<div class="col-md-6 col-lg-4 col-xl-3 mb-4">
+						<div class="card h-100 project-card shadow-sm">
 							<div class="card-body d-flex flex-column">
-								<div class="d-flex justify-content-between align-items-start mb-3">
-									<h5 class="card-title mb-0 flex-grow-1">
-										<a href="{{ path('project_show', {id: project.id}) }}" class="text-decoration-none stretched-link">{{ project.title }}</a>
-									</h5>
-									<div class="dropdown">
-										<button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-											<i class="fas fa-ellipsis-v"></i>
-										</button>
-										<ul class="dropdown-menu dropdown-menu-end">
-											<li>
-												<a class="dropdown-item" href="{{ path('project_show', {id: project.id}) }}">
-													<i class="fas fa-eye me-2"></i>Voir le détail
-												</a>
-											</li>
-											<li>
-												<a class="dropdown-item" href="{{ path('task_index', {project: project.id}) }}">
-													<i class="fas fa-tasks me-2"></i>Gérer les tâches
-												</a>
-											</li>
-											<li>
-												<a class="dropdown-item" href="{{ path('project_edit', {id: project.id}) }}">
-													<i class="fas fa-edit me-2"></i>Modifier
-												</a>
-											</li>
-											<li><hr class="dropdown-divider"></li>
-											<li>
-												<form method="post" action="{{ path('project_duplicate', {id: project.id}) }}" class="d-inline">
-													<input type="hidden" name="_token" value="{{ csrf_token('duplicate' ~ project.id) }}">
-													<button type="submit" class="dropdown-item">
-														<i class="fas fa-copy me-2"></i>Dupliquer
-													</button>
-												</form>
-											</li>
-											<li><hr class="dropdown-divider"></li>
-											<li>
-												<button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ project.id }}">
-													<i class="fas fa-trash me-2"></i>Supprimer
-												</button>
-											</li>
-										</ul>
-									</div>
+								<h5 class="card-title mb-3 d-flex justify-content-between align-items-center">
+									<a href="{{ path('project_show', {id: project.id}) }}" class="stretched-link text-decoration-none text-dark">{{ project.title }}</a>
+								</h5>
+								<p class="card-text text-muted small mb-3">
+									<i class="fas fa-info-circle me-1"></i>
+									{{ project.description ? (project.description|length > 100 ? project.description|slice(0, 100) ~ '...' : project.description) : 'Pas de description.' }}
+								</p>
+								<ul class="list-unstyled d-flex flex-wrap gap-3 mt-auto">
+									<li>
+										<i class="fas fa-tasks me-1 text-primary"></i>
+										{{ project.tasksCount }}
+										tâches
+									</li>
+									<li>
+										<i class="fas fa-check-circle me-1 text-success"></i>
+										{{ project.completedTasksCount }}
+										terminées
+									</li>
+									<li>
+										<i class="fas fa-spinner me-1 text-warning"></i>
+										{{ project.inProgressTasksCount }}
+										en cours
+									</li>
+								</ul>
+								<div class="progress mt-3" style="height: 5px;">
+									<div class="progress-bar bg-success" role="progressbar" style="width: {{ project.progressPercentage }}%;" aria-valuenow="{{ project.progressPercentage }}" aria-valuemin="0" aria-valuemax="100"></div>
 								</div>
-
-								<div class="flex-grow-1">
-									{% if project.description %}
-										<p class="card-text text-muted small mb-3">
-											{{ project.description|length > 120 ? project.description|slice(0, 120) ~ '...' : project.description }}
-										</p>
-									{% else %}
-										<p class="card-text text-muted small mb-3 fst-italic">Aucune description</p>
-									{% endif %}
-								</div>
-
-								{% set progress = project.progressPercentage %}
-								<div class="mb-3">
-									<div class="d-flex justify-content-between mb-1">
-										<small class="text-muted">Progression</small>
-										<small class="text-muted">{{ progress }}%</small>
-									</div>
-									<div class="progress" style="height: 8px;">
-										<div class="progress-bar bg-{{ progress == 100 ? 'success' : (progress > 50 ? 'primary' : 'warning') }}" style="width: {{ progress }}%"></div>
-									</div>
-								</div>
-
-								<div class="d-flex justify-content-between align-items-center small text-muted">
-									<div>
-										<i class="fas fa-calendar-alt me-1"></i>
-										Créé le
-										{{ project.createdAt|date('d/m/Y') }}
-									</div>
-									<div class="d-flex gap-2">
-										<span class="badge bg-light text-primary" title="Tâches totales">
-											<i class="fas fa-tasks me-1"></i>
-											{{ project.tasksCount }}</span>
-										<span class="badge bg-light text-success" title="Tâches terminées">
-											<i class="fas fa-check-circle me-1"></i>
-											{{ project.completedTasksCount }}</span>
-									</div>
-								</div>
+								<small class="text-muted mt-2">{{ project.progressPercentage }}% de progression</small>
 							</div>
+						</div>
+					</div>
 
-							<div class="modal fade" id="deleteModal{{ project.id }}" tabindex="-1">
-								<div class="modal-dialog">
-									<div class="modal-content">
-										<div class="modal-header">
-											<h5 class="modal-title">
-												<i class="fas fa-exclamation-triangle text-danger me-2"></i>
-												Confirmer la suppression
-											</h5>
-											<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-										</div>
-										<div class="modal-body">
-											<p>Êtes-vous sûr de vouloir supprimer le projet
-												<strong>"{{ project.title }}"</strong>
-												?</p>
-											<div class="alert alert-warning">
-												<i class="fas fa-exclamation-triangle me-2"></i>
-												<strong>Attention :</strong>
-												Cette action est irréversible et supprimera également
-												toutes les tâches associées à ce projet ({{ project.tasksCount }}
-												tâche(s)).
-											</div>
-										</div>
-										<div class="modal-footer">
-											<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-												Annuler
-											</button>
-											<form method="post" action="{{ path('project_delete', {id: project.id}) }}" class="d-inline">
-												<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ project.id) }}">
-												<button type="submit" class="btn btn-danger">
-													<i class="fas fa-trash me-2"></i>Supprimer définitivement
-												</button>
-											</form>
-										</div>
+					<div class="modal fade" id="deleteModal{{ project.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ project.id }}" aria-hidden="true">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title" id="deleteModalLabel{{ project.id }}">
+										<i class="fas fa-exclamation-triangle text-danger me-2"></i>
+										Confirmer la suppression
+									</h5>
+									<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+								</div>
+								<div class="modal-body">
+									<p>Êtes-vous sûr de vouloir supprimer le projet
+										<strong>"{{ project.title }}"</strong>
+										?</p>
+									<div class="alert alert-warning">
+										<i class="fas fa-exclamation-triangle me-2"></i>
+										<strong>Attention :</strong>
+										Cette action supprimera définitivement le projet
+										et toutes ses tâches ({{ project.tasksCount }}
+										tâche(s)).
 									</div>
+								</div>
+								<div class="modal-footer">
+									<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+									<form method="post" action="{{ path('project_delete', {id: project.id}) }}" class="d-inline">
+										<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ project.id) }}">
+										<button type="submit" class="btn btn-danger">
+											<i class="fas fa-trash me-2"></i>Supprimer définitivement
+										</button>
+									</form>
 								</div>
 							</div>
 						</div>
@@ -203,19 +150,4 @@
 			display: none;
 		}
 	</style>
-
-	<script>
-		document.addEventListener('DOMContentLoaded', function () {
-			// Ajoute une confirmation avant de soumettre les formulaires de duplication.
-			const duplicateForms = document.querySelectorAll('form[action*="duplicate"]');
-
-			duplicateForms.forEach(form => {
-				form.addEventListener('submit', function (event) {
-					if (!confirm('Voulez-vous vraiment dupliquer ce projet ?')) {
-						event.preventDefault(); // Annule la soumission du formulaire
-					}
-				});
-			});
-		});
-	</script>
 {% endblock %}

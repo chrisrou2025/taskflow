@@ -7,8 +7,7 @@
 
 {% block body %}
 	<div
-		class="container-fluid">
-		<!-- Header avec breadcrumb -->
+		class="container-fluid pb-5 mb-5 pb-lg-0 mb-lg-0">
 		<nav aria-label="breadcrumb" class="mb-3">
 			<ol class="breadcrumb">
 				<li class="breadcrumb-item">
@@ -30,7 +29,6 @@
 			</ol>
 		</nav>
 
-		<!-- Header de la tâche -->
 		<div class="row mb-4">
 			<div class="col-12">
 				<div class="d-flex justify-content-between align-items-start">
@@ -71,7 +69,7 @@
 							{% endif %}
 						</div>
 					</div>
-					<div class="d-flex gap-2">
+					<div class="d-none d-lg-flex gap-2">
 						<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-primary">
 							<i class="fas fa-edit me-2"></i>Modifier
 						</a>
@@ -109,11 +107,9 @@
 			</div>
 		</div>
 
-		<!-- Contenu principal -->
 		<div class="row">
 			<div
 				class="col-lg-8">
-				<!-- Description -->
 				<div class="card border-0 shadow-sm mb-4">
 					<div class="card-header bg-white">
 						<h5 class="card-title mb-0">
@@ -129,7 +125,6 @@
 					</div>
 				</div>
 
-				<!-- Informations du projet -->
 				<div class="card border-0 shadow-sm">
 					<div class="card-header bg-white">
 						<h5 class="card-title mb-0">
@@ -161,10 +156,8 @@
 				</div>
 			</div>
 
-			<!-- Sidebar avec informations détaillées -->
 			<div
 				class="col-lg-4">
-				<!-- Détails de la tâche -->
 				<div class="card border-0 shadow-sm mb-4">
 					<div class="card-header bg-white">
 						<h6 class="card-title mb-0">
@@ -201,47 +194,10 @@
 						</div>
 					</div>
 				</div>
-
-				<!-- Actions rapides -->
-				<div class="card border-0 shadow-sm">
-					<div class="card-header bg-white">
-						<h6 class="card-title mb-0">
-							<i class="fas fa-bolt me-2 text-warning"></i>Actions rapides
-						</h6>
-					</div>
-					<div class="card-body">
-						<div class="d-grid gap-2">
-							{% if not task.isCompleted %}
-								<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
-									<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
-									<button type="submit" class="btn btn-{{ task.status == 'todo' ? 'warning' : 'success' }} btn-sm w-100">
-										<i class="fas fa-{{ task.status == 'todo' ? 'play' : 'check' }} me-2"></i>
-										{{ task.status == 'todo' ? 'Démarrer la tâche' : 'Terminer la tâche' }}
-									</button>
-								</form>
-							{% else %}
-								<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
-									<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
-									<button type="submit" class="btn btn-outline-secondary btn-sm w-100">
-										<i class="fas fa-undo me-2"></i>Rouvrir la tâche
-									</button>
-								</form>
-							{% endif %}
-
-							<form method="post" action="{{ path('task_duplicate', {id: task.id}) }}" class="d-inline">
-								<input type="hidden" name="_token" value="{{ csrf_token('duplicate' ~ task.id) }}">
-								<button type="submit" class="btn btn-outline-primary btn-sm w-100">
-									<i class="fas fa-copy me-2"></i>Dupliquer cette tâche
-								</button>
-							</form>
-						</div>
-					</div>
-				</div>
 			</div>
 		</div>
 	</div>
 
-	<!-- Modal de suppression -->
 	<div class="modal fade" id="deleteModal" tabindex="-1">
 		<div class="modal-dialog">
 			<div class="modal-content">
@@ -275,13 +231,56 @@
 		</div>
 	</div>
 
+	<div class="mobile-action-bar d-lg-none">
+		<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-outline-primary">
+			<i class="fas fa-edit"></i>
+			<span class="ms-1">Modifier</span>
+		</a>
+		
+		{% if not task.isCompleted %}
+			<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
+				<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
+				<button type="submit" class="btn btn-{{ task.status == 'todo' ? 'warning' : 'success' }} w-100">
+					<i class="fas fa-{{ task.status == 'todo' ? 'play' : 'check' }}"></i>
+					<span class="ms-1">{{ task.status == 'todo' ? 'Démarrer' : 'Terminer' }}</span>
+				</button>
+			</form>
+		{% else %}
+			<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
+				<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
+				<button type="submit" class="btn btn-secondary w-100">
+					<i class="fas fa-undo"></i>
+					<span class="ms-1">Rouvrir</span>
+				</button>
+			</form>
+		{% endif %}
+	</div>
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
 	<style>
 		.progress {
 			background-color: rgba(0, 0, 0, 0.1);
 		}
-
 		.card-header {
 			border-bottom: 1px solid #dee2e6;
+		}
+		
+		/* Barre d'actions mobile pour la vue détaillée */
+		.mobile-action-bar {
+			position: fixed; /* Changé de sticky à fixed pour être toujours visible */
+			bottom: 0;
+			left: 0;
+			width: 100%;
+			background-color: #ffffff;
+			padding: 0.75rem;
+			border-top: 1px solid #dee2e6;
+			box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+			z-index: 1030;
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 0.75rem;
 		}
 	</style>
 {% endblock %}

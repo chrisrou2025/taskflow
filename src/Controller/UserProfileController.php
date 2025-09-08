@@ -11,6 +11,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+// Ajouté : pour gérer la déconnexion de l'utilisateur après la suppression
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 #[Route('/profile')]
 #[IsGranted('ROLE_USER')]
@@ -112,5 +114,62 @@ class UserProfileController extends AbstractController
         }
 
         return $this->render('user/change_password.html.twig');
+    }
+
+    #[Route('/delete', name: 'user_delete_account', methods: ['GET', 'POST'])]
+    public function deleteAccount(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UserPasswordHasherInterface $passwordHasher,
+        TokenStorageInterface $tokenStorage
+    ): Response {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        if ($request->isMethod('POST')) {
+            $confirmationText = $request->request->get('confirmation_text', '');
+            $password = $request->request->get('password_confirmation', '');
+            $finalConfirmation = $request->request->get('final_confirmation');
+
+            // 1. Vérifier le texte de confirmation
+            if ($confirmationText !== 'SUPPRIMER') {
+                $this->addFlash('error', 'Le texte de confirmation est incorrect.');
+                return $this->redirectToRoute('user_delete_account');
+            }
+
+            // 2. Vérifier le mot de passe
+            if (!$passwordHasher->isPasswordValid($user, $password)) {
+                $this->addFlash('error', 'Le mot de passe est incorrect.');
+                return $this->redirectToRoute('user_delete_account');
+            }
+
+            // 3. Vérifier la case à cocher finale
+            if (!$finalConfirmation) {
+                $this->addFlash('error', 'Vous devez cocher la case pour confirmer la suppression.');
+                return $this->redirectToRoute('user_delete_account');
+            }
+
+            try {
+                // Invalider la session (déconnexion) AVANT la redirection
+                $tokenStorage->setToken(null);
+                
+                // Supprimer l'utilisateur
+                $entityManager->remove($user);
+                $entityManager->flush();
+
+                $this->addFlash('success', 'Votre compte a été supprimé avec succès.');
+
+                // Rediriger vers la page d'accueil
+                return $this->redirectToRoute('app_home'); // Assurez-vous que 'app_home' est le nom de votre route d'accueil
+
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Une erreur est survenue lors de la suppression de votre compte.');
+                return $this->redirectToRoute('user_delete_account');
+            }
+        }
+
+        return $this->render('user/delete_account.html.twig', [
+        'user' => $user,
+    ]);
     }
 }

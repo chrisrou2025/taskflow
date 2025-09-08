@@ -1,247 +1,217 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}
-	{{ project.title }}
-	- TaskFlow
+	{{ project.title }} - TaskFlow
 {% endblock %}
 
 {% block body %}
-	<div class="container-fluid">
-		<nav aria-label="breadcrumb" class="mb-3">
-			<ol class="breadcrumb">
+	<div class="container-fluid px-2 px-md-3">
+		{# Breadcrumb optimisé mobile #}
+		<nav aria-label="breadcrumb" class="mb-2 mb-md-3">
+			<ol class="breadcrumb mb-0 small">
 				<li class="breadcrumb-item">
 					<a href="{{ path('project_index') }}" class="text-decoration-none">
-						<i class="fas fa-folder me-1"></i>Mes Projets
+						<i class="fas fa-folder me-1"></i>
+						<span class="d-none d-sm-inline">Mes Projets</span>
+						<span class="d-sm-none">Projets</span>
 					</a>
 				</li>
-				<li class="breadcrumb-item active">{{ project.title }}</li>
+				<li class="breadcrumb-item active text-truncate">{{ project.title }}</li>
 			</ol>
 		</nav>
 
-		<div class="row mb-4">
-			<div class="col-12">
-				<div class="d-flex flex-column flex-md-row justify-content-between align-items-start">
-					<div class="flex-grow-1 mb-3 mb-md-0">
-						<h1 class="h3 mb-2">{{ project.title }}</h1>
-						{% if project.description %}
-							<p class="text-muted mb-3">{{ project.description }}</p>
-						{% endif %}
-						<div class="d-flex flex-wrap gap-3 text-muted">
-							<small>
-								<i class="fas fa-calendar-plus me-1"></i>
-								Créé le
-								{{ project.createdAt|date('d/m/Y à H:i') }}
-							</small>
-							{% if project.updatedAt %}
-								<small>
-									<i class="fas fa-edit me-1"></i>
-									Modifié le
-									{{ project.updatedAt|date('d/m/Y à H:i') }}
-								</small>
+		{# En-tête projet avec sticky sur mobile #}
+		<div class="sticky-top bg-white border-bottom pb-2 mb-3" style="top: 0; z-index: 100;">
+			<div class="row g-2">
+				<div class="col-12">
+					<div class="d-flex justify-content-between align-items-start">
+						<div class="flex-grow-1 me-2">
+							<h1 class="h4 h3-md mb-1 text-truncate">{{ project.title }}</h1>
+							{% if project.description %}
+								<p class="text-muted mb-2 small d-none d-md-block">{{ project.description }}</p>
+								<p class="text-muted mb-2 small d-md-none">
+									{{ project.description|length > 60 ? project.description|slice(0, 60) ~ '...' : project.description }}
+								</p>
 							{% endif %}
 						</div>
-					</div>
-					<div class="d-flex flex-wrap gap-2 justify-content-end w-100 w-md-auto">
-						<a href="{{ path('task_new', {project: project.id}) }}" class="btn btn-success flex-grow-1 flex-md-grow-0">
-							<i class="fas fa-plus me-2"></i>Nouvelle tâche
-						</a>
-						<div class="dropdown">
-							<button class="btn btn-outline-secondary dropdown-toggle w-100" type="button" data-bs-toggle="dropdown">
-								<i class="fas fa-cog"></i>
+						{# Actions en dropdown sur mobile #}
+						<div class="dropdown d-md-none">
+							<button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+								<i class="fas fa-ellipsis-v"></i>
 							</button>
 							<ul class="dropdown-menu dropdown-menu-end">
 								<li>
 									<a class="dropdown-item" href="{{ path('project_edit', {id: project.id}) }}">
-										<i class="fas fa-edit me-2"></i>Modifier le projet
+										<i class="fas fa-edit me-2"></i>Modifier
 									</a>
 								</li>
 								<li>
-									<form method="post" action="{{ path('project_duplicate', {id: project.id}) }}" class="d-inline">
-										<input type="hidden" name="_token" value="{{ csrf_token('duplicate' ~ project.id) }}">
-										<button type="submit" class="dropdown-item">
-											<i class="fas fa-copy me-2"></i>Dupliquer
-										</button>
-									</form>
-								</li>
-								<li><hr class="dropdown-divider"></li>
-								<li>
-									<button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+									<a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#deleteModal">
 										<i class="fas fa-trash me-2"></i>Supprimer
-									</button>
+									</a>
 								</li>
 							</ul>
 						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-
-		<div class="row mb-4">
-			<div class="col-6 col-md-3 mb-3">
-				<div class="card border-0 bg-primary text-white h-100">
-					<div class="card-body text-center d-flex flex-column justify-content-center">
-						<h3 class="mb-1">{{ project.tasksCount }}</h3>
-						<small>Tâches totales</small>
-					</div>
-				</div>
-			</div>
-			<div class="col-6 col-md-3 mb-3">
-				<div class="card border-0 bg-success text-white h-100">
-					<div class="card-body text-center d-flex flex-column justify-content-center">
-						<h3 class="mb-1">{{ project.completedTasksCount }}</h3>
-						<small>Terminées</small>
-					</div>
-				</div>
-			</div>
-			<div class="col-6 col-md-3 mb-3">
-				<div class="card border-0 bg-warning text-white h-100">
-					<div class="card-body text-center d-flex flex-column justify-content-center">
-						<h3 class="mb-1">{{ project.inProgressTasksCount }}</h3>
-						<small>En cours</small>
-					</div>
-				</div>
-			</div>
-			<div class="col-6 col-md-3 mb-3">
-				<div class="card border-0 bg-info text-white h-100">
-					<div class="card-body text-center d-flex flex-column justify-content-center">
-						<h3 class="mb-1">{{ project.todoTasksCount }}</h3>
-						<small>À faire</small>
-					</div>
-				</div>
-			</div>
-		</div>
-
-		<div class="row mb-4">
-			<div class="col-12">
-				<div class="card border-0 shadow-sm">
-					<div class="card-body">
-						<h5 class="card-title mb-3">
-							<i class="fas fa-chart-line me-2 text-primary"></i>Progression du projet
-						</h5>
-						{% set progress = project.progressPercentage %}
-						<div class="d-flex align-items-center mb-2">
-							<div class="progress flex-grow-1 me-3" style="height: 20px;">
-								<div class="progress-bar bg-{{ progress == 100 ? 'success' : (progress > 50 ? 'primary' : 'warning') }} progress-bar-striped" style="width: {{ progress }}%">
-									{{ progress }}%
-								</div>
-							</div>
-							<span class="badge bg-{{ progress == 100 ? 'success' : (progress > 50 ? 'primary' : 'warning') }} fs-6">
-								{{ progress }}%
-							</span>
+						{# Actions desktop #}
+						<div class="d-none d-md-flex gap-2">
+							<a href="{{ path('project_edit', {id: project.id}) }}" class="btn btn-warning btn-sm">
+								<i class="fas fa-edit me-1"></i>Modifier
+							</a>
+							<a href="#" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
+								<i class="fas fa-trash me-1"></i>Supprimer
+							</a>
 						</div>
 					</div>
 				</div>
 			</div>
+
+			{# Stats projet en cards compactes #}
+			<div class="row g-2 mt-2 justify-content-center">
+				<div class="col-6 col-md-3">
+					<div class="card border-0 bg-light">
+						<div class="card-body p-2 text-center">
+							<div class="small text-muted mb-1">Créé le</div>
+							<div class="fw-bold small">{{ project.createdAt|date('d/m/Y') }}</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-6 col-md-3">
+					<div class="card border-0 bg-primary bg-opacity-10">
+						<div class="card-body p-2 text-center">
+							<div class="small text-muted mb-1">Progression</div>
+							<div class="fw-bold small">{{ project.completedTasksCount }}/{{ project.tasksCount }}</div>
+						</div>
+					</div>
+				</div>
+				{# Conteneur pour le bouton 'Nouvelle tâche' sur mobile #}
+				<div class="col-12 col-md-6 d-md-none d-flex justify-content-end align-items-center">
+					<a href="{{ path('task_new', {'project': project.id}) }}" class="btn btn-primary btn-sm w-100 w-md-auto">
+						<i class="fas fa-plus me-1"></i>Nouvelle tâche
+					</a>
+				</div>
+			</div>
+
+			{# Nouvelle ligne pour le bouton sur desktop #}
+			<div class="row mt-3 d-none d-md-flex justify-content-center">
+				<div class="col-12 col-md-6 text-center">
+					<a href="{{ path('task_new', {'project': project.id}) }}" class="btn btn-primary w-100 w-md-auto">
+						<i class="fas fa-plus me-1"></i>Nouvelle tâche
+					</a>
+				</div>
+			</div>
 		</div>
 
-
+		{# Section tâches optimisée #}
 		<div class="row">
-			<div class="col-lg-8 mb-4">
-				<div class="card border-0 shadow-sm">
-					<div class="card-header bg-white d-flex justify-content-between align-items-center">
-						<h5 class="card-title mb-0">
-							<i class="fas fa-tasks me-2 text-primary"></i>Tâches récentes
-						</h5>
-						<a href="{{ path('task_index', {project: project.id}) }}" class="btn btn-outline-primary btn-sm">
-							Voir toutes les tâches
+			<div class="col-12">
+				{% if project.tasks is empty %}
+					{# État vide optimisé mobile #}
+					<div class="text-center py-5">
+						<div class="mb-3">
+							<i class="fas fa-clipboard-list fa-4x text-muted"></i>
+						</div>
+						<h5 class="mb-3">Aucune tâche</h5>
+						<p class="text-muted mb-4 px-3">
+							Commencez par ajouter une tâche pour organiser votre travail.
+						</p>
+						<a href="{{ path('task_new', {'project': project.id}) }}" class="btn btn-primary">
+							<i class="fas fa-plus me-2"></i>Ajouter une tâche
 						</a>
 					</div>
-					<div class="card-body">
-						{% if recent_tasks is empty %}
-							<div class="text-center py-5">
-								<i class="fas fa-tasks fa-3x text-muted mb-3"></i>
-								<h6 class="text-muted">Aucune tâche dans ce projet</h6>
-								<p class="text-muted mb-3">Commencez par créer votre première tâche</p>
-								<a href="{{ path('task_new', {project: project.id}) }}" class="btn btn-success">
-									<i class="fas fa-plus me-2"></i>Créer une tâche
-								</a>
-							</div>
-						{% else %}
-							<div class="list-group list-group-flush">
-								{% for task in recent_tasks %}
-									<div class="list-group-item px-0 {{ task.isOverdue and not task.isCompleted ? 'bg-danger-light' : '' }}">
-										<div class="d-flex w-100 justify-content-between">
-											<h6 class="mb-1 flex-grow-1">{{ task.title }}</h6>
-											<div class="btn-group btn-group-sm">
-												<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-outline-primary btn-sm">
-													<i class="fas fa-eye"></i>
-												</a>
-												<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-outline-secondary btn-sm">
-													<i class="fas fa-edit"></i>
-												</a>
+				{% else %}
+					{# Vue mobile : Cards #}
+					<div class="d-md-none">
+						<div class="d-flex justify-content-between align-items-center mb-3">
+							<h2 class="h5 mb-0">Tâches ({{ project.tasksCount }})</h2>
+						</div>
+						<div class="row g-2">
+							{% for task in project.tasks %}
+								<div class="col-12">
+									<div class="card border-start border-4 {{ task.isCompleted ? 'border-success' : 'border-warning' }}">
+										<div class="card-body p-3">
+											<div class="d-flex justify-content-between align-items-start mb-2">
+												<h6 class="card-title mb-0 flex-grow-1 me-2">{{ task.title }}</h6>
+												<span class="badge {{ task.isCompleted ? 'bg-success' : 'bg-warning text-dark' }} flex-shrink-0">
+													{{ task.isCompleted ? 'Terminée' : 'En cours' }}
+												</span>
+											</div>
+											{% if task.description %}
+												<p class="card-text small text-muted mb-2">
+													{{ task.description|length > 80 ? task.description|slice(0, 80) ~ '...' : task.description }}
+												</p>
+											{% endif %}
+											<div class="d-flex justify-content-between align-items-center">
+												<small class="text-muted">
+													<i class="fas fa-calendar me-1"></i>
+													{{ task.dueDate ? task.dueDate|date('d/m/Y') : 'Pas de date' }}
+												</small>
+												<div class="d-flex gap-1">
+													<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-outline-warning btn-sm" title="Modifier">
+														<i class="fas fa-edit"></i>
+													</a>
+													<form method="post" action="{{ path('task_delete', {id: task.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?');" class="d-inline">
+														<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ task.id) }}">
+														<button type="submit" class="btn btn-outline-danger btn-sm" title="Supprimer">
+															<i class="fas fa-trash"></i>
+														</button>
+													</form>
+												</div>
 											</div>
 										</div>
-										{% if task.description %}
-											<p class="mb-1 small text-muted">{{ task.description|length > 80 ? task.description|slice(0, 80) ~ '...' : task.description }}</p>
-										{% endif %}
-										<div class="d-flex flex-wrap gap-3 mt-2">
-											<span class="badge {{ 'bg-' ~ (task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary')) }}">
-												{{ task.statusLabel }}
-											</span>
-											<span class="badge {{ 'bg-' ~ (task.priority == 'high' ? 'danger' : (task.priority == 'medium' ? 'warning' : 'secondary')) }}">
-												{{ task.priorityLabel }}
-											</span>
-											{% if task.dueDate %}
-												<small class="{{ task.isOverdue and not task.isCompleted ? 'text-danger fw-bold' : 'text-muted' }}">
-													<i class="fas fa-calendar-times me-1"></i>
-													Échéance :
-													{{ task.dueDate|date('d/m/Y') }}
-												</small>
-											{% endif %}
-										</div>
 									</div>
-								{% endfor %}
-							</div>
-						{% endif %}
-					</div>
-				</div>
-			</div>
-
-			<div class="col-lg-4">
-				{% if statistics %}
-					<div class="card border-0 shadow-sm mb-4">
-						<div class="card-header bg-white">
-							<h6 class="card-title mb-0">
-								<i class="fas fa-chart-pie me-2 text-primary"></i>Répartition par statut
-							</h6>
-						</div>
-						<div class="card-body">
-							{% for stat in statistics.status_stats %}
-								<div class="d-flex justify-content-between align-items-center mb-2">
-									<span class="text-muted">
-										{% if stat.status == 'todo' %}À faire
-											{% elseif stat.status == 'in_progress' %}En cours
-											{% else %}Terminé
-										{% endif %}
-									</span>
-									<span class="badge {{ 'bg-' ~ (stat.status == 'completed' ? 'success' : (stat.status == 'in_progress' ? 'warning' : 'secondary')) }}">
-										{{ stat.count }}
-									</span>
 								</div>
 							{% endfor %}
 						</div>
 					</div>
 
-					<div class="card border-0 shadow-sm mb-4">
-						<div class="card-header bg-white">
-							<h6 class="card-title mb-0">
-								<i class="fas fa-exclamation me-2 text-warning"></i>Répartition par priorité
-							</h6>
+					{# Vue desktop : Table #}
+					<div class="d-none d-md-block">
+						<div class="d-flex justify-content-between align-items-center mb-3">
+							<h2 class="h4 mb-0">Tâches</h2>
 						</div>
-						<div class="card-body">
-							{% for stat in statistics.priority_stats %}
-								<div class="d-flex justify-content-between align-items-center mb-2">
-									<span class="text-muted">
-										{% if stat.priority == 'low' %}Basse
-											{% elseif stat.priority == 'medium' %}Moyenne
-											{% else %}Haute
-										{% endif %}
-									</span>
-									<span class="badge {{ 'bg-' ~ (stat.priority == 'high' ? 'danger' : (stat.priority == 'medium' ? 'warning' : 'secondary')) }}">
-										{{ stat.count }}
-									</span>
-								</div>
-							{% endfor %}
+						<div class="table-responsive">
+							<table class="table table-hover align-middle">
+								<thead class="table-light">
+									<tr>
+										<th style="width: 100px;">Statut</th>
+										<th>Titre</th>
+										<th>Description</th>
+										<th style="width: 120px;">Date limite</th>
+										<th style="width: 120px;" class="text-center">Actions</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for task in project.tasks %}
+										<tr>
+											<td>
+												<span class="badge {{ task.isCompleted ? 'bg-success' : 'bg-warning text-dark' }}">
+													{{ task.isCompleted ? 'Terminée' : 'En cours' }}
+												</span>
+											</td>
+											<td class="fw-medium">{{ task.title }}</td>
+											<td>
+												<span title="{{ task.description }}">
+													{{ task.description ? (task.description|length > 50 ? task.description|slice(0, 50) ~ '...' : task.description) : 'N/A' }}
+												</span>
+											</td>
+											<td>{{ task.dueDate ? task.dueDate|date('d/m/Y') : 'Non définie' }}</td>
+											<td>
+												<div class="d-flex justify-content-center gap-1">
+													<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-sm btn-warning" title="Modifier">
+														<i class="fas fa-edit"></i>
+													</a>
+													<form method="post" action="{{ path('task_delete', {id: task.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?');" class="d-inline">
+														<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ task.id) }}">
+														<button type="submit" class="btn btn-sm btn-danger" title="Supprimer">
+															<i class="fas fa-trash"></i>
+														</button>
+													</form>
+												</div>
+											</td>
+										</tr>
+									{% endfor %}
+								</tbody>
+							</table>
 						</div>
 					</div>
 				{% endif %}
@@ -249,44 +219,38 @@
 		</div>
 	</div>
 
+	{# Modal de suppression optimisée #}
 	<div class="modal fade" id="deleteModal" tabindex="-1">
-		<div class="modal-dialog">
+		<div class="modal-dialog modal-dialog-centered">
 			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title">
-						<i class="fas fa-exclamation-triangle text-danger me-2"></i>
+				<div class="modal-header border-0 pb-0">
+					<h5 class="modal-title text-danger">
+						<i class="fas fa-exclamation-triangle me-2"></i>
 						Confirmer la suppression
 					</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 				</div>
 				<div class="modal-body">
-					<p>Êtes-vous sûr de vouloir supprimer le projet
-						<strong>"{{ project.title }}"</strong>
-						?</p>
-					<div class="alert alert-warning">
-						<i class="fas fa-exclamation-triangle me-2"></i>
-						<strong>Attention :</strong>
-						Cette action supprimera définitivement le projet
-												et toutes ses tâches ({{ project.tasksCount }}
-						tâche(s)).
+					<p class="mb-3">Êtes-vous sûr de vouloir supprimer le projet <strong>"{{ project.title }}"</strong> ?</p>
+					<div class="alert alert-warning mb-0">
+						<div class="d-flex align-items-start">
+							<i class="fas fa-exclamation-triangle me-2 mt-1 flex-shrink-0"></i>
+							<div>
+								<strong>Attention :</strong> Cette action supprimera définitivement le projet et toutes ses tâches ({{ project.tasksCount }} tâche{{ project.tasksCount > 1 ? 's' : '' }}).
+							</div>
+						</div>
 					</div>
 				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-					<form method="post" action="{{ path('project_delete', {id: project.id}) }}" class="d-inline">
+				<div class="modal-footer border-0 pt-0">
+					<button type="button" class="btn btn-secondary flex-grow-1" data-bs-dismiss="modal">Annuler</button>
+					<form method="post" action="{{ path('project_delete', {id: project.id}) }}" class="flex-grow-1">
 						<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ project.id) }}">
-						<button type="submit" class="btn btn-danger">
-							<i class="fas fa-trash me-2"></i>Supprimer définitivement
+						<button type="submit" class="btn btn-danger w-100">
+							<i class="fas fa-trash me-2"></i>Supprimer
 						</button>
 					</form>
 				</div>
 			</div>
 		</div>
 	</div>
-
-	<style>
-		.bg-danger-light {
-			background-color: rgba(220, 53, 69, 0.05);
-		}
-	</style>
 {% endblock %}

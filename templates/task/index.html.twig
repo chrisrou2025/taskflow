@@ -13,7 +13,6 @@
 {% block body %}
 	<div
 		class="container-fluid">
-		<!-- Header avec breadcrumb -->
 		<nav aria-label="breadcrumb" class="mb-3">
 			<ol class="breadcrumb">
 				{% if project %}
@@ -36,7 +35,6 @@
 			</ol>
 		</nav>
 
-		<!-- Header principal -->
 		<div class="row mb-4">
 			<div class="col-12">
 				<div class="d-flex justify-content-between align-items-center flex-wrap">
@@ -55,17 +53,15 @@
 							{% endif %}
 						</p>
 					</div>
-					<div class="d-flex gap-2 header-actions">
+					<div class="d-none d-sm-flex gap-2 header-actions">
 						{% if project %}
-							<!-- Ajout rapide de tâche -->
 							<div class="dropdown">
 								<button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
 									<i class="fas fa-plus me-1 me-md-2"></i>
 									<span class="d-none d-sm-inline">Ajout rapide</span>
-									<span class="d-sm-none">Ajout</span>
 								</button>
 								<div class="dropdown-menu dropdown-menu-quick-add p-3" style="min-width: 300px;">
-									<form id="quickAddForm" method="post" action="{{ path('task_quick_add', {id: project.id}) }}">
+									<form id="quickAddForm" method="post" action="{{ project ? path('task_quick_add', {id: project.id}) : '#' }}">
 										<input type="hidden" name="_token" value="{{ csrf_token('quick-add') }}">
 										<div class="mb-2">
 											<input type="text" name="title" class="form-control" placeholder="Titre de la tâche" required>
@@ -87,264 +83,142 @@
 			</div>
 		</div>
 
-		<!-- Filtres -->
-		<div class="row mb-4">
-			<div class="col-12">
-				<div class="card border-0 shadow-sm">
-					<div class="card-body">
-						<form method="get" class="row g-3">
-							{% if project %}
-								<input type="hidden" name="project" value="{{ project.id }}">
-							{% endif %}
-
-							<!-- Filtre par projet (seulement si pas de projet spécifié) -->
-							{% if not project %}
-								<div class="col-md-4">
-									<label for="projectFilter" class="form-label">
-										<i class="fas fa-folder me-1"></i>Projet
-									</label>
-									<select class="form-select" name="project" id="projectFilter">
-										<option value="">Tous les projets</option>
-										{% for proj in projects %}
-											<option value="{{ proj.id }}" {{ app.request.get('project') == proj.id ? 'selected' : '' }}>
-												{{ proj.title }}
-											</option>
-										{% endfor %}
-									</select>
-								</div>
-							{% endif %}
-
-							<!-- Filtre par statut -->
-							<div class="col-md-4">
-								<label for="statusFilter" class="form-label">
-									<i class="fas fa-flag me-1"></i>Statut
-								</label>
-								<select class="form-select" name="status" id="statusFilter">
-									<option value="">Tous les statuts</option>
-									{% for label, value in status_choices %}
-										<option value="{{ value }}" {{ current_status == value ? 'selected' : '' }}>
-											{{ label }}
-										</option>
-									{% endfor %}
-								</select>
-							</div>
-
-							<!-- Filtre par priorité -->
-							<div class="col-md-4">
-								<label for="priorityFilter" class="form-label">
-									<i class="fas fa-exclamation me-1"></i>Priorité
-								</label>
-								<select class="form-select" name="priority" id="priorityFilter">
-									<option value="">Toutes les priorités</option>
-									{% for label, value in priority_choices %}
-										<option value="{{ value }}" {{ current_priority == value ? 'selected' : '' }}>
-											{{ label }}
-										</option>
-									{% endfor %}
-								</select>
-							</div>
-
-							<!-- Boutons d'action -->
-							<div class="col-12">
-								<div class="d-flex flex-column flex-sm-row gap-2">
-									<button type="submit" class="btn btn-primary">
-										<i class="fas fa-filter me-2"></i>Filtrer
-									</button>
-									<a href="{{ path('task_index', project ? {project: project.id} : {}) }}" class="btn btn-outline-secondary">
-										<i class="fas fa-times me-2"></i>Réinitialiser
-									</a>
-								</div>
-							</div>
-						</form>
-					</div>
+		<div class="card border-0 shadow-sm mb-4">
+			<div class="card-body">
+				<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+					<h5 class="card-title mb-0">
+						<i class="fas fa-filter me-2"></i>Filtres
+					</h5>
 				</div>
+				<form method="get" class="row g-3">
+					{% if project %}
+						<input type="hidden" name="project" value="{{ project.id }}">
+					{% endif %}
+
+					{% if not project %}
+						<div class="col-md-4">
+							<select class="form-select" name="project" id="projectFilter" aria-label="Filtrer par projet">
+								<option value="">Tous les projets</option>
+								{% for proj in projects %}
+									<option value="{{ proj.id }}" {{ app.request.get('project') == proj.id ? 'selected' : '' }}>
+										{{ proj.title }}
+									</option>
+								{% endfor %}
+							</select>
+						</div>
+					{% endif %}
+					<div class="col-md-4">
+						<select class="form-select" name="status" id="statusFilter" aria-label="Filtrer par statut">
+							<option value="">Tous les statuts</option>
+							{% for label, value in status_choices %}
+								<option value="{{ value }}" {{ current_status == value ? 'selected' : '' }}>
+									{{ label }}
+								</option>
+							{% endfor %}
+						</select>
+					</div>
+					<div class="col-md-4">
+						<select class="form-select" name="priority" id="priorityFilter" aria-label="Filtrer par priorité">
+							<option value="">Toutes les priorités</option>
+							{% for label, value in priority_choices %}
+								<option value="{{ value }}" {{ current_priority == value ? 'selected' : '' }}>
+									{{ label }}
+								</option>
+							{% endfor %}
+						</select>
+					</div>
+
+					<div class="col-12">
+						<div class="d-flex gap-2">
+							<button type="submit" class="btn btn-primary">
+								<i class="fas fa-check me-2"></i>Appliquer
+							</button>
+							<a href="{{ path('task_index', project ? {project: project.id} : {}) }}" class="btn btn-outline-secondary">
+								<i class="fas fa-times me-2"></i>Réinitialiser
+							</a>
+						</div>
+					</div>
+				</form>
 			</div>
 		</div>
 
-		<!-- Liste des tâches -->
-		{% if tasks is empty %}
-			<!-- État vide -->
-			<div class="row justify-content-center">
-				<div class="col-md-8 col-lg-6">
-					<div class="text-center py-5">
-						<div class="mb-4">
-							<i class="fas fa-tasks fa-5x text-muted"></i>
-						</div>
-						<h4 class="mb-3">
-							{% if current_status or current_priority %}
-								Aucune tâche ne correspond aux filtres
-							{% else %}
-								Aucune tâche pour le moment
-							{% endif %}
-						</h4>
-						<p class="text-muted mb-4">
-							{% if current_status or current_priority %}
-								Essayez de modifier vos critères de filtrage ou créez une nouvelle tâche.
-							{% else %}
-								{% if project %}
-									Commencez par créer votre première tâche dans ce projet.
-								{% else %}
-									Commencez par créer votre première tâche.
-								{% endif %}
-							{% endif %}
-						</p>
-						<a href="{{ path('task_new', project ? {project: project.id} : {}) }}" class="btn btn-success btn-lg">
-							<i class="fas fa-plus me-2"></i>
-							{% if project %}Créer ma première tâche{% else %}Nouvelle tâche
-							{% endif %}
-						</a>
+		<div id="tasks-container">
+			{% if tasks is empty %}
+				<div class="text-center py-5">
+					<div class="mb-4">
+						<i class="fas fa-check-square fa-5x text-muted"></i>
 					</div>
-				</div>
-			</div>
-		{% else %}
-			<!-- Vue en cartes pour les tâches -->
-			<div class="row">
-				{% for task in tasks %}
-					<div class="col-xl-4 col-lg-6 mb-4">
-						<div class="card border-0 shadow-sm h-100 task-card {{ task.isOverdue and not task.isCompleted ? 'border-danger' : '' }}">
-							{% if task.isOverdue and not task.isCompleted %}
-								<div class="card-header bg-danger text-white py-2">
-									<small>
-										<i class="fas fa-exclamation-triangle me-1"></i>En retard</small>
-								</div>
-							{% endif %}
-
-							<div
-								class="card-body">
-								<!-- Header de la tâche -->
-								<div class="d-flex justify-content-between align-items-start mb-3">
-									<h5 class="card-title mb-0 flex-grow-1 pe-2">
-										<a href="{{ path('task_show', {id: task.id}) }}" class="text-decoration-none">
-											{{ task.title }}
-										</a>
-									</h5>
-									<div class="dropdown task-actions-dropdown">
-										<button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-											<i class="fas fa-ellipsis-v"></i>
-										</button>
-										<ul class="dropdown-menu dropdown-menu-end">
-											<li>
-												<a class="dropdown-item" href="{{ path('task_show', {id: task.id}) }}">
-													<i class="fas fa-eye me-2"></i>Voir le détail
-												</a>
-											</li>
-											<li>
-												<a class="dropdown-item" href="{{ path('task_edit', {id: task.id}) }}">
-													<i class="fas fa-edit me-2"></i>Modifier
-												</a>
-											</li>
-											<li><hr class="dropdown-divider"></li>
-											<li>
-												<form method="post" action="{{ path('task_duplicate', {id: task.id}) }}" class="d-inline">
-													<input type="hidden" name="_token" value="{{ csrf_token('duplicate' ~ task.id) }}">
-													<button type="submit" class="dropdown-item">
-														<i class="fas fa-copy me-2"></i>Dupliquer
-													</button>
-												</form>
-											</li>
-											<li><hr class="dropdown-divider"></li>
-											<li>
-												<button type="button" class="dropdown-item text-danger delete-task-btn" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}">
-													<i class="fas fa-trash me-2"></i>Supprimer
-												</button>
-											</li>
-										</ul>
-									</div>
-								</div>
-
-								<!-- Projet (si vue globale) -->
-								{% if not project %}
-									<p class="text-muted small mb-2">
-										<i class="fas fa-folder me-1"></i>
-										<a href="{{ path('project_show', {id: task.project.id}) }}" class="text-decoration-none">
-											{{ task.project.title }}
-										</a>
-									</p>
-								{% endif %}
-
-								<!-- Description -->
-								{% if task.description %}
-									<p class="card-text text-muted mb-3">
-										{{ task.description|length > 120 ? task.description|slice(0, 120) ~ '...' : task.description }}
-									</p>
-								{% endif %}
-
-								<!-- Badges de statut et priorité -->
-								<div class="d-flex gap-2 mb-3 flex-wrap">
-									<span class="badge bg-{{ task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">
-										{{ task.statusLabel }}
-									</span>
-									<span class="badge bg-{{ task.priority == 'high' ? 'danger' : (task.priority == 'medium' ? 'warning' : 'secondary') }}">
-										{{ task.priorityLabel }}
-									</span>
-								</div>
-
-								<!-- Échéance -->
-								{% if task.dueDate %}
-									<div class="mb-3">
-										<small class="{{ task.isOverdue and not task.isCompleted ? 'text-danger fw-bold' : 'text-muted' }}">
-											<i class="fas fa-calendar-alt me-1"></i>
-											{% if task.isOverdue and not task.isCompleted %}
-												<i class="fas fa-exclamation-triangle me-1"></i>
-											{% endif %}
-											Échéance :
-											{{ task.dueDate|date('d/m/Y à H:i') }}
-										</small>
-									</div>
-								{% endif %}
-
-								<!-- Actions rapides -->
-								<div class="d-flex justify-content-between align-items-center">
-									<small class="text-muted">
-										<i class="fas fa-clock me-1"></i>
-										{{ task.createdAt|date('d/m/Y') }}
-									</small>
-									<div
-										class="btn-group btn-group-sm">
-										<!-- Bouton de changement de statut -->
-										<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline toggle-status-form">
-											<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
-											<button type="submit" class="btn btn-sm btn-{{ task.status == 'completed' ? 'success' : 'outline-success' }}">
-												{% if task.status == 'completed' %}
-													<i class="fas fa-check"></i>
-												{% elseif task.status == 'in_progress' %}
-													<i class="fas fa-play"></i>
-												{% else %}
-													<i class="fas fa-circle"></i>
-												{% endif %}
-											</button>
-										</form>
-										<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-outline-primary btn-sm">
-											<i class="fas fa-arrow-right"></i>
-										</a>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				{% endfor %}
-			</div>
-
-			<!-- Résumé -->
-			<div class="row mt-4">
-				<div class="col-12 text-center">
-					<p class="text-muted">
-						{{ tasks|length }}
-						tâche(s)
-						{% if current_status or current_priority %}
-							(avec filtres appliqués)
+					<h4 class="mb-3">
+						{% if current_status or current_priority or app.request.get('project') %}
+							Aucune tâche ne correspond à vos filtres.
+						{% else %}
+							Vous n'avez aucune tâche pour le moment !
 						{% endif %}
+					</h4>
+					<p class="text-muted mb-4">
+						Créez votre première tâche pour commencer à vous organiser.
 					</p>
+					<a href="{{ path('task_new', project ? {project: project.id} : {}) }}" class="btn btn-success btn-lg">
+						<i class="fas fa-plus me-2"></i> Créer une tâche
+					</a>
 				</div>
-			</div>
-		{% endif %}
+			{% else %}
+				<div id="list-view">
+					<div class="table-responsive">
+						<table class="table table-hover align-middle">
+							<thead class="table-light">
+								<tr>
+									<th style="width: 100px;">Statut</th>
+									<th>Titre</th>
+									<th class="d-none d-lg-table-cell">Description</th>
+									<th style="width: 120px;" class="d-none d-lg-table-cell">Date limite</th>
+									<th style="width: 120px;" class="text-center">Actions</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for task in tasks %}
+									<tr class="task-row">
+										<td>
+											<span class="badge bg-{{ task.isCompleted ? 'success' : 'warning' }} text-dark">
+												{{ task.isCompleted ? 'Terminée' : 'En cours' }}
+											</span>
+										</td>
+										<td class="fw-medium">
+											<a href="{{ path('task_show', {id: task.id}) }}" class="text-decoration-none">
+												{{ task.title }}
+											</a>
+										</td>
+										<td class="d-none d-lg-table-cell">
+											<span title="{{ task.description }}">
+												{{ task.description ? (task.description|length > 50 ? task.description|slice(0, 50) ~ '...' : task.description) : 'N/A' }}
+											</span>
+										</td>
+										<td class="d-none d-lg-table-cell">{{ task.dueDate ? task.dueDate|date('d/m/Y') : 'Non définie' }}</td>
+										<td>
+											<div class="d-flex justify-content-center gap-1">
+												<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-sm btn-warning" title="Modifier">
+													<i class="fas fa-edit"></i>
+												</a>
+												<button type="button" class="btn btn-sm btn-danger delete-task-btn" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" data-csrf-token="{{ csrf_token('delete' ~ task.id) }}" title="Supprimer">
+													<i class="fas fa-trash"></i>
+												</button>
+											</div>
+										</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			{% endif %}
+		</div>
 	</div>
 
-	<!-- Modal de suppression unique (en dehors du container) -->
+	{# Modal de confirmation de suppression (pour index) #}
 	<div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true">
 		<div class="modal-dialog modal-dialog-centered">
 			<div class="modal-content">
-				<div class="modal-header">
+				<div class="modal-header border-0">
 					<h5 class="modal-title" id="deleteTaskModalLabel">
 						<i class="fas fa-exclamation-triangle text-danger me-2"></i>
 						Confirmer la suppression
@@ -352,23 +226,23 @@
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
-					<p>Êtes-vous sûr de vouloir supprimer la tâche
+					<p>
+						Êtes-vous sûr de vouloir supprimer la tâche
 						<strong id="taskToDeleteTitle"></strong>
-						?</p>
+						?
+					</p>
 					<div class="alert alert-warning">
 						<i class="fas fa-exclamation-triangle me-2"></i>
 						<strong>Attention :</strong>
 						Cette action est irréversible.
 					</div>
 				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-						Annuler
-					</button>
-					<form id="deleteTaskForm" method="post" class="d-inline">
-						<input type="hidden" name="_token" id="deleteTaskToken">
+				<div class="modal-footer border-0">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+					<form method="post" id="deleteTaskForm">
+						<input type="hidden" name="_token">
 						<button type="submit" class="btn btn-danger">
-							<i class="fas fa-trash me-2"></i>Supprimer définitivement
+							<i class="fas fa-trash me-2"></i>Supprimer
 						</button>
 					</form>
 				</div>
@@ -376,470 +250,85 @@
 		</div>
 	</div>
 
-	<style>
-		.task-card {
-			transition: transform 0.2s ease, box-shadow 0.2s ease;
-		}
+{% endblock %}
 
-		.task-card:hover {
-			transform: translateY(-3px);
-			box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-		}
-
-		.task-card.border-danger {
-			border-left: 4px solid #dc3545 !important;
-		}
-
-		.dropdown-menu {
-			box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-			border: 1px solid rgba(0, 0, 0, .15);
-			z-index: 1020;
-		}
-
-		/* Correction pour éviter les conflits de z-index */
-		.modal {
-			z-index: 1055;
-		}
-
-		.modal-backdrop {
-			z-index: 1050;
-		}
-
-		/* Éviter le scintillement */
-		.dropdown-menu .dropdown-item:focus,
-		.dropdown-menu .dropdown-item:hover {
-			transition: background-color 0.15s ease-in-out;
-		}
-
-		/* Stabiliser l'affichage des modales */
-		.modal-dialog-centered {
-			display: flex;
-			align-items: center;
-			min-height: calc(100% - 1rem);
-		}
-
-		/* ===== OPTIMISATIONS MOBILES ===== */
-
-		/* Menu déroulant d'ajout rapide - adaptation mobile */
-		@media (max-width: 576px) {
-			.dropdown-menu {
-				min-width: 280px !important;
-				max-width: calc(100vw - 30px) !important;
-				left: 50% !important;
-				transform: translateX(-50%) !important;
-				right: auto !important;
-				margin: 0 15px;
-			}
-			
-			/* Menu d'ajout rapide spécifique */
-			.dropdown-menu-quick-add {
-				min-width: 280px !important;
-				max-width: calc(100vw - 30px) !important;
-				padding: 1rem !important;
-			}
-
-			/* Header actions en colonne sur très petits écrans */
-			.header-actions {
-				flex-direction: column !important;
-				width: 100% !important;
-				gap: 0.5rem !important;
-			}
-			
-			.header-actions .btn,
-			.header-actions .dropdown {
-				width: 100% !important;
-			}
-			
-			.header-actions .dropdown-toggle {
-				width: 100% !important;
-				justify-content: center !important;
-			}
-		}
-
-		/* Menu actions des cartes - adaptation mobile */
-		@media (max-width: 768px) {
-			/* Repositionner les menus des cartes */
-			.task-actions-dropdown .dropdown-menu {
-				min-width: 200px !important;
-				max-width: calc(100vw - 60px) !important;
-			}
-			
-			/* Assurer que le menu reste visible */
-			.task-actions-dropdown .dropdown-menu-end {
-				right: 0 !important;
-				left: auto !important;
-			}
-
-			/* Interface tactile optimisée */
-			.dropdown-item {
-				padding: 0.75rem 1rem !important;
-				font-size: 0.95rem !important;
-			}
-			
-			.dropdown-toggle {
-				padding: 0.5rem 1rem !important;
-			}
-			
-			/* Espacement amélioré dans les cartes */
-			.task-card .card-body {
-				padding: 1.25rem !important;
-			}
-			
-			/* Boutons d'action plus accessibles */
-			.btn-group-sm .btn {
-				padding: 0.5rem 0.75rem !important;
-				min-width: 44px !important;
-				min-height: 44px !important;
-			}
-
-			/* Amélioration des boutons de filtre */
-			.d-flex.flex-column.flex-sm-row {
-				flex-direction: column !important;
-			}
-
-			.d-flex.flex-column.flex-sm-row .btn {
-				width: 100% !important;
-				margin-bottom: 0.5rem !important;
-			}
-		}
-
-		/* Optimisations pour écrans très petits */
-		@media (max-width: 480px) {
-			/* Titre responsive */
-			.h3 {
-				font-size: 1.5rem !important;
-			}
-
-			/* Breadcrumb plus compact */
-			.breadcrumb {
-				font-size: 0.875rem;
-				margin-bottom: 1rem !important;
-			}
-
-			/* Cartes de tâches optimisées */
-			.task-card .card-title {
-				font-size: 1.1rem !important;
-				line-height: 1.3 !important;
-			}
-
-			.task-card .card-body {
-				padding: 1rem !important;
-			}
-
-			/* Badges plus petits mais lisibles */
-			.badge {
-				font-size: 0.75rem !important;
-				padding: 0.375rem 0.5rem !important;
-			}
-
-			/* Amélioration des formulaires */
-			.form-control,
-			.form-select {
-				font-size: 16px !important; /* Évite le zoom sur iOS */
-			}
-		}
-
-		/* Optimisations spécifiques iOS */
-		@supports (-webkit-touch-callout: none) {
-			.form-control,
-			.form-select {
-				font-size: 16px !important;
-			}
-		}
-
-		/* Conteneur pour éviter les débordements */
-		.container-fluid {
-			overflow-x: hidden;
-		}
-
-		/* Amélioration de l'espacement sur mobile */
-		@media (max-width: 576px) {
-			.mb-4 {
-				margin-bottom: 1.5rem !important;
-			}
-			
-			.mb-3 {
-				margin-bottom: 1rem !important;
-			}
-
-			.gap-2 {
-				gap: 0.5rem !important;
-			}
-		}
-
-		/* Menu modal pour très petits écrans (si nécessaire) */
-		@media (max-width: 400px) {
-			.modal-dialog {
-				margin: 0.5rem !important;
-				max-width: none !important;
-			}
-			
-			.modal-content {
-				border-radius: 0.375rem;
-			}
-		}
-	</style>
+{% block javascripts %}
+	{{ parent() }}
 
 	<script>
-		document.addEventListener('DOMContentLoaded', function () { 
-			// Gestion de l'ajout rapide de tâche
-			const quickAddForm = document.getElementById('quickAddForm');
-			if (quickAddForm) {
-				quickAddForm.addEventListener('submit', function (e) {
-					e.preventDefault();
+		document.addEventListener('DOMContentLoaded', function () {
+			const deleteModalElement = document.getElementById('deleteTaskModal');
+			if (deleteModalElement) {
+				const deleteModal = new bootstrap.Modal(deleteModalElement);
+				const deleteForm = document.getElementById('deleteTaskForm');
+				const taskTitleElement = document.getElementById('taskToDeleteTitle');
+				const tokenInput = deleteForm.querySelector('input[name="_token"]');
 
-					const formData = new FormData(this);
-					const button = this.querySelector('button[type="submit"]');
-					const originalText = button.innerHTML;
+				document.querySelectorAll('.delete-task-btn').forEach(button => {
+					button.addEventListener('click', function (event) {
+						event.preventDefault();
+						event.stopPropagation();
 
-					button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Ajout...';
-					button.disabled = true;
+						const taskId = this.getAttribute('data-task-id');
+						const taskTitle = this.getAttribute('data-task-title');
+						const csrfToken = this.getAttribute('data-csrf-token');
 
-					fetch(this.action, {
-						method: 'POST',
-						body: formData
-					}).then(response => response.json()).then(data => {
-						if (data.success) {
-							setTimeout(() => {
-								location.reload();
-							}, 300);
-						} else {
-							alert('Erreur : ' + data.message);
+						if (taskTitleElement) {
+							taskTitleElement.textContent = taskTitle;
 						}
-					}).catch(error => {
-						console.error('Erreur:', error);
-						alert('Une erreur est survenue');
-					}).finally(() => {
-						button.innerHTML = originalText;
-						button.disabled = false;
+
+						if (deleteForm) {
+							const deletePath = "{{ path('task_delete', {id: 'TASK_ID'}) }}";
+							deleteForm.action = deletePath.replace('TASK_ID', taskId);
+						}
+						
+						if (tokenInput) {
+							tokenInput.value = csrfToken;
+						}
+
+						deleteModal.show();
 					});
 				});
 			}
 
-			// Gestion améliorée du changement de statut via AJAX
-			document.querySelectorAll('.toggle-status-form').forEach(form => {
-				form.addEventListener('submit', function (e) {
-					e.preventDefault();
-
-					const formData = new FormData(this);
+			const quickAddForm = document.getElementById('quickAddForm');
+			if (quickAddForm) {
+				quickAddForm.addEventListener('submit', function (event) {
+					event.preventDefault();
 					const button = this.querySelector('button[type="submit"]');
-					const taskCard = this.closest('.task-card');
-					const originalButtonContent = button.innerHTML;
-
 					button.disabled = true;
-					button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+					button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Ajout...';
+					
+					const formData = new FormData(this);
+					const url = this.action;
 
-					fetch(this.action, {
+					fetch(url, {
 						method: 'POST',
 						body: formData,
 						headers: {
 							'X-Requested-With': 'XMLHttpRequest'
 						}
-					}).then(response => {
-						if (!response.ok) {
-							throw new Error('Erreur réseau : ' + response.status);
-						}
-						return response.json();
-					}).then(data => {
+					})
+					.then(response => response.json())
+					.then(data => {
 						if (data.success) {
-							updateTaskCardStatus(taskCard, data.newStatus);
-							showSuccessNotification('Statut mis à jour avec succès');
-
-							setTimeout(() => {
-								location.reload();
-							}, 500);
+							// Redirection vers la même page pour recharger la liste des tâches
+							window.location.reload();
 						} else {
-							alert('Erreur : ' + (data.message || 'Erreur inconnue'));
-							button.innerHTML = originalButtonContent;
-							button.disabled = false;
+							alert('Erreur: ' + data.message);
 						}
-					}).catch(error => {
+					})
+					.catch(error => {
 						console.error('Erreur:', error);
-						alert('Une erreur est survenue');
-						button.innerHTML = originalButtonContent;
+						alert('Une erreur s\'est produite. Veuillez réessayer.');
+					})
+					.finally(() => {
 						button.disabled = false;
+						button.innerHTML = '<i class="fas fa-plus me-1"></i>Ajouter';
+						quickAddForm.reset();
 					});
 				});
-			});
-
-			// Gestion des boutons de suppression avec modal unique
-			const deleteModal = new bootstrap.Modal(document.getElementById('deleteTaskModal'));
-			const deleteForm = document.getElementById('deleteTaskForm');
-			const taskTitleElement = document.getElementById('taskToDeleteTitle');
-			const tokenInput = document.getElementById('deleteTaskToken');
-
-			document.querySelectorAll('.delete-task-btn').forEach(button => {
-				button.addEventListener('click', function (e) {
-					e.preventDefault();
-					e.stopPropagation();
-
-					const taskId = this.getAttribute('data-task-id');
-					const taskTitle = this.getAttribute('data-task-title');
-
-					// Fermer le dropdown avant d'ouvrir la modal
-					const dropdown = bootstrap.Dropdown.getInstance(this.closest('.dropdown').querySelector('.dropdown-toggle'));
-					if (dropdown) {
-						dropdown.hide();
-					}
-
-					// Configurer la modal
-					taskTitleElement.textContent = '"' + taskTitle + '"';
-					deleteForm.action = `{{ path('task_delete', {id: '__TASK_ID__'}) }}`.replace('__TASK_ID__', taskId);
-					tokenInput.value = `{{ csrf_token('delete__TASK_ID__') }}`.replace('__TASK_ID__', taskId);
-
-					// Petit délai pour éviter les conflits
-					setTimeout(() => {
-						deleteModal.show();
-					}, 100);
-				});
-			});
-
-			// Optimisations mobiles
-			// Ajustement dynamique de la position des menus
-			const dropdowns = document.querySelectorAll('.dropdown-menu');
-			
-			dropdowns.forEach(menu => {
-				menu.addEventListener('show.bs.dropdown', function() {
-					// Vérification de l'espace disponible
-					setTimeout(() => {
-						const rect = this.getBoundingClientRect();
-						const viewportWidth = window.innerWidth;
-						
-						// Ajustement si le menu déborde
-						if (rect.right > viewportWidth - 15) {
-							this.style.left = 'auto';
-							this.style.right = '0';
-							this.style.transform = 'none';
-						}
-						
-						// Ajustement pour très petits écrans
-						if (viewportWidth < 576) {
-							this.style.maxWidth = (viewportWidth - 30) + 'px';
-							
-							// Centrage pour le menu d'ajout rapide
-							if (this.classList.contains('dropdown-menu-quick-add')) {
-								this.style.left = '50%';
-								this.style.transform = 'translateX(-50%)';
-								this.style.right = 'auto';
-							}
-						}
-					}, 10);
-				});
-			});
-			
-			// Fermeture automatique des menus lors du redimensionnement
-			window.addEventListener('resize', function() {
-				const openDropdowns = document.querySelectorAll('.dropdown-menu.show');
-				openDropdowns.forEach(menu => {
-					const dropdown = bootstrap.Dropdown.getInstance(menu.previousElementSibling);
-					if (dropdown) {
-						dropdown.hide();
-					}
-				});
-			});
-			
-			// Prévention du zoom iOS sur les inputs
-			if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-				const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], textarea, select');
-				inputs.forEach(input => {
-					if (parseFloat(getComputedStyle(input).fontSize) < 16) {
-						input.style.fontSize = '16px';
-					}
-				});
 			}
-
-			// Met à jour visuellement une carte de tâche
-			function updateTaskCardStatus(taskCard, newStatus) {
-				if (!taskCard || !newStatus) return;
-
-				const statusBadge = taskCard.querySelector('.badge:first-of-type');
-				if (statusBadge) {
-					statusBadge.classList.remove('bg-secondary', 'bg-warning', 'bg-success');
-
-					switch (newStatus) {
-						case 'todo': 
-							statusBadge.classList.add('bg-secondary');
-							statusBadge.textContent = 'À faire';
-							break;
-						case 'in_progress': 
-							statusBadge.classList.add('bg-warning');
-							statusBadge.textContent = 'En cours';
-							break;
-						case 'completed': 
-							statusBadge.classList.add('bg-success');
-							statusBadge.textContent = 'Terminée';
-							break;
-					}
-				}
-
-				const toggleButton = taskCard.querySelector('.toggle-status-form button');
-				if (toggleButton) {
-					const icon = toggleButton.querySelector('i');
-					if (icon) {
-						icon.classList.remove('fa-circle', 'fa-play', 'fa-check');
-
-						switch (newStatus) {
-							case 'todo': 
-								icon.classList.add('fa-circle');
-								toggleButton.classList.remove('btn-success');
-								toggleButton.classList.add('btn-outline-success');
-								break;
-							case 'in_progress': 
-								icon.classList.add('fa-play');
-								toggleButton.classList.remove('btn-success');
-								toggleButton.classList.add('btn-outline-success');
-								break;
-							case 'completed': 
-								icon.classList.add('fa-check');
-								toggleButton.classList.remove('btn-outline-success');
-								toggleButton.classList.add('btn-success');
-								break;
-						}
-					}
-				}
-			}
-
-			// Affiche une notification de succès
-			function showSuccessNotification(message) {
-				const notification = document.createElement('div');
-				notification.className = 'alert alert-success alert-dismissible fade show position-fixed';
-				notification.style.cssText = 'top: 20px; right: 20px; z-index: 1060; min-width: 300px;';
-				notification.innerHTML = `
-					<i class="fas fa-check-circle me-2"></i>
-					${message}
-					<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-				`;
-
-				document.body.appendChild(notification);
-
-				setTimeout(() => {
-					if (notification.parentNode) {
-						notification.classList.remove('show');
-						setTimeout(() => {
-							if (notification.parentNode) {
-								notification.remove();
-							}
-						}, 300);
-					}
-				}, 3000);
-			}
-
-			// Gestion des formulaires de duplication avec confirmation
-			document.querySelectorAll('form[action*="duplicate"]').forEach(form => {
-				form.addEventListener('submit', function (e) {
-					e.preventDefault();
-
-					if (confirm('Voulez-vous vraiment dupliquer cette tâche ?')) {
-						const button = this.querySelector('button[type="submit"]');
-						const originalText = button.innerHTML;
-
-						button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Duplication...';
-						button.disabled = true;
-
-						this.submit();
-					}
-				});
-			});
 		});
 	</script>
 {% endblock %}

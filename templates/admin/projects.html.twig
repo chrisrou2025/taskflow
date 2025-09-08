@@ -6,7 +6,6 @@
 {% block body %}
 	<div
 		class="container-fluid">
-		<!-- Header -->
 		<div class="row mb-4">
 			<div class="col-12">
 				<div class="d-flex justify-content-between align-items-center">
@@ -32,32 +31,37 @@
 			</div>
 		</div>
 
-		<!-- Filtres et recherche -->
 		<div class="row mb-4">
 			<div class="col-12">
 				<div class="card border-0 shadow-sm">
 					<div class="card-body">
-						<form method="get" class="row g-3 align-items-end">
-							<div class="col-md-6">
+						<form method="get" class="row g-3 align-items-end" id="filter-form">
+							<div class="col-12 col-md-4">
 								<label for="search" class="form-label">Rechercher</label>
-								<div class="input-group">
-									<span class="input-group-text">
-										<i class="fas fa-search"></i>
-									</span>
-									<input type="text" class="form-control" id="search" name="search" value="{{ search }}" placeholder="Titre du projet ou nom du propriétaire...">
-								</div>
+								<input type="search" class="form-control" id="search" name="search" value="{{ app.request.query.get('search') }}">
 							</div>
-							<div class="col-md-3">
-								<button type="submit" class="btn btn-primary">
-									<i class="fas fa-search me-2"></i>Rechercher
-								</button>
+							<div class="col-12 col-md-4">
+								<label for="owner" class="form-label">Filtrer par propriétaire</label>
+								<select id="owner" name="owner" class="form-select">
+									<option value="">Tous les utilisateurs</option>
+									{% for user in users %}
+										<option value="{{ user.id }}" {{ app.request.query.get('owner') == user.id ? 'selected' : '' }}>
+											{{ user.fullName }}
+										</option>
+									{% endfor %}
+								</select>
 							</div>
-							<div class="col-md-3">
-								{% if search %}
-									<a href="{{ path('admin_projects') }}" class="btn btn-outline-secondary">
-										<i class="fas fa-times me-2"></i>Effacer
-									</a>
-								{% endif %}
+							<div class="col-12 col-md-4">
+								<label for="sort" class="form-label">Trier par</label>
+								<select id="sort" name="sort" class="form-select">
+									<option value="created_at" {{ app.request.query.get('sort') == 'created_at' ? 'selected' : '' }}>Date de création</option>
+									<option value="title" {{ app.request.query.get('sort') == 'title' ? 'selected' : '' }}>Titre</option>
+									<option value="tasks_count" {{ app.request.query.get('sort') == 'tasks_count' ? 'selected' : '' }}>Nombre de tâches</option>
+								</select>
+							</div>
+							<div class="col-12 d-grid d-md-block">
+								<button type="submit" class="btn btn-primary">Appliquer les filtres</button>
+								<a href="{{ path('admin_projects') }}" class="btn btn-outline-secondary mt-2 mt-md-0">Réinitialiser</a>
 							</div>
 						</form>
 					</div>
@@ -65,165 +69,65 @@
 			</div>
 		</div>
 
-		<!-- Liste des projets -->
-		<div class="row">
+		<div class="row mb-4">
 			<div class="col-12">
 				<div class="card border-0 shadow-sm">
-					<div class="card-header bg-white border-bottom">
-						<h5 class="card-title mb-0">
-							<i class="fas fa-folder me-2 text-primary"></i>
-							Projets
-							{% if search %}
-								(résultats pour "{{ search }}")
-							{% endif %}
-						</h5>
-					</div>
 					<div class="card-body p-0">
 						{% if projects is empty %}
-							<div class="text-center py-5">
-								{% if search %}
-									<i class="fas fa-search fa-3x text-muted mb-3"></i>
-									<h6 class="text-muted">Aucun projet trouvé</h6>
-									<p class="text-muted mb-3">Aucun projet ne correspond à votre recherche "{{ search }}"</p>
-								{% else %}
-									<i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
-									<h6 class="text-muted">Aucun projet</h6>
-									<p class="text-muted mb-3">Aucun projet n'a encore été créé</p>
-								{% endif %}
+							<div class="p-4 text-center text-muted">
+								<i class="fas fa-box-open fa-2x mb-3"></i>
+								<p class="mb-0">Aucun projet trouvé avec les filtres actuels.</p>
 							</div>
 						{% else %}
-							<div class="table-responsive">
-								<table class="table table-hover mb-0">
-									<thead class="table-light">
-										<tr>
-											<th>Projet</th>
-											<th>Propriétaire</th>
-											<th>Tâches</th>
-											<th>Progression</th>
-											<th>Créé le</th>
-											<th>Actions</th>
-										</tr>
-									</thead>
-									<tbody>
-										{% for project in projects %}
-											<tr>
-												<td>
-													<div>
-														<h6 class="mb-1">{{ project.title }}</h6>
-														{% if project.description %}
-															<small class="text-muted">
-																{{ project.description|length > 80 ? project.description|slice(0, 80) ~ '...' : project.description }}
-															</small>
-														{% else %}
-															<small class="text-muted fst-italic">Aucune description</small>
-														{% endif %}
-													</div>
-												</td>
-												<td>
-													<div>
+							<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 p-3">
+								{% for project in projects %}
+									<div class="col">
+										<div class="card h-100 shadow-sm">
+											<div class="card-body">
+												<h5 class="card-title">{{ project.title }}</h5>
+												<p class="card-text text-muted">
+													{{ project.description|length > 80 ? project.description|slice(0, 80) ~ '...' : project.description }}
+												</p>
+												<ul class="list-group list-group-flush mt-3">
+													<li class="list-group-item d-flex justify-content-between align-items-center">
+														<small class="text-muted">Propriétaire :</small>
 														<strong>{{ project.owner.fullName }}</strong>
-														<br><small class="text-muted">{{ project.owner.email }}</small>
-														{% if 'ROLE_ADMIN' in project.owner.roles %}
-															<br><span class="badge bg-warning text-dark">Admin</span>
-														{% endif %}
-													</div>
-												</td>
-												<td>
-													<div class="text-center">
-														<span class="badge bg-primary">{{ project.tasksCount }}</span>
-														<br><small class="text-muted">
-															{{ project.completedTasksCount }}
-															terminées
-														</small>
-													</div>
-												</td>
-												<td>
-													{% set progress = project.progressPercentage %}
-													<div>
-														<div class="progress mb-1" style="height: 8px;">
-															<div class="progress-bar bg-{{ progress == 100 ? 'success' : (progress > 50 ? 'primary' : 'warning') }}" style="width: {{ progress }}%"></div>
+													</li>
+													<li class="list-group-item d-flex justify-content-between align-items-center">
+														<small class="text-muted">Tâches :</small>
+														<span>
+															<span class="badge bg-primary">{{ project.tasksCount }}</span>
+															<small class="text-muted">{{ project.completedTasksCount }} terminées</small>
+														</span>
+													</li>
+													<li class="list-group-item d-flex justify-content-between align-items-center">
+														<small class="text-muted">Progression :</small>
+														<div class="w-50">
+															{% set progress = project.progressPercentage %}
+															<div class="progress" style="height: 8px;">
+																<div class="progress-bar bg-{{ progress == 100 ? 'success' : (progress > 50 ? 'primary' : 'warning') }}" style="width: {{ progress }}%"></div>
+															</div>
+															<small class="text-muted">{{ progress }}%</small>
 														</div>
-														<small class="text-muted">{{ progress }}%</small>
-													</div>
-												</td>
-												<td>
-													<div>
-														{{ project.createdAt|date('d/m/Y') }}
-														<br><small class="text-muted">{{ project.createdAt|date('H:i') }}</small>
-													</div>
-												</td>
-												<td>
-													<div class="btn-group btn-group-sm">
-														<a href="{{ path('project_show', {id: project.id}) }}" class="btn btn-outline-primary" title="Voir le projet" target="_blank">
-															<i class="fas fa-eye"></i>
-														</a>
-														<button type="button" class="btn btn-outline-danger delete-project-btn" title="Supprimer le projet" data-project-id="{{ project.id }}" data-project-title="{{ project.title }}" data-project-tasks="{{ project.tasksCount }}" data-project-owner="{{ project.owner.fullName }}" data-project-owner-email="{{ project.owner.email }}">
-															<i class="fas fa-trash"></i>
-														</button>
-													</div>
-												</td>
-											</tr>
-										{% endfor %}
-									</tbody>
-								</table>
-							</div>
-
-							<!-- Pagination -->
-							{% if total_pages > 1 %}
-								<div class="card-footer bg-white">
-									<nav aria-label="Pagination des projets">
-										<ul
-											class="pagination justify-content-center mb-0">
-											<!-- Bouton Précédent -->
-											{% if current_page > 1 %}
-												<li class="page-item">
-													<a class="page-link" href="{{ path('admin_projects', {page: current_page - 1, search: search}) }}">
-														<i class="fas fa-chevron-left"></i>
-														Précédent
-													</a>
-												</li>
-											{% endif %}
-
-											<!-- Numéros de pages -->
-											{% for page in 1..total_pages %}
-												{% if page == current_page %}
-													<li class="page-item active">
-														<span class="page-link">{{ page }}</span>
 													</li>
-												{% elseif page == 1 or page == total_pages or (page >= current_page - 2 and page <= current_page + 2) %}
-													<li class="page-item">
-														<a class="page-link" href="{{ path('admin_projects', {page: page, search: search}) }}">{{ page }}</a>
+													<li class="list-group-item d-flex justify-content-between align-items-center">
+														<small class="text-muted">Créé le :</small>
+														<span>{{ project.createdAt|date('d/m/Y') }}</span>
 													</li>
-												{% elseif page == current_page - 3 or page == current_page + 3 %}
-													<li class="page-item disabled">
-														<span class="page-link">...</span>
-													</li>
-												{% endif %}
-											{% endfor %}
-
-											<!-- Bouton Suivant -->
-											{% if current_page < total_pages %}
-												<li class="page-item">
-													<a class="page-link" href="{{ path('admin_projects', {page: current_page + 1, search: search}) }}">
-														Suivant
-														<i class="fas fa-chevron-right"></i>
-													</a>
-												</li>
-											{% endif %}
-										</ul>
-									</nav>
-									<div class="text-center mt-2">
-										<small class="text-muted">
-											Page
-											{{ current_page }}
-											sur
-											{{ total_pages }}
-											({{ total_projects }}
-											projet(s) au total)
-										</small>
+												</ul>
+											</div>
+											<div class="card-footer bg-light d-flex justify-content-end gap-2">
+												<a href="{{ path('project_show', {id: project.id}) }}" class="btn btn-outline-primary btn-sm" title="Voir le projet">
+													<i class="fas fa-eye"></i>
+												</a>
+												<button type="button" class="btn btn-outline-danger btn-sm delete-project-btn" data-bs-toggle="modal" data-bs-target="#deleteProjectModal" data-project-id="{{ project.id }}" data-project-title="{{ project.title }}" data-project-tasks="{{ project.tasksCount }}" data-project-owner="{{ project.owner.fullName }}" data-project-owner-email="{{ project.owner.email }}" title="Supprimer le projet">
+													<i class="fas fa-trash"></i>
+												</button>
+											</div>
+										</div>
 									</div>
-								</div>
-							{% endif %}
+								{% endfor %}
+							</div>
 						{% endif %}
 					</div>
 				</div>
@@ -231,134 +135,92 @@
 		</div>
 	</div>
 
-	<!-- Modal de suppression unique (en dehors du container) -->
 	<div class="modal fade" id="deleteProjectModal" tabindex="-1" aria-labelledby="deleteProjectModalLabel" aria-hidden="true">
-		<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title" id="deleteProjectModalLabel">
-						<i class="fas fa-exclamation-triangle text-danger me-2"></i>
-						Confirmer la suppression
-					</h5>
+					<h5 class="modal-title" id="deleteProjectModalLabel">Confirmation de suppression</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
-				<div class="modal-body">
-					<p>Êtes-vous sûr de vouloir supprimer le projet
-						<strong id="projectToDeleteTitle"></strong>
-						?</p>
-					<div class="alert alert-warning">
-						<i class="fas fa-exclamation-triangle me-2"></i>
-						<strong>Attention :</strong>
-						Cette action supprimera définitivement :
-						<ul class="mb-0 mt-2">
-							<li>Le projet "<span id="projectToDeleteName"></span>"</li>
-							<li>Toutes ses
-								<span id="projectToDeleteTasks"></span>
-								tâche(s)</li>
-							<li>Tout l'historique associé</li>
+				<form id="delete-project-form" method="POST">
+					<div class="modal-body">
+						<p>Vous êtes sur le point de supprimer le projet
+							<strong>
+								<span id="modal-project-title"></span>
+							</strong>. Cette action est irréversible et supprimera également toutes les tâches associées.
+						</p>
+						<p class="mb-0">
+							<strong>Détails du projet :</strong>
+						</p>
+						<ul>
+							<li>Titre :
+								<span id="project-name"></span>
+							</li>
+							<li>Nombre de tâches :
+								<span id="project-tasks"></span>
+							</li>
+							<li>Propriétaire :
+								<span id="project-owner"></span>
+								(<span id="project-owner-email"></span>)
+							</li>
 						</ul>
-					</div>
-					<div class="alert alert-info">
-						<strong>Propriétaire :</strong>
-						<span id="projectToDeleteOwner"></span>
-						(<span id="projectToDeleteOwnerEmail"></span>)
-					</div>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-						Annuler
-					</button>
-					<form id="deleteProjectForm" method="post" class="d-inline">
+						<input type="hidden" name="_method" value="DELETE">
 						<input type="hidden" name="_token" id="deleteProjectToken">
-						<button type="submit" class="btn btn-danger">
-							<i class="fas fa-trash me-2"></i>Supprimer définitivement
-						</button>
-					</form>
-				</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+						<button type="submit" class="btn btn-danger">Supprimer le projet</button>
+					</div>
+				</form>
 			</div>
 		</div>
 	</div>
 
-	<style>
-		.progress {
-			background-color: rgba(0, 0, 0, 0.1);
-		}
-
-		.table td {
-			vertical-align: middle;
-		}
-
-		.badge {
-			font-size: 0.75em;
-		}
-
-		.btn-group-sm > .btn {
-			padding: 0.25rem 0.5rem;
-		}
-
-		/* Correction pour éviter les conflits de z-index */
-		.modal {
-			z-index: 1055;
-		}
-
-		.modal-backdrop {
-			z-index: 1050;
-		}
-
-		/* Stabiliser l'affichage des modales */
-		.modal-dialog-centered {
-			display: flex;
-			align-items: center;
-			min-height: calc(100% - 1rem);
-		}
-	</style>
-
 	<script>
-		document.addEventListener('DOMContentLoaded', function () { // Gestion des boutons de suppression avec modal unique
-const deleteModal = new bootstrap.Modal(document.getElementById('deleteProjectModal'));
-const deleteForm = document.getElementById('deleteProjectForm');
-const projectTitleElement = document.getElementById('projectToDeleteTitle');
-const projectNameElement = document.getElementById('projectToDeleteName');
-const projectTasksElement = document.getElementById('projectToDeleteTasks');
-const projectOwnerElement = document.getElementById('projectToDeleteOwner');
-const projectOwnerEmailElement = document.getElementById('projectToDeleteOwnerEmail');
-const tokenInput = document.getElementById('deleteProjectToken');
+		// Gestion de la modal de suppression
+		const deleteModal = new bootstrap.Modal(document.getElementById('deleteProjectModal'));
+		const deleteForm = document.getElementById('delete-project-form');
+		const projectTitleElement = document.getElementById('modal-project-title');
+		const projectNameElement = document.getElementById('project-name');
+		const projectTasksElement = document.getElementById('project-tasks');
+		const projectOwnerElement = document.getElementById('project-owner');
+		const projectOwnerEmailElement = document.getElementById('project-owner-email');
+		const tokenInput = document.getElementById('deleteProjectToken');
 
-document.querySelectorAll('.delete-project-btn').forEach(button => {
-button.addEventListener('click', function (e) {
-e.preventDefault();
-e.stopPropagation();
+		document.querySelectorAll('.delete-project-btn').forEach(button => {
+			button.addEventListener('click', function (e) {
+				e.preventDefault();
+				e.stopPropagation();
 
-const projectId = this.getAttribute('data-project-id');
-const projectTitle = this.getAttribute('data-project-title');
-const projectTasks = this.getAttribute('data-project-tasks');
-const projectOwner = this.getAttribute('data-project-owner');
-const projectOwnerEmail = this.getAttribute('data-project-owner-email');
+				const projectId = this.getAttribute('data-project-id');
+				const projectTitle = this.getAttribute('data-project-title');
+				const projectTasks = this.getAttribute('data-project-tasks');
+				const projectOwner = this.getAttribute('data-project-owner');
+				const projectOwnerEmail = this.getAttribute('data-project-owner-email');
 
-// Configurer la modal
-projectTitleElement.textContent = '"' + projectTitle + '"';
-projectNameElement.textContent = projectTitle;
-projectTasksElement.textContent = projectTasks;
-projectOwnerElement.textContent = projectOwner;
-projectOwnerEmailElement.textContent = projectOwnerEmail;
+				// Configurer la modal
+				projectTitleElement.textContent = `"${projectTitle}"`;
+				projectNameElement.textContent = projectTitle;
+				projectTasksElement.textContent = projectTasks;
+				projectOwnerElement.textContent = projectOwner;
+				projectOwnerEmailElement.textContent = projectOwnerEmail;
 
-deleteForm.action = `{{ path('admin_project_delete', {id: '__PROJECT_ID__'}) }}`.replace('__PROJECT_ID__', projectId);
-tokenInput.value = `{{ csrf_token('delete-project__PROJECT_ID__') }}`.replace('__PROJECT_ID__', projectId);
+				deleteForm.action = `{{ path('admin_project_delete', {id: '__PROJECT_ID__'}) }}`.replace('__PROJECT_ID__', projectId);
+				tokenInput.value = `{{ csrf_token('delete-project__PROJECT_ID__') }}`.replace('__PROJECT_ID__', projectId);
 
-// Petit délai pour éviter les conflits
-setTimeout(() => {
-deleteModal.show();
-}, 100);
-});
-});
+				// Petit délai pour éviter les conflits
+				setTimeout(() => {
+					deleteModal.show();
+				}, 100);
+			});
+		});
 
-// Double confirmation avant suppression
-deleteForm.addEventListener('submit', function (e) {
-const projectName = projectNameElement.textContent;
-if (!confirm (`Êtes-vous absolument sûr de vouloir supprimer le projet "${projectName}" ? Cette action est irréversible.`)) {
-e.preventDefault();
-}
-});
-});
+		// Double confirmation avant suppression
+		deleteForm.addEventListener('submit', function (e) {
+			const projectName = projectNameElement.textContent;
+			if (!confirm(`Êtes-vous absolument sûr de vouloir supprimer le projet "${projectName}" ? Cette action est irréversible et supprimera également toutes les tâches associées.`)) {
+				e.preventDefault();
+			}
+		});
 	</script>
 {% endblock %}
