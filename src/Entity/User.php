@@ -96,9 +96,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return (string) $this->email;
     }
 
-    /**
-     * @see UserInterface
-     */
     public function getRoles(): array
     {
         $roles = $this->roles;
@@ -114,9 +111,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @see PasswordAuthenticatedUserInterface
-     */
     public function getPassword(): string
     {
         return $this->password;
@@ -128,9 +122,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @see UserInterface
-     */
     public function eraseCredentials(): void
     {
         // Nettoie les données sensibles temporaires si nécessaire
@@ -191,10 +182,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->resetTokenExpiresAt = $resetTokenExpiresAt;
         return $this;
     }
-
-    /**
-     * @return Collection<int, Project>
-     */
+    
     public function getProjects(): Collection
     {
         return $this->projects;

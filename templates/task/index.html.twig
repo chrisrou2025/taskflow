@@ -11,8 +11,7 @@
 {% endblock %}
 
 {% block body %}
-	<div
-		class="container-fluid">
+	<div class="container-fluid">
 		<nav aria-label="breadcrumb" class="mb-3">
 			<ol class="breadcrumb">
 				{% if project %}
@@ -41,7 +40,7 @@
 					<div class="mb-2 mb-md-0">
 						<h1 class="h3 mb-2">
 							✅
-							{% if project %}Tâches du
+							{% if project %}Tâches de
 								{{ project.title }}{% else %}Mes Tâches
 							{% endif %}
 						</h1>
@@ -159,7 +158,8 @@
 						Créez votre première tâche pour commencer à vous organiser.
 					</p>
 					<a href="{{ path('task_new', project ? {project: project.id} : {}) }}" class="btn btn-success btn-lg">
-						<i class="fas fa-plus me-2"></i> Créer une tâche
+						<i class="fas fa-plus me-2"></i>
+						Créer une tâche
 					</a>
 				</div>
 			{% else %}
@@ -179,8 +179,9 @@
 								{% for task in tasks %}
 									<tr class="task-row">
 										<td>
-											<span class="badge bg-{{ task.isCompleted ? 'success' : 'warning' }} text-dark">
-												{{ task.isCompleted ? 'Terminée' : 'En cours' }}
+											{# CORRECTION : Utiliser task.status au lieu de task.isCompleted #}
+											<span class="badge bg-{{ task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">
+												{{ task.statusLabel }}
 											</span>
 										</td>
 										<td class="fw-medium">
@@ -257,78 +258,73 @@
 
 	<script>
 		document.addEventListener('DOMContentLoaded', function () {
-			const deleteModalElement = document.getElementById('deleteTaskModal');
-			if (deleteModalElement) {
-				const deleteModal = new bootstrap.Modal(deleteModalElement);
-				const deleteForm = document.getElementById('deleteTaskForm');
-				const taskTitleElement = document.getElementById('taskToDeleteTitle');
-				const tokenInput = deleteForm.querySelector('input[name="_token"]');
+const deleteModalElement = document.getElementById('deleteTaskModal');
+if (deleteModalElement) {
+const deleteModal = new bootstrap.Modal(deleteModalElement);
+const deleteForm = document.getElementById('deleteTaskForm');
+const taskTitleElement = document.getElementById('taskToDeleteTitle');
+const tokenInput = deleteForm.querySelector('input[name="_token"]');
 
-				document.querySelectorAll('.delete-task-btn').forEach(button => {
-					button.addEventListener('click', function (event) {
-						event.preventDefault();
-						event.stopPropagation();
+document.querySelectorAll('.delete-task-btn').forEach(button => {
+button.addEventListener('click', function (event) {
+event.preventDefault();
+event.stopPropagation();
 
-						const taskId = this.getAttribute('data-task-id');
-						const taskTitle = this.getAttribute('data-task-title');
-						const csrfToken = this.getAttribute('data-csrf-token');
+const taskId = this.getAttribute('data-task-id');
+const taskTitle = this.getAttribute('data-task-title');
+const csrfToken = this.getAttribute('data-csrf-token');
 
-						if (taskTitleElement) {
-							taskTitleElement.textContent = taskTitle;
-						}
+if (taskTitleElement) {
+taskTitleElement.textContent = taskTitle;
+}
 
-						if (deleteForm) {
-							const deletePath = "{{ path('task_delete', {id: 'TASK_ID'}) }}";
-							deleteForm.action = deletePath.replace('TASK_ID', taskId);
-						}
-						
-						if (tokenInput) {
-							tokenInput.value = csrfToken;
-						}
+if (deleteForm) {
+const deletePath = "{{ path('task_delete', {id: 'TASK_ID'}) }}";
+deleteForm.action = deletePath.replace('TASK_ID', taskId);
+}
 
-						deleteModal.show();
-					});
-				});
-			}
+if (tokenInput) {
+tokenInput.value = csrfToken;
+}
 
-			const quickAddForm = document.getElementById('quickAddForm');
-			if (quickAddForm) {
-				quickAddForm.addEventListener('submit', function (event) {
-					event.preventDefault();
-					const button = this.querySelector('button[type="submit"]');
-					button.disabled = true;
-					button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Ajout...';
-					
-					const formData = new FormData(this);
-					const url = this.action;
+deleteModal.show();
+});
+});
+}
 
-					fetch(url, {
-						method: 'POST',
-						body: formData,
-						headers: {
-							'X-Requested-With': 'XMLHttpRequest'
-						}
-					})
-					.then(response => response.json())
-					.then(data => {
-						if (data.success) {
-							// Redirection vers la même page pour recharger la liste des tâches
-							window.location.reload();
-						} else {
-							alert('Erreur: ' + data.message);
-						}
-					})
-					.catch(error => {
-						console.error('Erreur:', error);
-						alert('Une erreur s\'est produite. Veuillez réessayer.');
-					})
-					.finally(() => {
-						button.disabled = false;
-						button.innerHTML = '<i class="fas fa-plus me-1"></i>Ajouter';
-						quickAddForm.reset();
-					});
-				});
-			}
-		});
+const quickAddForm = document.getElementById('quickAddForm');
+if (quickAddForm) {
+quickAddForm.addEventListener('submit', function (event) {
+event.preventDefault();
+const button = this.querySelector('button[type="submit"]');
+button.disabled = true;
+button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Ajout...';
+
+const formData = new FormData(this);
+const url = this.action;
+
+fetch(url, {
+method: 'POST',
+body: formData,
+headers: {
+'X-Requested-With': 'XMLHttpRequest'
+}
+}).then(response => response.json()).then(data => {
+if (data.success) { // Redirection vers la même page pour recharger la liste des tâches
+window.location.reload();
+} else {
+alert('Erreur: ' + data.message);
+}
+}).catch(error => {
+console.error('Erreur:', error);
+alert('Une erreur s\'est produite. Veuillez réessayer.');
+}). finally(() => {
+button.disabled = false;
+button.innerHTML = '<i class="fas fa-plus me-1"></i>Ajouter';
+quickAddForm.reset();
+});
+});
+}
+});
 	</script>
 {% endblock %}
