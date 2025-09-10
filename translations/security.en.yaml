@@ -1,0 +1,12 @@
+# translations/security.en.yaml
+
+Invalid credentials.: "Invalid credentials"
+Account is disabled.: "Account is disabled."
+Account is locked.: "Account is locked."
+Account has expired.: "Account has expired."
+Credentials have expired.: "Credentials have expired."
+Invalid CSRF token.: "Invalid CSRF token. Please try again."
+Too many failed login attempts, please try again later.: "Too many failed login attempts, please try again later."
+Not privileged to request the resource.: "Not privileged to request the resource."
+Authentication required.: "Authentication required."
+No token could be found.: "No security token could be found."

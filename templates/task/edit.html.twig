@@ -127,64 +127,6 @@
 						{{ form_end(form) }}
 					</div>
 				</div>
-
-				<div class="card border-0 shadow-sm mt-4">
-					<div class="card-header bg-white">
-						<h6 class="card-title mb-0">
-							<i class="fas fa-bolt me-2 text-warning"></i>Actions supplémentaires
-						</h6>
-					</div>
-					<div class="card-body">
-						<div class="row g-2">
-							<div class="col-md-6">
-								<form method="post" action="{{ path('task_duplicate', {id: task.id}) }}" class="d-inline w-100">
-									<input type="hidden" name="_token" value="{{ csrf_token('duplicate' ~ task.id) }}">
-									<button type="submit" class="btn btn-outline-secondary btn-sm w-100">
-										<i class="fas fa-copy me-1"></i>Dupliquer la tâche
-									</button>
-								</form>
-							</div>
-							<div class="col-md-6">
-								<button type="button" class="btn btn-outline-danger btn-sm w-100" data-bs-toggle="modal" data-bs-target="#deleteModal">
-									<i class="fas fa-trash me-1"></i>Supprimer la tâche
-								</button>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<div class="modal fade" id="deleteModal" tabindex="-1">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title">
-						<i class="fas fa-exclamation-triangle text-danger me-2"></i>
-						Confirmer la suppression
-					</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-				</div>
-				<div class="modal-body">
-					<p>Êtes-vous sûr de vouloir supprimer la tâche
-						<strong>"{{ task.title }}"</strong>
-						?</p>
-					<div class="alert alert-warning">
-						<i class="fas fa-exclamation-triangle me-2"></i>
-						<strong>Attention :</strong>
-						Cette action est irréversible.
-					</div>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-					<form method="post" action="{{ path('task_delete', {id: task.id}) }}" class="d-inline">
-						<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ task.id) }}">
-						<button type="submit" class="btn btn-danger">
-							<i class="fas fa-trash me-2"></i>Supprimer définitivement
-						</button>
-					</form>
-				</div>
 			</div>
 		</div>
 	</div>

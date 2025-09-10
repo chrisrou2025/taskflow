@@ -48,9 +48,9 @@
 								<h5 class="card-title mb-3 d-flex justify-content-between align-items-center">
 									<a href="{{ path('project_show', {id: project.id}) }}" class="stretched-link text-decoration-none text-dark">{{ project.title }}</a>
 								</h5>
-								<p class="card-text text-muted small mb-3">
+								<p class="card-text text-muted small mb-3 project-description">
 									<i class="fas fa-info-circle me-1"></i>
-									{{ project.description ? (project.description|length > 100 ? project.description|slice(0, 100) ~ '...' : project.description) : 'Pas de description.' }}
+									{{ project.description ? project.description : 'Pas de description.' }}
 								</p>
 								<ul class="list-unstyled d-flex flex-wrap gap-3 mt-auto">
 									<li>
@@ -70,7 +70,8 @@
 									</li>
 								</ul>
 								<div class="progress mt-3" style="height: 5px;">
-									<div class="progress-bar bg-success" role="progressbar" style="width: {{ project.progressPercentage }}%;" aria-valuenow="{{ project.progressPercentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+									<div class="progress-bar bg-success" role="progressbar" style="width: {{ project.progressPercentage }}%;"
+										aria-valuenow="{{ project.progressPercentage }}" aria-valuemin="0" aria-valuemax="100"></div>
 								</div>
 								<small class="text-muted mt-2">{{ project.progressPercentage }}% de progression</small>
 							</div>
@@ -148,6 +149,24 @@
 
 		.dropdown-toggle::after {
 			display: none;
+		}
+
+		.project-description {
+			/* Règle par défaut pour le mobile (petite largeur) */
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			max-width: 250px; /* Ajustez cette valeur si nécessaire */
+		}
+
+		/* Règle pour les écrans de taille moyenne (tablettes et plus) */
+		@media (min-width: 768px) {
+			.project-description {
+				white-space: normal;
+				overflow: visible;
+				text-overflow: clip;
+				max-width: none;
+			}
 		}
 	</style>
 {% endblock %}

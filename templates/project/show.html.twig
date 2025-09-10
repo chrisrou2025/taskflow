@@ -1,11 +1,13 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}
-	{{ project.title }} - TaskFlow
+	{{ project.title }}
+	- TaskFlow
 {% endblock %}
 
 {% block body %}
-	<div class="container-fluid px-2 px-md-3">
+	<div
+		class="container-fluid px-2 px-md-3">
 		{# Breadcrumb optimisé mobile #}
 		<nav aria-label="breadcrumb" class="mb-2 mb-md-3">
 			<ol class="breadcrumb mb-0 small">
@@ -28,36 +30,32 @@
 						<div class="flex-grow-1 me-2">
 							<h1 class="h4 h3-md mb-1 text-truncate">{{ project.title }}</h1>
 							{% if project.description %}
-								<p class="text-muted mb-2 small d-none d-md-block">{{ project.description }}</p>
+								{# Version desktop : description limitée à 50% de la largeur #}
+								<div class="d-none d-md-block" style="max-width: 50%;">
+									<p class="text-muted mb-2 small">{{ project.description }}</p>
+								</div>
+								{# Version mobile : description tronquée comme avant #}
 								<p class="text-muted mb-2 small d-md-none">
-									{{ project.description|length > 60 ? project.description|slice(0, 60) ~ '...' : project.description }}
+									{{ project.description|length > 60 ?
+ project.description|slice(0, 60) ~ '...' : project.description }}
 								</p>
 							{% endif %}
 						</div>
-						{# Actions en dropdown sur mobile #}
-						<div class="dropdown d-md-none">
-							<button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-								<i class="fas fa-ellipsis-v"></i>
-							</button>
-							<ul class="dropdown-menu dropdown-menu-end">
-								<li>
-									<a class="dropdown-item" href="{{ path('project_edit', {id: project.id}) }}">
-										<i class="fas fa-edit me-2"></i>Modifier
-									</a>
-								</li>
-								<li>
-									<a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#deleteModal">
-										<i class="fas fa-trash me-2"></i>Supprimer
-									</a>
-								</li>
-							</ul>
+						{# Actions en boutons d'icônes sur mobile #}
+						<div class="d-md-none d-flex gap-2">
+							<a href="{{ path('project_edit', {id: project.id}) }}" class="btn btn-warning btn-sm" title="Modifier">
+								<i class="fas fa-edit"></i>
+							</a>
+							<a href="#" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteProjectModal" title="Supprimer">
+								<i class="fas fa-trash"></i>
+							</a>
 						</div>
 						{# Actions desktop #}
 						<div class="d-none d-md-flex gap-2">
 							<a href="{{ path('project_edit', {id: project.id}) }}" class="btn btn-warning btn-sm">
 								<i class="fas fa-edit me-1"></i>Modifier
 							</a>
-							<a href="#" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
+							<a href="#" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteProjectModal">
 								<i class="fas fa-trash me-1"></i>Supprimer
 							</a>
 						</div>
@@ -127,45 +125,64 @@
 						<div class="row g-2">
 							{% for task in project.tasks %}
 								<div class="col-12">
-                                    {# Changement de la couleur de la bordure en fonction du statut #}
-                                    {% set borderColor = 'border-secondary' %}
-                                    {% if task.status == 'in_progress' %}{% set borderColor = 'border-warning' %}{% endif %}
-                                    {% if task.status == 'completed' %}{% set borderColor = 'border-success' %}{% endif %}
-
+									{% set borderColor = 'border-secondary' %}
+									{% if task.status == 'in_progress' %}
+										{% set borderColor = 'border-warning' %}
+									{% elseif task.status == 'completed' %}
+										{% set borderColor = 'border-success' %}
+									{% endif %}
 									<div class="card border-start border-4 {{ borderColor }}">
 										<div class="card-body p-3">
 											<div class="d-flex justify-content-between align-items-start mb-2">
-												<h6 class="card-title mb-0 flex-grow-1 me-2">{{ task.title }}</h6>
-												
-                                                {# Badge et texte en fonction du statut #}
-                                                {% if task.status == 'completed' %}
-                                                    <span class="badge bg-success flex-shrink-0">Terminée</span>
-                                                {% elseif task.status == 'in_progress' %}
-                                                    <span class="badge bg-warning text-dark flex-shrink-0">En cours</span>
-                                                {% else %}
-                                                    <span class="badge bg-secondary flex-shrink-0">À faire</span>
-                                                {% endif %}
+												<div class="flex-grow-1 me-2">
+													<h6 class="card-title mb-1">{{ task.title }}</h6>
+													{# Affichage de la priorité sur mobile #}
+													<div class="d-flex align-items-center gap-2 small">
+														<div class="small text-muted">Priorité :</div>
+														{% if task.priority == 'high' %}
+															<span class="badge bg-danger">Haute</span>
+														{% elseif task.priority == 'medium' %}
+															<span class="badge bg-warning text-dark">Moyenne</span>
+														{% else %}
+															<span class="badge bg-info text-dark">Basse</span>
+														{% endif %}
+													</div>
+												</div>
+												<div class="d-flex align-items-center gap-2">
+													<div class="small text-muted">Statut :</div>
+													{% if task.status == 'completed' %}
+														<span class="badge bg-success flex-shrink-0">Terminée</span>
+													{% elseif task.status == 'in_progress' %}
+														<span class="badge bg-warning text-dark flex-shrink-0">En cours</span>
+													{% else %}
+														<span class="badge bg-secondary flex-shrink-0">À faire</span>
+													{% endif %}
+												</div>
 											</div>
 											{% if task.description %}
 												<p class="card-text small text-muted mb-2">
-													{{ task.description|length > 80 ? task.description|slice(0, 80) ~ '...' : task.description }}
+													{{ task.description|length > 80 ?
+ task.description|slice(0, 80) ~ '...' : task.description }}
 												</p>
 											{% endif %}
 											<div class="d-flex justify-content-between align-items-center">
 												<small class="text-muted">
 													<i class="fas fa-calendar me-1"></i>
-													{{ task.dueDate ? task.dueDate|date('d/m/Y') : 'Pas de date' }}
+													{{ task.dueDate ?
+ task.dueDate|date('d/m/Y') : 'Pas de date' }}
 												</small>
 												<div class="d-flex gap-1">
 													<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-outline-warning btn-sm" title="Modifier">
 														<i class="fas fa-edit"></i>
 													</a>
-													<form method="post" action="{{ path('task_delete', {id: task.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?');" class="d-inline">
-														<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ task.id) }}">
-														<button type="submit" class="btn btn-outline-danger btn-sm" title="Supprimer">
-															<i class="fas fa-trash"></i>
-														</button>
-													</form>
+													<button type="button" class="btn btn-outline-danger btn-sm" 
+														data-bs-toggle="modal" 
+														data-bs-target="#deleteTaskModal" 
+														data-task-id="{{ task.id }}"
+														data-task-title="{{ task.title }}"
+														title="Supprimer">
+														<i class="fas fa-trash"></i>
+													</button>
 												</div>
 											</div>
 										</div>
@@ -184,44 +201,57 @@
 							<table class="table table-hover align-middle">
 								<thead class="table-light">
 									<tr>
-										<th style="width: 100px;">Statut</th>
 										<th>Titre</th>
-										<th>Description</th>
-										<th style="width: 120px;">Date limite</th>
-										<th style="width: 120px;" class="text-center">Actions</th>
+										<th class="d-none d-sm-table-cell">Description</th>
+										<th class="d-none d-lg-table-cell">Date limite</th>
+										<th>Statut</th>
+										<th>Priorité</th>
+										<th class="text-center">Actions</th>
 									</tr>
 								</thead>
 								<tbody>
 									{% for task in project.tasks %}
 										<tr>
-											<td>
-                                                {# Badge et texte en fonction du statut #}
-                                                {% if task.status == 'completed' %}
-                                                    <span class="badge bg-success">Terminée</span>
-                                                {% elseif task.status == 'in_progress' %}
-                                                    <span class="badge bg-warning text-dark">En cours</span>
-                                                {% else %}
-                                                    <span class="badge bg-secondary">À faire</span>
-                                                {% endif %}
-											</td>
 											<td class="fw-medium">{{ task.title }}</td>
-											<td>
+											<td class="d-none d-sm-table-cell">
 												<span title="{{ task.description }}">
-													{{ task.description ? (task.description|length > 50 ? task.description|slice(0, 50) ~ '...' : task.description) : 'N/A' }}
+													{{ task.description ?
+ (task.description|length > 50 ? task.description|slice(0, 50) ~ '...' : task.description) : 'N/A' }}
 												</span>
 											</td>
-											<td>{{ task.dueDate ? task.dueDate|date('d/m/Y') : 'Non définie' }}</td>
+											<td class="d-none d-lg-table-cell">{{ task.dueDate ?
+ task.dueDate|date('d/m/Y') : 'Non définie' }}</td>
+											<td>
+												{% if task.status == 'completed' %}
+													<span class="badge bg-success">Terminée</span>
+												{% elseif task.status == 'in_progress' %}
+													<span class="badge bg-warning text-dark">En cours</span>
+												{% else %}
+													<span class="badge bg-secondary">À faire</span>
+												{% endif %}
+											</td>
+											<td>
+												{% if task.priority == 'high' %}
+													<span class="badge bg-danger">Haute</span>
+												{% elseif task.priority == 'medium' %}
+													<span class="badge bg-warning text-dark">Moyenne</span>
+												{% else %}
+													<span class="badge bg-info text-dark">Basse</span>
+												{% endif %}
+											</td>
 											<td>
 												<div class="d-flex justify-content-center gap-1">
 													<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-sm btn-warning" title="Modifier">
 														<i class="fas fa-edit"></i>
 													</a>
-													<form method="post" action="{{ path('task_delete', {id: task.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?');" class="d-inline">
-														<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ task.id) }}">
-														<button type="submit" class="btn btn-sm btn-danger" title="Supprimer">
-															<i class="fas fa-trash"></i>
-														</button>
-													</form>
+													<button type="button" class="btn btn-sm btn-danger" 
+														data-bs-toggle="modal" 
+														data-bs-target="#deleteTaskModal" 
+														data-task-id="{{ task.id }}"
+														data-task-title="{{ task.title }}"
+														title="Supprimer">
+														<i class="fas fa-trash"></i>
+													</button>
 												</div>
 											</td>
 										</tr>
@@ -235,8 +265,8 @@
 		</div>
 	</div>
 
-	{# Modal de suppression optimisée #}
-	<div class="modal fade" id="deleteModal" tabindex="-1">
+	{# MODALE UNIQUE pour la suppression de tâche #}
+	<div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true">
 		<div class="modal-dialog modal-dialog-centered">
 			<div class="modal-content">
 				<div class="modal-header border-0 pb-0">
@@ -247,12 +277,46 @@
 					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 				</div>
 				<div class="modal-body">
-					<p class="mb-3">Êtes-vous sûr de vouloir supprimer le projet <strong>"{{ project.title }}"</strong> ?</p>
+					<p class="mb-0">Êtes-vous sûr de vouloir supprimer la tâche 
+						<strong id="taskTitle"></strong> ?
+					</p>
+				</div>
+				<div class="modal-footer border-0 pt-0">
+					<button type="button" class="btn btn-secondary flex-grow-1" data-bs-dismiss="modal">Annuler</button>
+					<form method="post" action="#" id="deleteTaskForm" class="flex-grow-1">
+						<input type="hidden" name="_token" id="deleteToken" value="">
+						<button type="submit" class="btn btn-danger w-100">
+							<i class="fas fa-trash me-2"></i>Supprimer
+						</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	{# Modal de suppression de projet #}
+	<div class="modal fade" id="deleteProjectModal" tabindex="-1">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header border-0 pb-0">
+					<h5 class="modal-title text-danger">
+						<i class="fas fa-exclamation-triangle me-2"></i>
+						Confirmer la suppression
+					</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<p class="mb-3">Êtes-vous sûr de vouloir supprimer le projet
+						<strong>"{{ project.title }}"</strong>
+						?</p>
 					<div class="alert alert-warning mb-0">
 						<div class="d-flex align-items-start">
 							<i class="fas fa-exclamation-triangle me-2 mt-1 flex-shrink-0"></i>
 							<div>
-								<strong>Attention :</strong> Cette action supprimera définitivement le projet et toutes ses tâches ({{ project.tasksCount }} tâche{{ project.tasksCount > 1 ? 's' : '' }}).
+								<strong>Attention :</strong>
+								Cette action supprimera définitivement le projet et toutes ses tâches ({{ project.tasksCount }}
+								tâche{{ project.tasksCount > 1 ?
+ 's' : '' }}).
 							</div>
 						</div>
 					</div>
@@ -269,4 +333,51 @@
 			</div>
 		</div>
 	</div>
+
+	{# Script JavaScript pour gérer la modale dynamique #}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteTaskModal = document.getElementById('deleteTaskModal');
+    const taskTitleElement = document.getElementById('taskTitle');
+    const deleteTaskForm = document.getElementById('deleteTaskForm');
+    const deleteTokenInput = document.getElementById('deleteToken');
+    
+    // Pré-génération des tokens CSRF pour toutes les tâches
+    const csrfTokens = {
+        {% for task in project.tasks %}
+        '{{ task.id }}': '{{ csrf_token('delete' ~ task.id) }}'{{ not loop.last ? ',' : '' }}
+        {% endfor %}
+    };
+    
+    // Écouteur d'événement pour tous les boutons de suppression de tâche
+    deleteTaskModal.addEventListener('show.bs.modal', function(event) {
+        // Récupération du bouton qui a déclenché la modale
+        const button = event.relatedTarget;
+        
+        // Extraction des données du bouton
+        const taskId = button.getAttribute('data-task-id');
+        const taskTitle = button.getAttribute('data-task-title');
+        
+        // Mise à jour du contenu de la modale
+        taskTitleElement.textContent = '"' + taskTitle + '"';
+        
+        // Construction de l'URL de suppression
+        const deleteUrl = '{{ path('task_delete', {id: '__TASK_ID__'}) }}'.replace('__TASK_ID__', taskId);
+        deleteTaskForm.action = deleteUrl;
+        
+        // Utilisation du token CSRF pré-généré
+        const token = csrfTokens[taskId];
+        if (token) {
+            deleteTokenInput.value = token;
+        } else {
+            console.error('Token CSRF introuvable pour la tâche ID:', taskId);
+            // Optionnel : désactiver le bouton de suppression si pas de token
+            const submitButton = deleteTaskForm.querySelector('button[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = true;
+            }
+        }
+    });
+});
+</script>
 {% endblock %}

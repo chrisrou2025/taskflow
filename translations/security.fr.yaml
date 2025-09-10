@@ -1,0 +1,31 @@
+# translations/security.fr.yaml
+
+# Identifiants incorrects
+Invalid credentials.: "Identifiants invalides"
+
+# Compte désactivé
+Account is disabled.: "Ce compte est désactivé."
+
+# Compte verrouillé
+Account is locked.: "Ce compte est verrouillé."
+
+# Compte expiré
+Account has expired.: "Ce compte a expiré."
+
+# Les identifiants ont expiré
+Credentials have expired.: "Les identifiants ont expiré."
+
+# Session invalide
+Invalid CSRF token.: "Le jeton de sécurité CSRF est invalide. Veuillez réessayer."
+
+# Trop de tentatives
+Too many failed login attempts, please try again later.: "Trop de tentatives échouées, veuillez réessayer plus tard."
+
+# Pas les droits nécessaires
+Not privileged to request the resource.: "Vous n’avez pas les droits nécessaires pour accéder à cette ressource."
+
+# Authentification requise
+Authentication required.: "Authentification requise."
+
+# Jeton invalide
+No token could be found.: "Aucun jeton de sécurité n’a été trouvé."

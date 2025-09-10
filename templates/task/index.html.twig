@@ -168,36 +168,49 @@
 						<table class="table table-hover align-middle">
 							<thead class="table-light">
 								<tr>
-									<th style="width: 100px;">Statut</th>
 									<th>Titre</th>
-									<th class="d-none d-lg-table-cell">Description</th>
-									<th style="width: 120px;" class="d-none d-lg-table-cell">Date limite</th>
-									<th style="width: 120px;" class="text-center">Actions</th>
+									<th class="d-none d-sm-table-cell">Description</th>
+									<th class="d-none d-lg-table-cell">Date limite</th>
+									<th>Statut</th>
+									<th>Priorité</th>
+									<th class="text-center">Actions</th>
 								</tr>
 							</thead>
 							<tbody>
 								{% for task in tasks %}
 									<tr class="task-row">
-										<td>
-											{# CORRECTION : Utiliser task.status au lieu de task.isCompleted #}
-											<span class="badge bg-{{ task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">
-												{{ task.statusLabel }}
-											</span>
-										</td>
 										<td class="fw-medium">
-											<a href="{{ path('task_show', {id: task.id}) }}" class="text-decoration-none">
-												{{ task.title }}
-											</a>
+											{{ task.title }}
 										</td>
-										<td class="d-none d-lg-table-cell">
+										<td class="d-none d-sm-table-cell">
 											<span title="{{ task.description }}">
 												{{ task.description ? (task.description|length > 50 ? task.description|slice(0, 50) ~ '...' : task.description) : 'N/A' }}
 											</span>
 										</td>
 										<td class="d-none d-lg-table-cell">{{ task.dueDate ? task.dueDate|date('d/m/Y') : 'Non définie' }}</td>
 										<td>
-											<div class="d-flex justify-content-center gap-1">
-												<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-sm btn-warning" title="Modifier">
+											<span class="badge bg-{{ task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">
+												{{ task.statusLabel }}
+											</span>
+										</td>
+										<td>
+											{% if task.priority == 'high' %}
+												<span class="badge bg-danger">
+													Haute
+												</span>
+											{% elseif task.priority == 'medium' %}
+												<span class="badge bg-warning text-dark">
+													Moyenne
+												</span>
+											{% else %}
+												<span class="badge bg-info text-dark">
+													Basse
+												</span>
+											{% endif %}
+										</td>
+										<td>
+											<div class="d-flex flex-column flex-md-row justify-content-center gap-1">
+												<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-sm btn-warning mb-1 mb-md-0" title="Modifier">
 													<i class="fas fa-edit"></i>
 												</a>
 												<button type="button" class="btn btn-sm btn-danger delete-task-btn" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" data-csrf-token="{{ csrf_token('delete' ~ task.id) }}" title="Supprimer">
@@ -213,44 +226,70 @@
 				</div>
 			{% endif %}
 		</div>
-	</div>
 
-	{# Modal de confirmation de suppression (pour index) #}
-	<div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true">
-		<div class="modal-dialog modal-dialog-centered">
-			<div class="modal-content">
-				<div class="modal-header border-0">
-					<h5 class="modal-title" id="deleteTaskModalLabel">
-						<i class="fas fa-exclamation-triangle text-danger me-2"></i>
-						Confirmer la suppression
-					</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
-					<p>
-						Êtes-vous sûr de vouloir supprimer la tâche
-						<strong id="taskToDeleteTitle"></strong>
-						?
-					</p>
-					<div class="alert alert-warning">
-						<i class="fas fa-exclamation-triangle me-2"></i>
-						<strong>Attention :</strong>
-						Cette action est irréversible.
+		{# CONTENEUR POUR LES BOUTONS MOBILES #}
+		<div class="d-sm-none d-flex justify-content-center gap-2 mb-4">
+			{% if project %}
+				<div class="dropdown">
+					<button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+						<i class="fas fa-plus me-1"></i>
+						Ajout rapide
+					</button>
+					<div class="dropdown-menu dropdown-menu-quick-add p-3" style="min-width: 300px;">
+						<form id="quickAddFormMobile" method="post" action="{{ project ? path('task_quick_add', {id: project.id}) : '#' }}">
+							<input type="hidden" name="_token" value="{{ csrf_token('quick-add') }}">
+							<div class="mb-2">
+								<input type="text" name="title" class="form-control" placeholder="Titre de la tâche" required>
+							</div>
+							<button type="submit" class="btn btn-success btn-sm w-100">
+								<i class="fas fa-plus me-1"></i>Ajouter
+							</button>
+						</form>
 					</div>
 				</div>
-				<div class="modal-footer border-0">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-					<form method="post" id="deleteTaskForm">
-						<input type="hidden" name="_token">
-						<button type="submit" class="btn btn-danger">
-							<i class="fas fa-trash me-2"></i>Supprimer
-						</button>
-					</form>
+			{% endif %}
+			<a href="{{ path('task_new', project ? {project: project.id} : {}) }}" class="btn btn-success">
+				<i class="fas fa-plus me-1"></i>Nouvelle tâche
+			</a>
+		</div>
+
+
+		{# Modal de confirmation de suppression (pour index) #}
+		<div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header border-0">
+						<h5 class="modal-title" id="deleteTaskModalLabel">
+							<i class="fas fa-exclamation-triangle text-danger me-2"></i>
+							Confirmer la suppression
+						</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<p>
+							Êtes-vous sûr de vouloir supprimer la tâche
+							<strong id="taskToDeleteTitle"></strong>
+							?
+						</p>
+						<div class="alert alert-warning">
+							<i class="fas fa-exclamation-triangle me-2"></i>
+							<strong>Attention :</strong>
+							Cette action est irréversible.
+						</div>
+					</div>
+					<div class="modal-footer border-0">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+						<form method="post" id="deleteTaskForm">
+							<input type="hidden" name="_token">
+							<button type="submit" class="btn btn-danger">
+								<i class="fas fa-trash me-2"></i>Supprimer
+							</button>
+						</form>
+					</div>
 				</div>
 			</div>
 		</div>
 	</div>
-
 {% endblock %}
 
 {% block javascripts %}
@@ -258,73 +297,74 @@
 
 	<script>
 		document.addEventListener('DOMContentLoaded', function () {
-const deleteModalElement = document.getElementById('deleteTaskModal');
-if (deleteModalElement) {
-const deleteModal = new bootstrap.Modal(deleteModalElement);
-const deleteForm = document.getElementById('deleteTaskForm');
-const taskTitleElement = document.getElementById('taskToDeleteTitle');
-const tokenInput = deleteForm.querySelector('input[name="_token"]');
+			const deleteModalElement = document.getElementById('deleteTaskModal');
+			if (deleteModalElement) {
+				const deleteModal = new bootstrap.Modal(deleteModalElement);
+				const deleteForm = document.getElementById('deleteTaskForm');
+				const taskTitleElement = document.getElementById('taskToDeleteTitle');
+				const tokenInput = deleteForm.querySelector('input[name="_token"]');
 
-document.querySelectorAll('.delete-task-btn').forEach(button => {
-button.addEventListener('click', function (event) {
-event.preventDefault();
-event.stopPropagation();
+				document.querySelectorAll('.delete-task-btn').forEach(button => {
+					button.addEventListener('click', function (event) {
+						event.preventDefault();
+						event.stopPropagation();
 
-const taskId = this.getAttribute('data-task-id');
-const taskTitle = this.getAttribute('data-task-title');
-const csrfToken = this.getAttribute('data-csrf-token');
+						const taskId = this.getAttribute('data-task-id');
+						const taskTitle = this.getAttribute('data-task-title');
+						const csrfToken = this.getAttribute('data-csrf-token');
 
-if (taskTitleElement) {
-taskTitleElement.textContent = taskTitle;
-}
+						if (taskTitleElement) {
+							taskTitleElement.textContent = taskTitle;
+						}
 
-if (deleteForm) {
-const deletePath = "{{ path('task_delete', {id: 'TASK_ID'}) }}";
-deleteForm.action = deletePath.replace('TASK_ID', taskId);
-}
+						if (deleteForm) {
+							const deletePath = "{{ path('task_delete', {id: 'TASK_ID'}) }}";
+							deleteForm.action = deletePath.replace('TASK_ID', taskId);
+						}
 
-if (tokenInput) {
-tokenInput.value = csrfToken;
-}
+						if (tokenInput) {
+							tokenInput.value = csrfToken;
+						}
 
-deleteModal.show();
-});
-});
-}
+						deleteModal.show();
+					});
+				});
+			}
 
-const quickAddForm = document.getElementById('quickAddForm');
-if (quickAddForm) {
-quickAddForm.addEventListener('submit', function (event) {
-event.preventDefault();
-const button = this.querySelector('button[type="submit"]');
-button.disabled = true;
-button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Ajout...';
+			const quickAddForms = document.querySelectorAll('#quickAddForm, #quickAddFormMobile');
 
-const formData = new FormData(this);
-const url = this.action;
+			quickAddForms.forEach(form => {
+				form.addEventListener('submit', function (event) {
+					event.preventDefault();
+					const button = this.querySelector('button[type="submit"]');
+					button.disabled = true;
+					button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Ajout...';
 
-fetch(url, {
-method: 'POST',
-body: formData,
-headers: {
-'X-Requested-With': 'XMLHttpRequest'
-}
-}).then(response => response.json()).then(data => {
-if (data.success) { // Redirection vers la même page pour recharger la liste des tâches
-window.location.reload();
-} else {
-alert('Erreur: ' + data.message);
-}
-}).catch(error => {
-console.error('Erreur:', error);
-alert('Une erreur s\'est produite. Veuillez réessayer.');
-}). finally(() => {
-button.disabled = false;
-button.innerHTML = '<i class="fas fa-plus me-1"></i>Ajouter';
-quickAddForm.reset();
-});
-});
-}
-});
+					const formData = new FormData(this);
+					const url = this.action;
+
+					fetch(url, {
+						method: 'POST',
+						body: formData,
+						headers: {
+							'X-Requested-With': 'XMLHttpRequest'
+						}
+					}).then(response => response.json()).then(data => {
+						if (data.success) {
+							window.location.reload();
+						} else {
+							alert('Erreur: ' + data.message);
+						}
+					}).catch(error => {
+						console.error('Erreur:', error);
+						alert('Une erreur s\'est produite. Veuillez réessayer.');
+					}).finally(() => {
+						button.disabled = false;
+						button.innerHTML = '<i class="fas fa-plus me-1"></i>Ajouter';
+						form.reset();
+					});
+				});
+			});
+		});
 	</script>
 {% endblock %}
