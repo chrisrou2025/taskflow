@@ -65,24 +65,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'boolean')]
     private bool $isVerified = false;
 
-    public function isVerified(): bool
-    {
-        return $this->isVerified;
-    }
-
-    public function setIsVerified(bool $isVerified): static
-    {
-        $this->isVerified = $isVerified;
-        return $this;
-    }
-
-    // Relation OneToMany avec Project
+    // Relation OneToMany avec Project (projets possédés)
     #[ORM\OneToMany(mappedBy: 'owner', targetEntity: Project::class, orphanRemoval: true)]
     private Collection $projects;
+
+    // Relation OneToMany avec Task pour l'assignation (AJOUT PRINCIPAL)
+    #[ORM\OneToMany(mappedBy: 'assignee', targetEntity: Task::class)]
+    private Collection $assignedTasks;
 
     public function __construct()
     {
         $this->projects = new ArrayCollection();
+        $this->assignedTasks = new ArrayCollection(); // Initialisation de la nouvelle collection
         $this->createdAt = new \DateTimeImmutable();
     }
 
@@ -174,6 +168,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function isVerified(): bool
+    {
+        return $this->isVerified;
+    }
+
+    public function setIsVerified(bool $isVerified): static
+    {
+        $this->isVerified = $isVerified;
+        return $this;
+    }
+
     // Getters et setters pour les champs de reset password
     public function getResetToken(): ?string
     {
@@ -197,6 +202,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    // Méthodes pour la gestion des projets
     public function getProjects(): Collection
     {
         return $this->projects;
@@ -224,12 +230,112 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    // Méthodes pour la gestion des tâches assignées (NOUVELLES MÉTHODES)
+    /**
+     * @return Collection<int, Task>
+     */
+    public function getAssignedTasks(): Collection
+    {
+        return $this->assignedTasks;
+    }
+
+    public function addAssignedTask(Task $task): static
+    {
+        if (!$this->assignedTasks->contains($task)) {
+            $this->assignedTasks->add($task);
+            $task->setAssignee($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAssignedTask(Task $task): static
+    {
+        if ($this->assignedTasks->removeElement($task)) {
+            // Définit la relation à null si c'était l'utilisateur assigné
+            if ($task->getAssignee() === $this) {
+                $task->setAssignee(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Retourne le nombre de tâches assignées à cet utilisateur
+     */
+    public function getAssignedTasksCount(): int
+    {
+        return $this->assignedTasks->count();
+    }
+
+    /**
+     * Retourne les tâches assignées par statut
+     */
+    public function getAssignedTasksByStatus(string $status): Collection
+    {
+        return $this->assignedTasks->filter(
+            function (Task $task) use ($status) {
+                return $task->getStatus() === $status;
+            }
+        );
+    }
+
+    /**
+     * Retourne le nombre de tâches terminées assignées à cet utilisateur
+     */
+    public function getCompletedAssignedTasksCount(): int
+    {
+        return $this->getAssignedTasksByStatus(Task::STATUS_COMPLETED)->count();
+    }
+
+    /**
+     * Retourne le nombre de tâches en cours assignées à cet utilisateur
+     */
+    public function getInProgressAssignedTasksCount(): int
+    {
+        return $this->getAssignedTasksByStatus(Task::STATUS_IN_PROGRESS)->count();
+    }
+
+    /**
+     * Retourne le nombre de tâches à faire assignées à cet utilisateur
+     */
+    public function getTodoAssignedTasksCount(): int
+    {
+        return $this->getAssignedTasksByStatus(Task::STATUS_TODO)->count();
+    }
+
+    /**
+     * Vérifie si l'utilisateur a des tâches en retard
+     */
+    public function hasOverdueTasks(): bool
+    {
+        foreach ($this->assignedTasks as $task) {
+            if ($task->isOverdue()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Retourne les tâches en retard assignées à cet utilisateur
+     */
+    public function getOverdueTasks(): Collection
+    {
+        return $this->assignedTasks->filter(
+            function (Task $task) {
+                return $task->isOverdue();
+            }
+        );
+    }
+
     /**
      * Retourne le nom complet de l'utilisateur
      */
     public function getFullName(): string
     {
-        return $this->firstName . ' ' . $this->lastName;
+        return trim($this->firstName . ' ' . $this->lastName);
     }
 
     /**

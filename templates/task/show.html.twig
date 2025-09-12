@@ -6,8 +6,7 @@
 {% endblock %}
 
 {% block body %}
-	<div
-		class="container-fluid pb-5 mb-5 pb-lg-0 mb-lg-0">
+	<div class="container-fluid pb-5 mb-5 pb-lg-0 mb-lg-0">
 		<nav aria-label="breadcrumb" class="mb-3">
 			<ol class="breadcrumb">
 				<li class="breadcrumb-item">
@@ -50,8 +49,7 @@
 							{% if task.updatedAt %}
 								<small>
 									<i class="fas fa-edit me-1"></i>
-									Mise à jour 
-le
+									Mise à jour le
 									{{ task.updatedAt|date('d/m/Y à H:i') }}
 								</small>
 							{% endif %}
@@ -64,20 +62,18 @@ le
 							{% endif %}
 						</div>
 					</div>
+					
+					{# Boutons pour la vue desktop (grands écrans) #}
 					<div class="d-none d-lg-flex gap-2">
 						<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-primary">
 							<i class="fas fa-edit me-2"></i>Modifier
 						</a>
-						
-						{# Bouton pour changer le statut #}
 						<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
 							<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
 							<button type="submit" class="btn btn-outline-secondary" title="Actualiser la tâche">
 								<i class="fas fa-sync me-2"></i>Actualiser
 							</button>
 						</form>
-						
-						{# Bouton de suppression #}
 						<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" title="Supprimer cette tâche">
 							<i class="fas fa-trash me-2"></i>Supprimer
 						</button>
@@ -87,19 +83,16 @@ le
 		</div>
 
 		<div class="row">
-			<div
-				class="col-lg-8">
+			<div class="col-lg-8">
 				<div class="card border-0 shadow-sm mb-4">
 					<div class="card-header bg-white">
-						<h5
-							class="card-title mb-0">
+						<h5 class="card-title mb-0">
 							<i class="fas fa-align-left me-2 text-primary"></i>Description
 						</h5>
 					</div>
 					<div class="card-body">
 						{% if task.description %}
-							<p class="mb-0">{{ task.description|nl2br 
-}}</p>
+							<p class="mb-0">{{ task.description|nl2br }}</p>
 						{% else %}
 							<p class="text-muted mb-0">Aucune description n'a été ajoutée à cette tâche.</p>
 						{% endif %}
@@ -120,24 +113,12 @@ le
 							</a>
 						</div>
 						{% if task.project.description %}
-							<p class="text-muted mb-0">{{ task.project.description }}</p>
+							<p class="text-muted mb-0">{{ task.project.description|striptags|length > 150 ? task.project.description|striptags|slice(0, 150) ~ '...' : task.project.description|striptags }}</p>
 						{% endif %}
-						<div class="mt-3">
-							<div class="d-flex justify-content-between align-items-center mb-2">
-								<small class="text-muted">Progression du projet</small>
-								<small class="text-muted">{{ task.project.progressPercentage }}%</small>
-							</div>
-							<div class="progress" style="height: 6px;">
-								<div class="progress-bar bg-{{ task.project.progressPercentage == 100 ?
-'success' : (task.project.progressPercentage > 50 ? 'primary' : 'warning') }}" style="width: {{ task.project.progressPercentage }}%"></div>
-							</div>
-						</div>
 					</div>
 				</div>
 			</div>
-
-			<div
-				class="col-lg-4">
+			<div class="col-lg-4">
 				<div class="card border-0 shadow-sm mb-4">
 					<div class="card-header bg-white">
 						<h6 class="card-title mb-0">
@@ -145,72 +126,73 @@ le
 						</h6>
 					</div>
 					<div class="card-body">
-						<div class="row g-3">
-							<div class="col-6">
-								<small class="text-muted d-block">Statut</small>
-								<span class="badge bg-{{ task.status == 'completed' ?
-'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">
-									{{ task.statusLabel }}
-								</span>
-							</div>
-							<div class="col-6">
-								<small class="text-muted d-block">Priorité</small>
-								<span class="badge bg-{{ task.priority == 'high' ?
-'danger' : (task.priority == 'medium' ? 'warning' : 'secondary') }}">
-									{{ task.priorityLabel }}
-								</span>
-							</div>
-							<div class="col-12">
-								<small class="text-muted d-block">Échéance</small>
-								{% if task.dueDate %}
-									<span class="{{ task.isOverdue and not task.isCompleted ?
-'text-danger fw-bold' : 'text-dark' }}">
-										{% if task.isOverdue and not task.isCompleted %}
-											<i class="fas fa-exclamation-triangle me-1"></i>
-										{% endif %}
-										{{ task.dueDate|date('d/m/Y à H:i') }}
-									</span>
-								{% else %}
-									<span class="text-muted">Aucune échéance définie</span>
-								{% endif %}
-							</div>
+						<div class="d-flex justify-content-between align-items-center mb-2">
+							<small class="text-muted">Statut :</small>
+							<span class="badge bg-{{ task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">{{ task.statusLabel }}</span>
+						</div>
+						<div class="d-flex justify-content-between align-items-center mb-2">
+							<small class="text-muted">Priorité :</small>
+							{% if task.priority == 'high' %}
+								<span class="badge bg-danger">Haute</span>
+							{% elseif task.priority == 'medium' %}
+								<span class="badge bg-warning text-dark">Moyenne</span>
+							{% else %}
+								<span class="badge bg-info text-dark">Basse</span>
+							{% endif %}
+						</div>
+						<div class="d-flex justify-content-between align-items-center">
+							<small class="text-muted">Date limite :</small>
+							<small class="text-muted">{{ task.dueDate ? task.dueDate|date('d/m/Y') : 'Non définie' }}</small>
 						</div>
 					</div>
 				</div>
-
-				<div class="d-flex flex-column gap-2 d-lg-none mt-3">
-					<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-outline-primary w-100">
-						<i class="fas fa-edit"></i>
-						<span class="ms-1">Modifier</span>
-					</a>
-					
-					{# Bouton pour changer le statut #}
-					<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
-						<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
-						<button type="submit" class="btn btn-outline-secondary w-100">
-							<i class="fas fa-sync"></i>
-							<span class="ms-1">Actualiser la tâche</span>
-						</button>
-					</form>
-					
-					{# Bouton de suppression pour mobile #}
-					<button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#deleteModal">
-						<i class="fas fa-trash"></i>
-						<span class="ms-1">Supprimer</span>
-					</button>
+				<div class="card border-0 shadow-sm">
+					<div class="card-header bg-white">
+						<h6 class="card-title mb-0">
+							<i class="fas fa-user-circle me-2 text-primary"></i>Responsable
+						</h6>
+					</div>
+					<div class="card-body text-center">
+						{% if task.assignee %}
+							<img src="https://via.placeholder.com/80" alt="Avatar" class="rounded-circle mb-2">
+							<h5 class="mb-0">{{ task.assignee.fullName }}</h5>
+							<p class="text-muted mb-0">Responsable de la tâche</p>
+						{% else %}
+							<img src="https://via.placeholder.com/80" alt="Avatar par défaut" class="rounded-circle mb-2">
+							<h5 class="mb-0">Non attribué</h5>
+							<p class="text-muted mb-0">Cette tâche n'a pas de responsable</p>
+						{% endif %}
+					</div>
 				</div>
+			</div>
+		</div>
+
+		{# Boutons pour la vue mobile (petits écrans) #}
+		<div class="row d-lg-none mt-4">
+			<div class="col-12 d-flex flex-wrap gap-2 justify-content-center">
+				<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-sm btn-primary" title="Modifier la tâche">
+					<i class="fas fa-edit"></i>
+				</a>
+				<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
+					<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
+					<button type="submit" class="btn btn-sm btn-outline-secondary" title="Actualiser le statut">
+						<i class="fas fa-sync"></i>
+					</button>
+				</form>
+				<button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" title="Supprimer la tâche">
+					<i class="fas fa-trash"></i>
+				</button>
 			</div>
 		</div>
 	</div>
 
-	<div class="modal fade" id="deleteModal" tabindex="-1">
+	<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
 					<h5 class="modal-title">
 						<i class="fas fa-exclamation-triangle text-danger me-2"></i>
-						Confirmer la 
-suppression
+						Confirmer la suppression
 					</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 				</div>
@@ -222,7 +204,7 @@ suppression
 						<i class="fas fa-exclamation-triangle me-2"></i>
 						<strong>Attention :</strong>
 						Cette action est irréversible.
-</div>
+					</div>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
@@ -241,18 +223,10 @@ suppression
 {% block stylesheets %}
 	{{ parent() }}
 	<style>
-		.progress {
-			background-color: rgba(0, 0, 0, 0.1);
-}
-		.card-header {
-			border-bottom: 1px solid #dee2e6;
-		}
-		
-		/* Styles pour les boutons d'action sur desktop */
-		@media (min-width: 992px) {
-			.d-lg-flex .btn {
-				white-space: nowrap;
-}
+		.task-badge-small {
+			font-size: 0.75rem;
+			padding: 0.25em 0.5em;
+			border-radius: 0.25rem;
 		}
 	</style>
 {% endblock %}

@@ -36,11 +36,11 @@ class TaskType extends AbstractType
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Décrivez en détail cette tâche...',
                     'rows' => 4,
+                    'placeholder' => 'Ajoutez des détails sur la tâche (optionnel)',
                     'maxlength' => 2000
                 ],
-                'help' => 'Description détaillée de la tâche (maximum 2000 caractères)'
+                'help' => 'Vous pouvez laisser ce champ vide.'
             ])
             ->add('status', ChoiceType::class, [
                 'label' => 'Statut',
@@ -48,7 +48,7 @@ class TaskType extends AbstractType
                 'attr' => [
                     'class' => 'form-select'
                 ],
-                'help' => 'Statut actuel de la tâche'
+                'help' => 'État actuel de la tâche'
             ])
             ->add('priority', ChoiceType::class, [
                 'label' => 'Priorité',
@@ -57,6 +57,24 @@ class TaskType extends AbstractType
                     'class' => 'form-select'
                 ],
                 'help' => 'Niveau de priorité de la tâche'
+            ])
+            ->add('assignee', EntityType::class, [
+                'class' => User::class,
+                'choice_label' => 'fullName',
+                'label' => 'Responsable',
+                'placeholder' => 'Non attribué',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-select'
+                ],
+                'help' => 'Utilisateur responsable de cette tâche',
+                'query_builder' => function ($repository) {
+                    return $repository->createQueryBuilder('u')
+                        ->where('u.isVerified = :verified')
+                        ->setParameter('verified', true)
+                        ->orderBy('u.firstName', 'ASC')
+                        ->addOrderBy('u.lastName', 'ASC');
+                }
             ])
             ->add('dueDate', DateTimeType::class, [
                 'label' => 'Date d\'échéance',

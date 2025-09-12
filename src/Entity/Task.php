@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Task
 {
     // Constantes pour les statuts
@@ -69,13 +70,24 @@ class Task
     private ?\DateTimeImmutable $completedAt = null;
 
     // Relation ManyToOne avec Project
-    #[ORM\ManyToOne(inversedBy: 'tasks')]
+    #[ORM\ManyToOne(targetEntity: Project::class, inversedBy: 'tasks')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Project $project = null;
+
+    // Relation ManyToOne avec User pour l'assignation (AJOUT PRINCIPAL)
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'assignedTasks')]
+    #[ORM\JoinColumn(name: 'assignee_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?User $assignee = null;
 
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+    }
+
+    #[ORM\PreUpdate]
+    public function setUpdatedAtValue(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -112,16 +124,17 @@ class Task
 
     public function setStatus(string $status): static
     {
-        $this->status = $status;
-
-        // Si la tâche est marquée comme terminée, enregistrer la date
-        if ($status === self::STATUS_COMPLETED && $this->completedAt === null) {
-            $this->completedAt = new \DateTimeImmutable();
-        }
-
-        // Si la tâche n'est plus terminée, réinitialiser la date de completion
-        if ($status !== self::STATUS_COMPLETED) {
-            $this->completedAt = null;
+        // Vérifier si le statut change réellement
+        if ($this->status !== $status) {
+            $this->status = $status;
+            
+            // Si la tâche est marquée comme terminée, enregistrer la date
+            if ($status === self::STATUS_COMPLETED) {
+                $this->completedAt = new \DateTimeImmutable();
+            } else {
+                // Si la tâche n'est plus terminée, réinitialiser la date de completion
+                $this->completedAt = null;
+            }
         }
 
         return $this;
@@ -190,6 +203,18 @@ class Task
     public function setProject(?Project $project): static
     {
         $this->project = $project;
+        return $this;
+    }
+
+    // Méthodes pour la gestion de l'assignation (NOUVELLES MÉTHODES)
+    public function getAssignee(): ?User
+    {
+        return $this->assignee;
+    }
+
+    public function setAssignee(?User $assignee): static
+    {
+        $this->assignee = $assignee;
         return $this;
     }
 
@@ -284,6 +309,22 @@ class Task
             self::STATUS_COMPLETED => 'status-completed',
             default => ''
         };
+    }
+
+    /**
+     * Vérifie si la tâche a un responsable assigné
+     */
+    public function hasAssignee(): bool
+    {
+        return $this->assignee !== null;
+    }
+
+    /**
+     * Retourne le nom du responsable ou "Non attribué"
+     */
+    public function getAssigneeDisplayName(): string
+    {
+        return $this->assignee ? $this->assignee->getFullName() : 'Non attribué';
     }
 
     /**

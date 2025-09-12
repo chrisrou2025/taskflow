@@ -38,227 +38,233 @@
 			<div class="col-12">
 				<div class="d-flex justify-content-between align-items-center flex-wrap">
 					<div class="mb-2 mb-md-0">
-						<h1 class="h3 mb-2">
-							✅
-							{% if project %}Tâches de
-								{{ project.title }}{% else %}Mes Tâches
-							{% endif %}
-						</h1>
-						<p class="text-muted mb-0 d-none d-md-block">
-							{% if project %}
-								Gérez les tâches de ce projet
-							{% else %}
-								Vue d'ensemble de toutes vos tâches
-							{% endif %}
-						</p>
-					</div>
-					<div class="d-none d-sm-flex gap-2 header-actions">
 						{% if project %}
-							<div class="dropdown">
-								<button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
-									<i class="fas fa-plus me-1 me-md-2"></i>
-									<span class="d-none d-sm-inline">Ajout rapide</span>
-								</button>
-								<div class="dropdown-menu dropdown-menu-quick-add p-3" style="min-width: 300px;">
-									<form id="quickAddForm" method="post" action="{{ project ? path('task_quick_add', {id: project.id}) : '#' }}">
-										<input type="hidden" name="_token" value="{{ csrf_token('quick-add') }}">
-										<div class="mb-2">
-											<input type="text" name="title" class="form-control" placeholder="Titre de la tâche" required>
-										</div>
-										<button type="submit" class="btn btn-success btn-sm w-100">
-											<i class="fas fa-plus me-1"></i>Ajouter
-										</button>
-									</form>
-								</div>
-							</div>
-						{% endif %}
-						<a href="{{ path('task_new', project ? {project: project.id} : {}) }}" class="btn btn-success">
-							<i class="fas fa-plus me-1 me-md-2"></i>
-							<span class="d-none d-sm-inline">Nouvelle tâche</span>
-							<span class="d-sm-none">Nouveau</span>
-						</a>
-					</div>
-				</div>
-			</div>
-		</div>
-
-		<div class="card border-0 shadow-sm mb-4">
-			<div class="card-body">
-				<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-					<h5 class="card-title mb-0">
-						<i class="fas fa-filter me-2"></i>Filtres
-					</h5>
-				</div>
-				<form method="get" class="row g-3">
-					{% if project %}
-						<input type="hidden" name="project" value="{{ project.id }}">
-					{% endif %}
-
-					{% if not project %}
-						<div class="col-md-4">
-							<select class="form-select" name="project" id="projectFilter" aria-label="Filtrer par projet">
-								<option value="">Tous les projets</option>
-								{% for proj in projects %}
-									<option value="{{ proj.id }}" {{ app.request.get('project') == proj.id ? 'selected' : '' }}>
-										{{ proj.title }}
-									</option>
-								{% endfor %}
-							</select>
-						</div>
-					{% endif %}
-					<div class="col-md-4">
-						<select class="form-select" name="status" id="statusFilter" aria-label="Filtrer par statut">
-							<option value="">Tous les statuts</option>
-							{% for label, value in status_choices %}
-								<option value="{{ value }}" {{ current_status == value ? 'selected' : '' }}>
-									{{ label }}
-								</option>
-							{% endfor %}
-						</select>
-					</div>
-					<div class="col-md-4">
-						<select class="form-select" name="priority" id="priorityFilter" aria-label="Filtrer par priorité">
-							<option value="">Toutes les priorités</option>
-							{% for label, value in priority_choices %}
-								<option value="{{ value }}" {{ current_priority == value ? 'selected' : '' }}>
-									{{ label }}
-								</option>
-							{% endfor %}
-						</select>
-					</div>
-
-					<div class="col-12">
-						<div class="d-flex gap-2">
-							<button type="submit" class="btn btn-primary">
-								<i class="fas fa-check me-2"></i>Appliquer
-							</button>
-							<a href="{{ path('task_index', project ? {project: project.id} : {}) }}" class="btn btn-outline-secondary">
-								<i class="fas fa-times me-2"></i>Réinitialiser
-							</a>
-						</div>
-					</div>
-				</form>
-			</div>
-		</div>
-
-		<div id="tasks-container">
-			{% if tasks is empty %}
-				<div class="text-center py-5">
-					<div class="mb-4">
-						<i class="fas fa-check-square fa-5x text-muted"></i>
-					</div>
-					<h4 class="mb-3">
-						{% if current_status or current_priority or app.request.get('project') %}
-							Aucune tâche ne correspond à vos filtres.
+							<h1 class="h3 mb-1">Tâches de
+								{{ project.title }}</h1>
+							<p class="text-muted mb-0">{{ project.title }}
+								compte
+								{{ project.tasksCount }}
+								tâches ({{ project.completedTasksCount }}
+								terminées)</p>
 						{% else %}
-							Vous n'avez aucune tâche pour le moment !
+							<h1 class="h3 mb-1">Toutes mes tâches</h1>
+							<p class="text-muted mb-0">Retrouvez toutes vos tâches ici</p>
 						{% endif %}
-					</h4>
-					<p class="text-muted mb-4">
-						Créez votre première tâche pour commencer à vous organiser.
-					</p>
-					<a href="{{ path('task_new', project ? {project: project.id} : {}) }}" class="btn btn-success btn-lg">
-						<i class="fas fa-plus me-2"></i>
-						Créer une tâche
-					</a>
+					</div>
 				</div>
-			{% else %}
-				<div id="list-view">
-					<div class="table-responsive">
-						<table class="table table-hover align-middle">
-							<thead class="table-light">
-								<tr>
-									<th>Titre</th>
-									<th class="d-none d-sm-table-cell">Description</th>
-									<th class="d-none d-lg-table-cell">Date limite</th>
-									<th>Statut</th>
-									<th>Priorité</th>
-									<th class="text-center">Actions</th>
-								</tr>
-							</thead>
-							<tbody>
-								{% for task in tasks %}
-									<tr class="task-row">
-										<td class="fw-medium">
-											{{ task.title }}
-										</td>
-										<td class="d-none d-sm-table-cell">
-											<span title="{{ task.description }}">
-												{{ task.description ? (task.description|length > 50 ? task.description|slice(0, 50) ~ '...' : task.description) : 'N/A' }}
-											</span>
-										</td>
-										<td class="d-none d-lg-table-cell">{{ task.dueDate ? task.dueDate|date('d/m/Y') : 'Non définie' }}</td>
-										<td>
-											<span class="badge bg-{{ task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">
-												{{ task.statusLabel }}
-											</span>
-										</td>
-										<td>
-											{% if task.priority == 'high' %}
-												<span class="badge bg-danger">
-													Haute
-												</span>
-											{% elseif task.priority == 'medium' %}
-												<span class="badge bg-warning text-dark">
-													Moyenne
-												</span>
-											{% else %}
-												<span class="badge bg-info text-dark">
-													Basse
-												</span>
-											{% endif %}
-										</td>
-										<td>
-											<div class="d-flex flex-column flex-md-row justify-content-center gap-1">
-												<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-sm btn-warning mb-1 mb-md-0" title="Modifier">
-													<i class="fas fa-edit"></i>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-12">
+				{% if tasks is empty %}
+					<div class="text-center py-5">
+						<div class="mb-4">
+							<i class="fas fa-check-double fa-5x text-success"></i>
+						</div>
+						{% if project %}
+							<h4 class="mb-3">Toutes les tâches du projet ont été terminées !
+								🎉</h4>
+							<p class="text-muted mb-4">Bravo ! Ce projet est terminé. Vous pouvez en ajouter d'autres depuis votre tableau de bord.</p>
+							<a href="{{ path('task_new', {project: project.id}) }}" class="btn btn-primary">
+								<i class="fas fa-plus me-2"></i>Ajouter une nouvelle tâche
+							</a>
+						{% else %}
+							<h4 class="mb-3">Aucune tâche pour le moment</h4>
+							<p class="text-muted mb-4">Créez votre première tâche pour commencer à organiser votre travail.</p>
+							<a href="{{ path('task_new') }}" class="btn btn-primary">
+								<i class="fas fa-plus me-2"></i>Créer une nouvelle tâche
+							</a>
+						{% endif %}
+					</div>
+				{% else %}
+					{# Vue Tableau pour les grands écrans #}
+					<div class="d-none d-md-block">
+						<div class="card border-0 shadow-sm">
+							<div class="card-body">
+								<div class="table-responsive">
+									<table class="table table-hover align-middle mb-0">
+										<thead>
+											<tr>
+												<th>Titre</th>
+												{% if not project %}
+													<th>Projet</th>
+												{% endif %}
+												<th>Responsable</th>
+												<th>Priorité</th>
+												<th>Date limite</th>
+												<th>Statut</th>
+												<th class="d-none d-sm-table-cell text-end">Actions</th>
+											</tr>
+										</thead>
+										<tbody>
+											{% for task in tasks %}
+												<tr class="task-row">
+													<td data-label="Titre">
+														{{ task.title }}
+													</td>
+													{% if not project %}
+														<td data-label="Projet">
+															<span class="text-muted">
+																<i class="fas fa-folder me-1"></i>{{ task.project.title }}
+															</span>
+														</td>
+													{% endif %}
+													<td data-label="Responsable">
+														{% if task.assignee %}
+															{{ task.assignee.fullName }}
+														{% else %}
+															<span class="text-muted fst-italic">Non assigné</span>
+														{% endif %}
+													</td>
+													<td data-label="Priorité">
+														{% if task.priority == 'high' %}
+															<span class="badge bg-danger">Haute</span>
+														{% elseif task.priority == 'medium' %}
+															<span class="badge bg-warning text-dark">Moyenne</span>
+														{% else %}
+															<span class="badge bg-info text-dark">Basse</span>
+														{% endif %}
+													</td>
+													<td data-label="Date limite">
+														{% if task.dueDate %}
+															<span class="text-muted">{{ task.dueDate|date('d/m/Y') }}</span>
+														{% else %}
+															<span class="text-muted fst-italic">Non définie</span>
+														{% endif %}
+													</td>
+													<td data-label="Statut">
+														<span class="badge bg-{{ task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">{{ task.statusLabel }}</span>
+													</td>
+													<td data-label="Actions" class="text-end">
+														<div class="d-flex justify-content-end align-items-center gap-2">
+															<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-sm btn-outline-info" title="Voir les détails">
+																<i class="fas fa-eye"></i>
+															</a>
+															<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-sm btn-outline-warning" title="Modifier la tâche">
+																<i class="fas fa-edit"></i>
+															</a>
+															<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
+																<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
+																<button type="submit" class="btn btn-sm btn-outline-secondary" title="Actualiser le statut">
+																	<i class="fas fa-sync"></i>
+																</button>
+															</form>
+															<button type="button" class="btn btn-sm btn-outline-danger delete-task-btn" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" title="Supprimer la tâche">
+																<i class="fas fa-trash"></i>
+															</button>
+														</div>
+													</td>
+												</tr>
+											{% endfor %}
+										</tbody>
+									</table>
+								</div>
+
+								{# Pagination #}
+								{% if pages is defined and pages > 1 %}
+									<nav aria-label="Page navigation" class="mt-4">
+										<ul class="pagination justify-content-center">
+											<li class="page-item {{ currentPage == 1 ? 'disabled' : '' }}">
+												<a class="page-link" href="{{ path('task_index', {project: project ? project.id : null, page: currentPage - 1}) }}" aria-label="Previous">
+													<span aria-hidden="true">&laquo;</span>
 												</a>
-												<button type="button" class="btn btn-sm btn-danger delete-task-btn" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" data-csrf-token="{{ csrf_token('delete' ~ task.id) }}" title="Supprimer">
-													<i class="fas fa-trash"></i>
-												</button>
-											</div>
-										</td>
-									</tr>
-								{% endfor %}
-							</tbody>
-						</table>
-					</div>
-				</div>
-			{% endif %}
-		</div>
-
-		{# CONTENEUR POUR LES BOUTONS MOBILES #}
-		<div class="d-sm-none d-flex justify-content-center gap-2 mb-4">
-			{% if project %}
-				<div class="dropdown">
-					<button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
-						<i class="fas fa-plus me-1"></i>
-						Ajout rapide
-					</button>
-					<div class="dropdown-menu dropdown-menu-quick-add p-3" style="min-width: 300px;">
-						<form id="quickAddFormMobile" method="post" action="{{ project ? path('task_quick_add', {id: project.id}) : '#' }}">
-							<input type="hidden" name="_token" value="{{ csrf_token('quick-add') }}">
-							<div class="mb-2">
-								<input type="text" name="title" class="form-control" placeholder="Titre de la tâche" required>
+											</li>
+											{% for page in 1..pages %}
+												<li class="page-item {{ currentPage == page ? 'active' : '' }}">
+													<a class="page-link" href="{{ path('task_index', {project: project ? project.id : null, page: page}) }}">{{ page }}</a>
+												</li>
+											{% endfor %}
+											<li class="page-item {{ currentPage == pages ? 'disabled' : '' }}">
+												<a class="page-link" href="{{ path('task_index', {project: project ? project.id : null, page: currentPage + 1}) }}" aria-label="Next">
+													<span aria-hidden="true">&raquo;</span>
+												</a>
+											</li>
+										</ul>
+									</nav>
+								{% endif %}
 							</div>
-							<button type="submit" class="btn btn-success btn-sm w-100">
-								<i class="fas fa-plus me-1"></i>Ajouter
-							</button>
-						</form>
+						</div>
 					</div>
+
+					{# Vue Cartes pour les petits écrans #}
+					<div class="d-md-none">
+						{% for task in tasks %}
+							<div class="card mb-3 shadow-sm border-0">
+								<div class="card-body">
+									<h5 class="card-title fw-bold">
+										{{ task.title }}
+									</h5>
+									<ul class="list-unstyled mb-0 small text-muted">
+										{% if not project %}
+											<li class="mb-1">
+												<strong class="text-dark">Projet :</strong> 
+												<span class="text-muted">
+													<i class="fas fa-folder me-1"></i>{{ task.project.title }}
+												</span>
+											</li>
+										{% endif %}
+										<li class="mb-1">
+											<strong class="text-dark">Responsable :</strong> 
+											{% if task.assignee %}
+												{{ task.assignee.fullName }}
+											{% else %}
+												<span class="fst-italic">Non assigné</span>
+											{% endif %}
+										</li>
+										<li class="mb-1">
+											<strong class="text-dark">Priorité :</strong> 
+											{% if task.priority == 'high' %}
+												<span class="badge bg-danger">Haute</span>
+											{% elseif task.priority == 'medium' %}
+												<span class="badge bg-warning text-dark">Moyenne</span>
+											{% else %}
+												<span class="badge bg-info text-dark">Basse</span>
+											{% endif %}
+										</li>
+										<li class="mb-1">
+											<strong class="text-dark">Date limite :</strong> 
+											{% if task.dueDate %}
+												{{ task.dueDate|date('d/m/Y') }}
+											{% else %}
+												<span class="fst-italic">Non définie</span>
+											{% endif %}
+										</li>
+										<li>
+											<strong class="text-dark">Statut :</strong> 
+											<span class="badge bg-{{ task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">{{ task.statusLabel }}</span>
+										</li>
+									</ul>
+									<div class="d-flex justify-content-end align-items-center gap-2 mt-3">
+										<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-sm btn-outline-info" title="Voir les détails">
+											<i class="fas fa-eye"></i>
+										</a>
+										<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-sm btn-outline-warning" title="Modifier la tâche">
+											<i class="fas fa-edit"></i>
+										</a>
+										<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
+											<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
+											<button type="submit" class="btn btn-sm btn-outline-secondary" title="Actualiser le statut">
+												<i class="fas fa-sync"></i>
+											</button>
+										</form>
+										<button type="button" class="btn btn-sm btn-outline-danger delete-task-btn" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" title="Supprimer la tâche">
+												<i class="fas fa-trash"></i>
+											</button>
+										</div>
+									</div>
+								</div>
+							{% endfor %}
+						</div>
+					{% endif %}
 				</div>
-			{% endif %}
-			<a href="{{ path('task_new', project ? {project: project.id} : {}) }}" class="btn btn-success">
-				<i class="fas fa-plus me-1"></i>Nouvelle tâche
-			</a>
+			</div>
 		</div>
 
-
-		{# Modal de confirmation de suppression (pour index) #}
 		<div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true">
-			<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-dialog">
 				<div class="modal-content">
-					<div class="modal-header border-0">
+					<div class="modal-header">
 						<h5 class="modal-title" id="deleteTaskModalLabel">
 							<i class="fas fa-exclamation-triangle text-danger me-2"></i>
 							Confirmer la suppression
@@ -266,105 +272,137 @@
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 					</div>
 					<div class="modal-body">
-						<p>
-							Êtes-vous sûr de vouloir supprimer la tâche
-							<strong id="taskToDeleteTitle"></strong>
-							?
-						</p>
+						<p>Êtes-vous sûr de vouloir supprimer la tâche
+							<strong id="taskTitlePlaceholder"></strong>
+							?</p>
 						<div class="alert alert-warning">
 							<i class="fas fa-exclamation-triangle me-2"></i>
 							<strong>Attention :</strong>
 							Cette action est irréversible.
 						</div>
 					</div>
-					<div class="modal-footer border-0">
+					<div class="modal-footer">
 						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-						<form method="post" id="deleteTaskForm">
-							<input type="hidden" name="_token">
+						<form method="post" id="deleteTaskForm" class="d-inline">
+							<input type="hidden" name="_token" id="deleteTaskToken">
 							<button type="submit" class="btn btn-danger">
-								<i class="fas fa-trash me-2"></i>Supprimer
+								<i class="fas fa-trash me-2"></i>Supprimer définitivement
 							</button>
 						</form>
 					</div>
 				</div>
 			</div>
 		</div>
-	</div>
-{% endblock %}
+	{% endblock %}
 
-{% block javascripts %}
-	{{ parent() }}
+	{% block javascripts %}
+		{{ parent() }}
+		<script>
+			document.addEventListener('DOMContentLoaded', function() {
+				const deleteTaskModal = new bootstrap.Modal(document.getElementById('deleteTaskModal'));
+				const taskTitleElement = document.getElementById('taskTitlePlaceholder');
+				const deleteTaskForm = document.getElementById('deleteTaskForm');
+				const deleteTaskTokenInput = document.getElementById('deleteTaskToken');
+				const deleteButtons = document.querySelectorAll('.delete-task-btn');
 
-	<script>
-		document.addEventListener('DOMContentLoaded', function () {
-			const deleteModalElement = document.getElementById('deleteTaskModal');
-			if (deleteModalElement) {
-				const deleteModal = new bootstrap.Modal(deleteModalElement);
-				const deleteForm = document.getElementById('deleteTaskForm');
-				const taskTitleElement = document.getElementById('taskToDeleteTitle');
-				const tokenInput = deleteForm.querySelector('input[name="_token"]');
-
-				document.querySelectorAll('.delete-task-btn').forEach(button => {
-					button.addEventListener('click', function (event) {
-						event.preventDefault();
-						event.stopPropagation();
-
+				deleteButtons.forEach(button => {
+					button.addEventListener('click', function(event) {
 						const taskId = this.getAttribute('data-task-id');
 						const taskTitle = this.getAttribute('data-task-title');
-						const csrfToken = this.getAttribute('data-csrf-token');
+						const csrfToken = this.getAttribute('data-token');
 
 						if (taskTitleElement) {
 							taskTitleElement.textContent = taskTitle;
 						}
 
-						if (deleteForm) {
+						if (deleteTaskForm) {
 							const deletePath = "{{ path('task_delete', {id: 'TASK_ID'}) }}";
-							deleteForm.action = deletePath.replace('TASK_ID', taskId);
+							deleteTaskForm.action = deletePath.replace('TASK_ID', taskId);
 						}
 
-						if (tokenInput) {
-							tokenInput.value = csrfToken;
+						if (deleteTaskTokenInput) {
+							deleteTaskTokenInput.value = csrfToken;
 						}
 
-						deleteModal.show();
-					});
-				});
-			}
-
-			const quickAddForms = document.querySelectorAll('#quickAddForm, #quickAddFormMobile');
-
-			quickAddForms.forEach(form => {
-				form.addEventListener('submit', function (event) {
-					event.preventDefault();
-					const button = this.querySelector('button[type="submit"]');
-					button.disabled = true;
-					button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Ajout...';
-
-					const formData = new FormData(this);
-					const url = this.action;
-
-					fetch(url, {
-						method: 'POST',
-						body: formData,
-						headers: {
-							'X-Requested-With': 'XMLHttpRequest'
-						}
-					}).then(response => response.json()).then(data => {
-						if (data.success) {
-							window.location.reload();
-						} else {
-							alert('Erreur: ' + data.message);
-						}
-					}).catch(error => {
-						console.error('Erreur:', error);
-						alert('Une erreur s\'est produite. Veuillez réessayer.');
-					}).finally(() => {
-						button.disabled = false;
-						button.innerHTML = '<i class="fas fa-plus me-1"></i>Ajouter';
-						form.reset();
+						deleteTaskModal.show();
 					});
 				});
 			});
-		});
-	</script>
-{% endblock %}
+		</script>
+	{% endblock %}
+
+	{% block stylesheets %}
+		{{ parent() }}
+		<style>
+			/* Styles pour rendre le tableau responsive en mode "carte" */
+			@media screen and (max-width: 767px) {
+				.table-responsive .table thead {
+					display: none;
+					/* Masque l'en-tête du tableau sur mobile */
+				}
+
+				.table-responsive .table tbody,
+				.table-responsive .table tr,
+				.table-responsive .table td {
+					display: block;
+					/* Chaque élément devient un bloc */
+					width: 100%;
+				}
+
+				.table-responsive .table tr {
+					margin-bottom: 1rem;
+					border: 1px solid #dee2e6;
+					border-radius: 0.375rem;
+					/* Bords arrondis pour l'effet "carte" */
+				}
+
+				.table-responsive .table td {
+					/* Affiche les données à droite et l'étiquette à gauche */
+					text-align: right;
+					padding-left: 50%;
+					position: relative;
+					border: none;
+					border-bottom: 1px solid #f0f0f0;
+				}
+				
+				.table-responsive .table tr td:last-child {
+					border-bottom: none;
+					/* Pas de bordure pour la dernière cellule (Actions) */
+				}
+
+				.table-responsive .table td::before {
+					/* Affiche l'étiquette (depuis l'attribut data-label) */
+					content: attr(data-label);
+					position: absolute;
+					left: 10px;
+					width: calc(50% - 20px);
+					text-align: left;
+					font-weight: bold;
+					white-space: nowrap;
+				}
+
+				/* Mise à jour des styles pour les boutons d'action en mode mobile */
+				.table-responsive .table td[data-label="Actions"] {
+					text-align: center;
+					padding-left: 10px;
+					padding-right: 10px;
+					padding-top: 15px;
+					padding-bottom: 10px;
+				}
+				
+				.table-responsive .table td[data-label="Actions"]::before {
+					content: "";
+				}
+
+				.table-responsive .table td[data-label="Actions"] .d-flex {
+					justify-content: center !important;
+					/* Alignement des boutons au centre */
+				}
+				
+				/* Nouveaux styles pour corriger l'alignement vertical des icônes */
+				.btn-sm i.fas {
+					vertical-align: middle;
+				}
+			}
+		</style>
+	{% endblock %}

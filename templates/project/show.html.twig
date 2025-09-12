@@ -36,8 +36,7 @@
 								</div>
 								{# Version mobile : description tronquée comme avant #}
 								<p class="text-muted mb-2 small d-md-none">
-									{{ project.description|length > 60 ?
- project.description|slice(0, 60) ~ '...' : project.description }}
+									{{ project.description|length > 60 ? project.description|slice(0, 60) ~ '...' : project.description }}
 								</p>
 							{% endif %}
 						</div>
@@ -117,82 +116,8 @@
 						</a>
 					</div>
 				{% else %}
-					{# Vue mobile : Cards #}
-					<div class="d-md-none">
-						<div class="d-flex justify-content-between align-items-center mb-3">
-							<h2 class="h5 mb-0">Tâches ({{ project.tasksCount }})</h2>
-						</div>
-						<div class="row g-2">
-							{% for task in project.tasks %}
-								<div class="col-12">
-									{% set borderColor = 'border-secondary' %}
-									{% if task.status == 'in_progress' %}
-										{% set borderColor = 'border-warning' %}
-									{% elseif task.status == 'completed' %}
-										{% set borderColor = 'border-success' %}
-									{% endif %}
-									<div class="card border-start border-4 {{ borderColor }}">
-										<div class="card-body p-3">
-											<div class="d-flex justify-content-between align-items-start mb-2">
-												<div class="flex-grow-1 me-2">
-													<h6 class="card-title mb-1">{{ task.title }}</h6>
-													{# Affichage de la priorité sur mobile #}
-													<div class="d-flex align-items-center gap-2 small">
-														<div class="small text-muted">Priorité :</div>
-														{% if task.priority == 'high' %}
-															<span class="badge bg-danger">Haute</span>
-														{% elseif task.priority == 'medium' %}
-															<span class="badge bg-warning text-dark">Moyenne</span>
-														{% else %}
-															<span class="badge bg-info text-dark">Basse</span>
-														{% endif %}
-													</div>
-												</div>
-												<div class="d-flex align-items-center gap-2">
-													<div class="small text-muted">Statut :</div>
-													{% if task.status == 'completed' %}
-														<span class="badge bg-success flex-shrink-0">Terminée</span>
-													{% elseif task.status == 'in_progress' %}
-														<span class="badge bg-warning text-dark flex-shrink-0">En cours</span>
-													{% else %}
-														<span class="badge bg-secondary flex-shrink-0">À faire</span>
-													{% endif %}
-												</div>
-											</div>
-											{% if task.description %}
-												<p class="card-text small text-muted mb-2">
-													{{ task.description|length > 80 ?
- task.description|slice(0, 80) ~ '...' : task.description }}
-												</p>
-											{% endif %}
-											<div class="d-flex justify-content-between align-items-center">
-												<small class="text-muted">
-													<i class="fas fa-calendar me-1"></i>
-													{{ task.dueDate ?
- task.dueDate|date('d/m/Y') : 'Pas de date' }}
-												</small>
-												<div class="d-flex gap-1">
-													<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-outline-warning btn-sm" title="Modifier">
-														<i class="fas fa-edit"></i>
-													</a>
-													<button type="button" class="btn btn-outline-danger btn-sm" 
-														data-bs-toggle="modal" 
-														data-bs-target="#deleteTaskModal" 
-														data-task-id="{{ task.id }}"
-														data-task-title="{{ task.title }}"
-														title="Supprimer">
-														<i class="fas fa-trash"></i>
-													</button>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							{% endfor %}
-						</div>
-					</div>
-
-					{# Vue desktop : Table #}
+					
+					{# Tableau pour les écrans desktop #}
 					<div class="d-none d-md-block">
 						<div class="d-flex justify-content-between align-items-center mb-3">
 							<h2 class="h4 mb-0">Tâches</h2>
@@ -202,35 +127,27 @@
 								<thead class="table-light">
 									<tr>
 										<th>Titre</th>
-										<th class="d-none d-sm-table-cell">Description</th>
-										<th class="d-none d-lg-table-cell">Date limite</th>
-										<th>Statut</th>
+										<th>Responsable</th>
 										<th>Priorité</th>
-										<th class="text-center">Actions</th>
+										<th>Date limite</th>
+										<th>Statut</th>
+										<th class="text-end">Actions</th>
 									</tr>
 								</thead>
 								<tbody>
 									{% for task in project.tasks %}
 										<tr>
-											<td class="fw-medium">{{ task.title }}</td>
-											<td class="d-none d-sm-table-cell">
-												<span title="{{ task.description }}">
-													{{ task.description ?
- (task.description|length > 50 ? task.description|slice(0, 50) ~ '...' : task.description) : 'N/A' }}
-												</span>
+											<td data-label="Titre">
+												{{ task.title }}
 											</td>
-											<td class="d-none d-lg-table-cell">{{ task.dueDate ?
- task.dueDate|date('d/m/Y') : 'Non définie' }}</td>
-											<td>
-												{% if task.status == 'completed' %}
-													<span class="badge bg-success">Terminée</span>
-												{% elseif task.status == 'in_progress' %}
-													<span class="badge bg-warning text-dark">En cours</span>
+											<td data-label="Responsable">
+												{% if task.assignee %}
+													{{ task.assignee.fullName }}
 												{% else %}
-													<span class="badge bg-secondary">À faire</span>
+													<span class="text-muted fst-italic">Non assigné</span>
 												{% endif %}
 											</td>
-											<td>
+											<td data-label="Priorité">
 												{% if task.priority == 'high' %}
 													<span class="badge bg-danger">Haute</span>
 												{% elseif task.priority == 'medium' %}
@@ -239,17 +156,31 @@
 													<span class="badge bg-info text-dark">Basse</span>
 												{% endif %}
 											</td>
-											<td>
-												<div class="d-flex justify-content-center gap-1">
-													<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-sm btn-warning" title="Modifier">
+											<td data-label="Date limite">
+												{% if task.dueDate %}
+													<span class="text-muted">{{ task.dueDate|date('d/m/Y') }}</span>
+												{% else %}
+													<span class="text-muted fst-italic">Non définie</span>
+												{% endif %}
+											</td>
+											<td data-label="Statut">
+												<span class="badge bg-{{ task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">{{ task.statusLabel }}</span>
+											</td>
+											<td data-label="Actions" class="text-end">
+												<div class="d-flex justify-content-end align-items-center gap-2">
+													<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-sm btn-outline-info" title="Voir les détails">
+														<i class="fas fa-eye"></i>
+													</a>
+													<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-sm btn-outline-warning" title="Modifier la tâche">
 														<i class="fas fa-edit"></i>
 													</a>
-													<button type="button" class="btn btn-sm btn-danger" 
-														data-bs-toggle="modal" 
-														data-bs-target="#deleteTaskModal" 
-														data-task-id="{{ task.id }}"
-														data-task-title="{{ task.title }}"
-														title="Supprimer">
+													<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
+														<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
+														<button type="submit" class="btn btn-sm btn-outline-secondary" title="Actualiser le statut">
+															<i class="fas fa-sync"></i>
+														</button>
+													</form>
+													<button type="button" class="btn btn-sm btn-outline-danger delete-task-btn" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" title="Supprimer la tâche">
 														<i class="fas fa-trash"></i>
 													</button>
 												</div>
@@ -259,6 +190,71 @@
 								</tbody>
 							</table>
 						</div>
+					</div>
+
+					{# Liste de cartes pour les écrans mobiles #}
+					<div class="d-md-none">
+						<div class="d-flex justify-content-between align-items-center mb-3">
+							<h2 class="h4 mb-0">Tâches</h2>
+						</div>
+						{% for task in project.tasks %}
+							<div class="card mb-3 shadow-sm border-0">
+								<div class="card-body">
+									<h5 class="card-title fw-bold">
+										{{ task.title }}
+									</h5>
+									<ul class="list-unstyled mb-0 small text-muted">
+										<li class="mb-1">
+											<strong class="text-dark">Responsable :</strong> 
+											{% if task.assignee %}
+												{{ task.assignee.fullName }}
+											{% else %}
+												<span class="fst-italic">Non assigné</span>
+											{% endif %}
+										</li>
+										<li class="mb-1">
+											<strong class="text-dark">Priorité :</strong> 
+											{% if task.priority == 'high' %}
+												<span class="badge bg-danger">Haute</span>
+											{% elseif task.priority == 'medium' %}
+												<span class="badge bg-warning text-dark">Moyenne</span>
+											{% else %}
+												<span class="badge bg-info text-dark">Basse</span>
+											{% endif %}
+										</li>
+										<li class="mb-1">
+											<strong class="text-dark">Date limite :</strong> 
+											{% if task.dueDate %}
+												{{ task.dueDate|date('d/m/Y') }}
+											{% else %}
+												<span class="fst-italic">Non définie</span>
+											{% endif %}
+										</li>
+										<li>
+											<strong class="text-dark">Statut :</strong> 
+											<span class="badge bg-{{ task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">{{ task.statusLabel }}</span>
+										</li>
+									</ul>
+									<div class="d-flex justify-content-end align-items-center gap-2 mt-3">
+										<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-sm btn-outline-info" title="Voir les détails">
+											<i class="fas fa-eye"></i>
+										</a>
+										<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-sm btn-outline-warning" title="Modifier la tâche">
+											<i class="fas fa-edit"></i>
+										</a>
+										<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
+											<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
+											<button type="submit" class="btn btn-sm btn-outline-secondary" title="Actualiser le statut">
+												<i class="fas fa-sync"></i>
+											</button>
+										</form>
+										<button type="button" class="btn btn-sm btn-outline-danger delete-task-btn" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" title="Supprimer la tâche">
+											<i class="fas fa-trash"></i>
+										</button>
+									</div>
+								</div>
+							</div>
+						{% endfor %}
 					</div>
 				{% endif %}
 			</div>
@@ -277,9 +273,9 @@
 					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 				</div>
 				<div class="modal-body">
-					<p class="mb-0">Êtes-vous sûr de vouloir supprimer la tâche 
-						<strong id="taskTitle"></strong> ?
-					</p>
+					<p class="mb-0">Êtes-vous sûr de vouloir supprimer la tâche
+						<strong id="taskTitle"></strong>
+						?</p>
 				</div>
 				<div class="modal-footer border-0 pt-0">
 					<button type="button" class="btn btn-secondary flex-grow-1" data-bs-dismiss="modal">Annuler</button>
@@ -315,8 +311,7 @@
 							<div>
 								<strong>Attention :</strong>
 								Cette action supprimera définitivement le projet et toutes ses tâches ({{ project.tasksCount }}
-								tâche{{ project.tasksCount > 1 ?
- 's' : '' }}).
+								tâche{{ project.tasksCount > 1 ? 's' : '' }}).
 							</div>
 						</div>
 					</div>
@@ -335,49 +330,48 @@
 	</div>
 
 	{# Script JavaScript pour gérer la modale dynamique #}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const deleteTaskModal = document.getElementById('deleteTaskModal');
-    const taskTitleElement = document.getElementById('taskTitle');
-    const deleteTaskForm = document.getElementById('deleteTaskForm');
-    const deleteTokenInput = document.getElementById('deleteToken');
-    
-    // Pré-génération des tokens CSRF pour toutes les tâches
-    const csrfTokens = {
-        {% for task in project.tasks %}
-        '{{ task.id }}': '{{ csrf_token('delete' ~ task.id) }}'{{ not loop.last ? ',' : '' }}
-        {% endfor %}
-    };
-    
-    // Écouteur d'événement pour tous les boutons de suppression de tâche
-    deleteTaskModal.addEventListener('show.bs.modal', function(event) {
-        // Récupération du bouton qui a déclenché la modale
-        const button = event.relatedTarget;
-        
-        // Extraction des données du bouton
-        const taskId = button.getAttribute('data-task-id');
-        const taskTitle = button.getAttribute('data-task-title');
-        
-        // Mise à jour du contenu de la modale
-        taskTitleElement.textContent = '"' + taskTitle + '"';
-        
-        // Construction de l'URL de suppression
-        const deleteUrl = '{{ path('task_delete', {id: '__TASK_ID__'}) }}'.replace('__TASK_ID__', taskId);
-        deleteTaskForm.action = deleteUrl;
-        
-        // Utilisation du token CSRF pré-généré
-        const token = csrfTokens[taskId];
-        if (token) {
-            deleteTokenInput.value = token;
-        } else {
-            console.error('Token CSRF introuvable pour la tâche ID:', taskId);
-            // Optionnel : désactiver le bouton de suppression si pas de token
-            const submitButton = deleteTaskForm.querySelector('button[type="submit"]');
-            if (submitButton) {
-                submitButton.disabled = true;
-            }
-        }
-    });
-});
-</script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			const deleteTaskModal = document.getElementById('deleteTaskModal');
+			const taskTitleElement = document.getElementById('taskTitle');
+			const deleteTaskForm = document.getElementById('deleteTaskForm');
+			const deleteTokenInput = document.getElementById('deleteToken');
+			
+			// Pré-génération des tokens CSRF pour toutes les tâches
+			const csrfTokens = {
+				{% for task in project.tasks %}
+					'{{ task.id }}': '{{ csrf_token('delete' ~ task.id) }}'{{ not loop.last ? ',' : '' }}
+				{% endfor %}
+			};
+			// Écouteur d'événement pour tous les boutons de suppression de tâche
+			deleteTaskModal.addEventListener('show.bs.modal', function(event) {
+				// Récupération du bouton qui a déclenché la modale
+				const button = event.relatedTarget;
+				
+				// Extraction des données du bouton
+				const taskId = button.getAttribute('data-task-id');
+				const taskTitle = button.getAttribute('data-task-title');
+				
+				// Mise à jour du contenu de la modale
+				taskTitleElement.textContent = '"' + taskTitle + '"';
+				
+				// Construction de l'URL de suppression
+				const deleteUrl = '{{ path('task_delete', {id: '__TASK_ID__'}) }}'.replace('__TASK_ID__', taskId);
+				deleteTaskForm.action = deleteUrl;
+				
+				// Utilisation du token CSRF pré-généré
+				const token = csrfTokens[taskId];
+				if (token) {
+					deleteTokenInput.value = token;
+				} else {
+					console.error('Token CSRF introuvable pour la tâche ID:', taskId);
+					// Optionnel : désactiver le bouton de suppression si pas de token
+					const submitButton = deleteTaskForm.querySelector('button[type="submit"]');
+					if (submitButton) {
+						submitButton.disabled = true;
+					}
+				}
+			});
+		});
+	</script>
 {% endblock %}

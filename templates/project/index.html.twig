@@ -70,8 +70,7 @@
 									</li>
 								</ul>
 								<div class="progress mt-3" style="height: 5px;">
-									<div class="progress-bar bg-success" role="progressbar" style="width: {{ project.progressPercentage }}%;"
-										aria-valuenow="{{ project.progressPercentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+									<div class="progress-bar bg-success" role="progressbar" style="width: {{ project.progressPercentage }}%;" aria-valuenow="{{ project.progressPercentage }}" aria-valuemin="0" aria-valuemax="100"></div>
 								</div>
 								<small class="text-muted mt-2">{{ project.progressPercentage }}% de progression</small>
 							</div>
@@ -125,48 +124,4 @@
 			</div>
 		{% endif %}
 	</div>
-
-	<style>
-		.project-card {
-			transition: transform 0.2s ease, box-shadow 0.2s ease;
-		}
-
-		.project-card:hover {
-			transform: translateY(-3px);
-			box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-		}
-
-		.progress {
-			background-color: rgba(0, 0, 0, 0.1);
-			border-radius: 4px;
-		}
-
-		/* Assure que le dropdown fonctionne même avec le stretched-link */
-		.dropdown {
-			position: relative;
-			z-index: 2;
-		}
-
-		.dropdown-toggle::after {
-			display: none;
-		}
-
-		.project-description {
-			/* Règle par défaut pour le mobile (petite largeur) */
-			white-space: nowrap;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			max-width: 250px; /* Ajustez cette valeur si nécessaire */
-		}
-
-		/* Règle pour les écrans de taille moyenne (tablettes et plus) */
-		@media (min-width: 768px) {
-			.project-description {
-				white-space: normal;
-				overflow: visible;
-				text-overflow: clip;
-				max-width: none;
-			}
-		}
-	</style>
 {% endblock %}

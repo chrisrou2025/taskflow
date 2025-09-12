@@ -38,11 +38,9 @@
 						</h4>
 					</div>
 					<div class="card-body p-4">
-						<div class="alert alert-info">
-							<i class="fas fa-info-circle me-2"></i>
-							<strong>Projet :</strong>
-							{{ task.project.title }}
-						</div>
+						<p class="text-muted mb-4">
+							Modifiez les informations de cette tâche. Les changements seront appliqués immédiatement.
+						</p>
 
 						{{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
 
@@ -50,9 +48,9 @@
 							{{ form_label(form.title, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
 							<div class="input-group">
 								<span class="input-group-text bg-light">
-									<i class="fas fa-tasks text-primary"></i>
+									<i class="fas fa-heading text-primary"></i>
 								</span>
-								{{ form_widget(form.title, {'attr': {'class': 'form-control form-control-lg'}}) }}
+								{{ form_widget(form.title, {'attr': {'class': 'form-control', 'autofocus': 'autofocus'}}) }}
 							</div>
 							{{ form_errors(form.title) }}
 						</div>
@@ -69,26 +67,41 @@
 						</div>
 
 						<div class="row mb-4">
-							<div class="col-md-6">
-								{{ form_label(form.status, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
-								<div class="input-group">
-									<span class="input-group-text bg-light">
-										<i class="fas fa-flag text-primary"></i>
-									</span>
-									{{ form_widget(form.status, {'attr': {'class': 'form-select'}}) }}
+							<div class="col-sm-6">
+								<div class="mb-4 mb-sm-0">
+									{{ form_label(form.status, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+									<div class="input-group">
+										<span class="input-group-text bg-light">
+											<i class="fas fa-tasks text-primary"></i>
+										</span>
+										{{ form_widget(form.status, {'attr': {'class': 'form-select'}}) }}
+									</div>
+									{{ form_errors(form.status) }}
 								</div>
-								{{ form_errors(form.status) }}
 							</div>
-							<div class="col-md-6">
-								{{ form_label(form.priority, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
-								<div class="input-group">
-									<span class="input-group-text bg-light">
-										<i class="fas fa-exclamation text-primary"></i>
-									</span>
-									{{ form_widget(form.priority, {'attr': {'class': 'form-select'}}) }}
+							<div class="col-sm-6">
+								<div>
+									{{ form_label(form.priority, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+									<div class="input-group">
+										<span class="input-group-text bg-light">
+											<i class="fas fa-exclamation-triangle text-primary"></i>
+										</span>
+										{{ form_widget(form.priority, {'attr': {'class': 'form-select'}}) }}
+									</div>
+									{{ form_errors(form.priority) }}
 								</div>
-								{{ form_errors(form.priority) }}
 							</div>
+						</div>
+
+						<div class="mb-4">
+							{{ form_label(form.assignee, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+							<div class="input-group">
+								<span class="input-group-text bg-light">
+									<i class="fas fa-user-circle text-primary"></i>
+								</span>
+								{{ form_widget(form.assignee) }}
+							</div>
+							{{ form_errors(form.assignee) }}
 						</div>
 
 						<div class="mb-4">
@@ -134,19 +147,13 @@
 	<style>
 		.input-group-text {
 			border-right: none;
-			background-color: #f8f9fa !important;
+			background-color: #f8f9fa;
+			border-color: #ced4da;
 		}
-		.input-group .form-control,
-		.input-group .form-select {
+
+		.form-control,
+		.form-select {
 			border-left: none;
-		}
-		.input-group .form-control:focus,
-		.input-group .form-select:focus {
-			border-color: #86b7fe;
-			box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-		}
-		.alert {
-			border-left: 4px solid #0dcaf0;
 		}
 	</style>
 {% endblock %}
