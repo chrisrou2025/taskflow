@@ -1,0 +1,11 @@
+.badge-todo {
+    background-color: #6c757d;
+}
+
+.badge-progress {
+    background-color: #fd7e14;
+}
+
+.badge-completed {
+    background-color: #198754;
+}

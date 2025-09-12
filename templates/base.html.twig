@@ -17,141 +17,143 @@
 		<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
 		{% block stylesheets %}
-			<style>
-			/* Variables CSS personnalisées */:root
-			{
-				--primary-color: #3b82f6;
-				--secondary-color: #64748b;
-				--success-color: #10b981;
-				--warning-color: #f59e0b;
-				--danger-color: #ef4444;
-				--light-bg: #f8fafc;
-				--dark-text: #1e293b;
-			}
+			<link rel="stylesheet" href="/css/app.css">
+		{% endblock %}
 
-			/* Styles généraux */
-			body {
-				background-color: var(--light-bg);
-				color: var(--dark-text);
-				font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-			}
+		<style>
+		/* Variables CSS personnalisées */:root
+		{
+			--primary-color: #3b82f6;
+			--secondary-color: #64748b;
+			--success-color: #10b981;
+			--warning-color: #f59e0b;
+			--danger-color: #ef4444;
+			--light-bg: #f8fafc;
+			--dark-text: #1e293b;
+		}
 
-			/* Navigation */
-			.navbar-brand {
-				font-weight: 700;
-				font-size: 1.5rem;
-			}
+		/* Styles généraux */
+		body {
+			background-color: var(--light-bg);
+			color: var(--dark-text);
+			font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+		}
 
-			/* Sidebar */
+		/* Navigation */
+		.navbar-brand {
+			font-weight: 700;
+			font-size: 1.5rem;
+		}
+
+		/* Sidebar */
+		.sidebar {
+			background: white;
+			box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+			min-height: calc(100vh - 76px);
+		}
+
+		.sidebar .nav-link {
+			color: var(--dark-text);
+			padding: 0.75rem 1rem;
+			border-radius: 8px;
+			margin: 0.25rem 0;
+			transition: all 0.2s;
+		}
+
+		.sidebar .nav-link:hover,
+		.sidebar .nav-link.active {
+			background-color: var(--primary-color);
+			color: white;
+		}
+
+		/* Cards */
+		.card {
+			border: none;
+			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+			border-radius: 12px;
+			transition: transform 0.2s, box-shadow 0.2s;
+		}
+
+		.card:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+		}
+
+		/* Boutons */
+		.btn {
+			border-radius: 8px;
+			font-weight: 500;
+			padding: 0.5rem 1rem;
+		}
+
+		.btn-primary {
+			background-color: var(--primary-color);
+			border-color: var(--primary-color);
+		}
+
+		/* Badges de statut */
+		.badge-todo {
+			background-color: var(--secondary-color);
+		}
+		.badge-progress {
+			background-color: var(--warning-color);
+		}
+		.badge-completed {
+			background-color: var(--success-color);
+		}
+
+		/* Badges de priorité */
+		.badge-priority-low {
+			background-color: #6b7280;
+		}
+		.badge-priority-medium {
+			background-color: var(--warning-color);
+		}
+		.badge-priority-high {
+			background-color: var(--danger-color);
+		}
+
+		/* Barres de progression */
+		.progress {
+			height: 8px;
+			border-radius: 4px;
+		}
+
+		/* Alertes */
+		.alert {
+			border: none;
+			border-radius: 8px;
+		}
+
+		/* Footer */
+		footer {
+			background: white;
+			border-top: 1px solid #e2e8f0;
+		}
+
+		/* Animations */
+		.fade-in {
+			animation: fadeIn 0.5s ease-in;
+		}
+
+		@keyframes fadeIn {
+			from {
+				opacity: 0;
+				transform: translateY(10px);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		/* Responsive */
+		@media(max-width: 768px) {
 			.sidebar {
-				background: white;
-				box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
-				min-height: calc(100vh - 76px);
+				margin-bottom: 2rem;
 			}
-
-			.sidebar .nav-link {
-				color: var(--dark-text);
-				padding: 0.75rem 1rem;
-				border-radius: 8px;
-				margin: 0.25rem 0;
-				transition: all 0.2s;
-			}
-
-			.sidebar .nav-link:hover,
-			.sidebar .nav-link.active {
-				background-color: var(--primary-color);
-				color: white;
-			}
-
-			/* Cards */
-			.card {
-				border: none;
-				box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-				border-radius: 12px;
-				transition: transform 0.2s, box-shadow 0.2s;
-			}
-
-			.card:hover {
-				transform: translateY(-2px);
-				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-			}
-
-			/* Boutons */
-			.btn {
-				border-radius: 8px;
-				font-weight: 500;
-				padding: 0.5rem 1rem;
-			}
-
-			.btn-primary {
-				background-color: var(--primary-color);
-				border-color: var(--primary-color);
-			}
-
-			/* Badges de statut */
-			.badge-todo {
-				background-color: var(--secondary-color);
-			}
-			.badge-progress {
-				background-color: var(--warning-color);
-			}
-			.badge-completed {
-				background-color: var(--success-color);
-			}
-
-			/* Badges de priorité */
-			.badge-priority-low {
-				background-color: #6b7280;
-			}
-			.badge-priority-medium {
-				background-color: var(--warning-color);
-			}
-			.badge-priority-high {
-				background-color: var(--danger-color);
-			}
-
-			/* Barres de progression */
-			.progress {
-				height: 8px;
-				border-radius: 4px;
-			}
-
-			/* Alertes */
-			.alert {
-				border: none;
-				border-radius: 8px;
-			}
-
-			/* Footer */
-			footer {
-				background: white;
-				border-top: 1px solid #e2e8f0;
-			}
-
-			/* Animations */
-			.fade-in {
-				animation: fadeIn 0.5s ease-in;
-			}
-
-			@keyframes fadeIn {
-				from {
-					opacity: 0;
-					transform: translateY(10px);
-				}
-				to {
-					opacity: 1;
-					transform: translateY(0);
-				}
-			}
-
-			/* Responsive */
-			@media(max-width: 768px) {
-				.sidebar {
-					margin-bottom: 2rem;
-				}
-			}
-		</style>
-	{% endblock %}
+		}
+	</style>
 </head>
 
 <body>

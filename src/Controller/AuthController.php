@@ -5,10 +5,13 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\RegistrationType;
 use App\Repository\UserRepository;
+use App\Security\EmailVerifier;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -16,9 +19,18 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
+use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 
 class AuthController extends AbstractController
 {
+    // Injection du service EmailVerifier
+    private EmailVerifier $emailVerifier;
+
+    public function __construct(EmailVerifier $emailVerifier)
+    {
+        $this->emailVerifier = $emailVerifier;
+    }
+
     #[Route('/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
@@ -29,9 +41,6 @@ class AuthController extends AbstractController
 
         // Récupération des erreurs de connexion éventuelles
         $error = $authenticationUtils->getLastAuthenticationError();
-
-        // CORRECTION : Ne pas passer le dernier nom d'utilisateur pour avoir des champs vides
-        // $lastUsername = $authenticationUtils->getLastUsername();
 
         // Créer une réponse avec des en-têtes pour empêcher la mise en cache
         $response = $this->render('auth/login.html.twig', [
@@ -58,7 +67,6 @@ class AuthController extends AbstractController
             return $this->redirectToRoute('app_dashboard');
         }
 
-        // CORRECTION : Toujours créer un nouvel utilisateur pour avoir des champs vides
         $user = new User();
         $form = $this->createForm(RegistrationType::class, $user);
         $form->handleRequest($request);
@@ -75,12 +83,24 @@ class AuthController extends AbstractController
             // Attribution du rôle utilisateur par défaut
             $user->setRoles(['ROLE_USER']);
 
+            // IMPORTANT : L'utilisateur n'est PAS vérifié à la création
+            $user->setIsVerified(false);
+
             // Sauvegarde en base de données
             $entityManager->persist($user);
             $entityManager->flush();
 
-            // Message de succès
-            $this->addFlash('success', 'Votre compte a été créé avec succès ! Vous pouvez maintenant vous connecter.');
+            // Génération et envoi de l'email de vérification
+            $this->emailVerifier->sendEmailConfirmation('app_verify_email', $user,
+                (new TemplatedEmail())
+                    ->from(new Address('noreply@taskflow.app', 'TaskFlow'))
+                    ->to($user->getEmail())
+                    ->subject('Veuillez confirmer votre adresse email')
+                    ->htmlTemplate('auth/confirmation_email.html.twig')
+            );
+
+            // Message de succès modifié
+            $this->addFlash('success', 'Votre compte a été créé ! Veuillez vérifier votre boîte email pour confirmer votre adresse.');
 
             return $this->redirectToRoute('app_login');
         }
@@ -96,6 +116,34 @@ class AuthController extends AbstractController
         $response->headers->set('Expires', '0');
 
         return $response;
+    }
+
+    #[Route('/verify/email', name: 'app_verify_email')]
+    public function verifyUserEmail(Request $request, UserRepository $userRepository): Response
+    {
+        $id = $request->get('id');
+
+        if (null === $id) {
+            return $this->redirectToRoute('app_register');
+        }
+
+        $user = $userRepository->find($id);
+
+        if (null === $user) {
+            return $this->redirectToRoute('app_register');
+        }
+
+        // Validation de l'email avec le token
+        try {
+            $this->emailVerifier->handleEmailConfirmation($request, $user);
+        } catch (VerifyEmailExceptionInterface $exception) {
+            $this->addFlash('verify_email_error', $exception->getReason());
+            return $this->redirectToRoute('app_register');
+        }
+
+        $this->addFlash('success', 'Votre adresse email a été vérifiée avec succès ! Vous pouvez maintenant vous connecter.');
+
+        return $this->redirectToRoute('app_login');
     }
 
     #[Route('/forgot-password', name: 'app_forgot_password')]
@@ -141,7 +189,6 @@ class AuthController extends AbstractController
                 try {
                     $mailer->send($emailMessage);
                 } catch (\Exception $e) {
-                    // Log l'erreur mais ne pas exposer les détails à l'utilisateur
                     $this->addFlash('error', 'Erreur lors de l\'envoi de l\'email. Veuillez réessayer plus tard.');
                 }
             }
@@ -207,7 +254,6 @@ class AuthController extends AbstractController
     #[Route('/logout', name: 'app_logout')]
     public function logout(): void
     {
-        // Cette méthode peut rester vide - elle sera interceptée par la clé logout dans security.yaml
         throw new \LogicException('Cette méthode peut rester vide - elle sera interceptée par la clé logout dans security.yaml');
     }
 }

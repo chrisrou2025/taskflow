@@ -62,6 +62,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $resetTokenExpiresAt = null;
 
+    #[ORM\Column(type: 'boolean')]
+    private bool $isVerified = false;
+
+    public function isVerified(): bool
+    {
+        return $this->isVerified;
+    }
+
+    public function setIsVerified(bool $isVerified): static
+    {
+        $this->isVerified = $isVerified;
+        return $this;
+    }
+
     // Relation OneToMany avec Project
     #[ORM\OneToMany(mappedBy: 'owner', targetEntity: Project::class, orphanRemoval: true)]
     private Collection $projects;
@@ -182,7 +196,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->resetTokenExpiresAt = $resetTokenExpiresAt;
         return $this;
     }
-    
+
     public function getProjects(): Collection
     {
         return $this->projects;
