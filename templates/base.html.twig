@@ -32,11 +32,23 @@
 			--dark-text: #1e293b;
 		}
 
-		/* Styles généraux */
+		/* Solution pour le footer collant */
+		html,
 		body {
+			height: 100%;
+		}
+
+		body {
+			display: flex;
+			flex-direction: column;
 			background-color: var(--light-bg);
 			color: var(--dark-text);
 			font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+		}
+
+		/* Le contenu principal doit grandir pour occuper l'espace disponible */
+		.main-content {
+			flex: 1;
 		}
 
 		/* Navigation */
@@ -129,6 +141,7 @@
 		footer {
 			background: white;
 			border-top: 1px solid #e2e8f0;
+			margin-top: auto; /* Important pour pousser le footer vers le bas */
 		}
 
 		/* Animations */
@@ -239,21 +252,23 @@
 		</div>
 	</nav>
 
-	<!-- Contenu principal -->
-	<div
-		class="container-fluid py-4">
-		<!-- Messages Flash -->
-		{% for type, messages in app.flashes %}
-			{% for message in messages %}
-				<div class="alert alert-{{ type == 'error' ? 'danger' : type }} alert-dismissible fade show" role="alert">
-					<i class="fas fa-{{ type == 'success' ? 'check-circle' : (type == 'error' ? 'exclamation-triangle' : 'info-circle') }}"></i>
-					{{ message }}
-					<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-				</div>
+	<!-- Contenu principal avec classe main-content -->
+	<div class="main-content">
+		<div
+			class="container-fluid py-4">
+			<!-- Messages Flash -->
+			{% for type, messages in app.flashes %}
+				{% for message in messages %}
+					<div class="alert alert-{{ type == 'error' ? 'danger' : type }} alert-dismissible fade show" role="alert">
+						<i class="fas fa-{{ type == 'success' ? 'check-circle' : (type == 'error' ? 'exclamation-triangle' : 'info-circle') }}"></i>
+						{{ message }}
+						<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+					</div>
+				{% endfor %}
 			{% endfor %}
-		{% endfor %}
 
-		{% block body %}{% endblock %}
+			{% block body %}{% endblock %}
+		</div>
 	</div>
 
 	<!-- Footer -->

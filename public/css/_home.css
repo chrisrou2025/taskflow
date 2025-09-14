@@ -1,4 +1,3 @@
-/* Responsive Typography */
 @media(max-width: 991.98px) {
     .display-4-lg {
         font-size: 2.5rem;
@@ -33,7 +32,6 @@
     }
 }
 
-/* Hero Section */
 .min-vh-75 {
     min-height: 75vh;
 }
@@ -52,7 +50,6 @@
     animation: fadeInUp 0.8s ease-out 0.2s both;
 }
 
-/* Feature Icons */
 .feature-icon {
     width: 60px;
     height: 60px;
@@ -60,6 +57,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 0 auto;
 }
 
 @media(min-width: 992px) {
@@ -69,7 +67,6 @@
     }
 }
 
-/* Benefit Icons */
 .benefit-icon {
     width: 40px;
     height: 40px;
@@ -108,7 +105,6 @@
     }
 }
 
-/* Counter Animation */
 .counter {
     animation: countUp 2s ease-out;
 }
@@ -125,7 +121,6 @@
     }
 }
 
-/* Fade In Animation */
 .fade-in {
     animation: fadeInUp 0.8s ease-out;
 }
@@ -142,7 +137,6 @@
     }
 }
 
-/* Stats Section */
 .stats-section {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
 }
@@ -155,7 +149,6 @@
     transform: scale(1.05);
 }
 
-/* Mobile Optimizations */
 @media(max-width: 768px) {
     .btn {
         min-height: 48px;
@@ -171,12 +164,10 @@
         padding: 1.5rem;
     }
 
-    /* Touch friendly spacing */
     .row.g-4>* {
         margin-bottom: 1.5rem;
     }
 
-    /* Improve text readability */
     .lead {
         font-size: 1.1rem;
         line-height: 1.6;
@@ -187,12 +178,10 @@
     }
 }
 
-/* Smooth scrolling */
 html {
     scroll-behavior: smooth;
 }
 
-/* Loading states */
 .btn {
     position: relative;
     overflow: hidden;
@@ -213,7 +202,6 @@ html {
     left: 100%;
 }
 
-/* Accessibility improvements */
 @media(prefers-reduced-motion: reduce) {
     * {
         animation-duration: 0.01ms !important;
@@ -227,7 +215,6 @@ html {
     }
 }
 
-/* High contrast mode */
 @media(prefers-contrast: high) {
     .text-muted {
         color: #495057 !important;
@@ -238,7 +225,6 @@ html {
     }
 }
 
-/* Dark mode support (si implémenté plus tard) */
 @media(prefers-color-scheme: dark) {
     .bg-white {
         background-color: #212529 !important;
@@ -250,7 +236,6 @@ html {
     }
 }
 
-/* Focus states pour l'accessibilité */
 .btn:focus,
 .card:focus {
     outline: 2px solid #0d6efd;

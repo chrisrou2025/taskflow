@@ -6,6 +6,7 @@ use App\Entity\Project;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @extends ServiceEntityRepository<Project>
@@ -15,6 +16,58 @@ class ProjectRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Project::class);
+    }
+
+    /**
+     * Récupère les projets dont l'utilisateur est propriétaire ou collaborateur.
+     *
+     * @return Project[]
+     */
+    public function findProjectsByUser(UserInterface $user): array
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.tasks', 't')
+            ->where('p.owner = :user')
+            ->orWhere('t.assignee = :user')
+            ->setParameter('user', $user)
+            ->groupBy('p.id')
+            ->orderBy('p.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Récupère les projets dont l'utilisateur est propriétaire ou collaborateur
+     * et retourne un QueryBuilder.
+     */
+    public function findProjectsByUserQueryBuilder(UserInterface $user): \Doctrine\ORM\QueryBuilder
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.tasks', 't')
+            ->where('p.owner = :user')
+            ->orWhere('t.assignee = :user')
+            ->setParameter('user', $user)
+            ->groupBy('p.id')
+            ->orderBy('p.createdAt', 'DESC');
+    }
+
+    /**
+     * Trouve les projets sur lesquels un utilisateur collabore.
+     * Un projet est considéré comme collaboratif si l'utilisateur y a au moins une tâche assignée,
+     * mais n'est PAS le propriétaire du projet.
+     */
+    public function findCollaborativeProjects(User $user): array
+    {
+        return $this->createQueryBuilder('p') // 'p' est l'alias pour l'entité Project
+            ->select('p')
+            ->distinct() // Assure que chaque projet est retourné une seule fois
+            ->innerJoin('p.tasks', 't') // Fait une jointure avec les tâches associées au projet
+            ->where('t.assignee = :user') // Condition 1: La tâche doit être assignée à l'utilisateur
+            ->andWhere('p.owner != :user') // Condition 2: Le propriétaire du projet ne doit PAS être cet utilisateur
+            ->setParameter('user', $user) // Lie la variable :user à l'objet User
+            ->orderBy('p.createdAt', 'DESC') // Trie les projets du plus récent au plus ancien
+            ->getQuery()
+            ->getResult();
     }
 
     /**
@@ -151,8 +204,6 @@ class ProjectRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    // Ajoutez ces méthodes au ProjectRepository existant
-
     /**
      * Pagination des projets pour l'admin
      */
@@ -215,6 +266,35 @@ class ProjectRepository extends ServiceEntityRepository
     }
 
     /**
+     * Récupère les projets dont l'utilisateur est propriétaire ou collaborateur.
+     */
+    public function findProjectsByUserWithCollaborations($user): array
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.tasks', 't')
+            ->where('p.owner = :user OR t.assignee = :user')
+            ->setParameter('user', $user)
+            ->groupBy('p.id')
+            ->orderBy('p.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Compte le nombre de projets dont l'utilisateur est propriétaire ou collaborateur
+     */
+    public function countProjectsByUserWithCollaborations(User $user): int
+    {
+        return (int) $this->createQueryBuilder('p')
+            ->select('COUNT(DISTINCT p.id)')
+            ->leftJoin('p.tasks', 't')
+            ->where('p.owner = :user OR t.assignee = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
      * Moyenne du nombre de tâches par projet pour un utilisateur
      */
     public function getAverageTasksPerProjectByUser(User $user): float
@@ -228,11 +308,10 @@ class ProjectRepository extends ServiceEntityRepository
                 WHERE p2.owner = :user
                 GROUP BY p2.id
             )', 'task_count', 'WITH', 'task_count.project_id = p.id')
-            ->where('p.owner = :user')
             ->setParameter('user', $user)
             ->getQuery()
             ->getSingleScalarResult();
 
-        return $result ? round($result, 1) : 0.0;
+        return (float) $result;
     }
 }

@@ -4,37 +4,7 @@
 {% endblock %}
 
 {% block body %}
-	<div
-		class="container">
-		<nav aria-label="breadcrumb" class="mb-4">
-			<ol class="breadcrumb">
-				<li class="breadcrumb-item">
-					<a href="{{ path('project_index') }}" class="text-decoration-none">
-						<i class="fas fa-folder me-1"></i>Mes Projets
-					</a>
-				</li>
-				{% if task.project %}
-					<li class="breadcrumb-item">
-						<a href="{{ path('project_show', {id: task.project.id}) }}" class="text-decoration-none">
-							{{ task.project.title }}
-						</a>
-					</li>
-					<li class="breadcrumb-item">
-						<a href="{{ path('task_index', {project: task.project.id}) }}" class="text-decoration-none">
-							Tâches
-						</a>
-					</li>
-				{% else %}
-					<li class="breadcrumb-item">
-						<a href="{{ path('task_index') }}" class="text-decoration-none">
-							<i class="fas fa-tasks me-1"></i>Mes Tâches
-						</a>
-					</li>
-				{% endif %}
-				<li class="breadcrumb-item active">Nouvelle tâche</li>
-			</ol>
-		</nav>
-
+	<div class="container">
 		<div class="row justify-content-center">
 			<div class="col-lg-8">
 				<div class="card border-0 shadow-sm">

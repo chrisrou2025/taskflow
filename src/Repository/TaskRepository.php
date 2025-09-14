@@ -19,6 +19,52 @@ class TaskRepository extends ServiceEntityRepository
     }
 
     /**
+     * NOUVELLE MÉTHODE
+     * Récupère les statistiques de tâches où l'utilisateur est l'assigné,
+     * tous projets confondus.
+     */
+    public function getTasksStatisticsForUser(User $user): array
+    {
+        $stats = $this->createQueryBuilder('t')
+            ->select('COUNT(t.id) as total, 
+                            SUM(CASE WHEN t.status = :completed THEN 1 ELSE 0 END) as completed,
+                            SUM(CASE WHEN t.status = :in_progress THEN 1 ELSE 0 END) as in_progress,
+                            SUM(CASE WHEN t.status = :todo THEN 1 ELSE 0 END) as todo')
+            ->where('t.assignee = :user')
+            ->setParameter('user', $user)
+            ->setParameter('completed', Task::STATUS_COMPLETED)
+            ->setParameter('in_progress', Task::STATUS_IN_PROGRESS)
+            ->setParameter('todo', Task::STATUS_TODO)
+            ->getQuery()
+            ->getSingleResult();
+
+        return [
+            'total' => (int)($stats['total'] ?? 0),
+            'completed' => (int)($stats['completed'] ?? 0),
+            'in_progress' => (int)($stats['in_progress'] ?? 0),
+            'todo' => (int)($stats['todo'] ?? 0),
+        ];
+    }
+
+    /**
+     * NOUVELLE MÉTHODE
+     * Trouve les tâches en retard assignées à un utilisateur
+     */
+    public function findOverdueTasksByAssignee(User $user): array
+    {
+        return $this->createQueryBuilder('t')
+            ->where('t.assignee = :user')
+            ->andWhere('t.dueDate < :now')
+            ->andWhere('t.status != :completed')
+            ->setParameter('user', $user)
+            ->setParameter('now', new \DateTime())
+            ->setParameter('completed', Task::STATUS_COMPLETED)
+            ->orderBy('t.dueDate', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Trouve les tâches récentes d'un utilisateur
      */
     public function findRecentTasksByUser(User $user, int $limit = 10): array
@@ -35,13 +81,17 @@ class TaskRepository extends ServiceEntityRepository
 
     /**
      * Compte les tâches par statut pour un utilisateur
+     *
+     * MODIFIÉ pour prendre en compte :
+     * - tâches des projets dont l'utilisateur est propriétaire
+     * - tâches assignées à l'utilisateur (ce qui couvre les projets collaboratifs)
      */
     public function getTasksCountByStatusForUser(User $user): array
     {
         $result = $this->createQueryBuilder('t')
             ->select('t.status, COUNT(t.id) as count')
             ->innerJoin('t.project', 'p')
-            ->where('p.owner = :user')
+            ->where('p.owner = :user OR t.assignee = :user')
             ->setParameter('user', $user)
             ->groupBy('t.status')
             ->getQuery()
@@ -63,18 +113,32 @@ class TaskRepository extends ServiceEntityRepository
 
     /**
      * Trouve les tâches en retard d'un utilisateur
+     *
+     * MODIFIÉ pour inclure aussi les tâches assignées à l'utilisateur (projets collaboratifs).
      */
     public function findOverdueTasksByUser(User $user): array
     {
         return $this->createQueryBuilder('t')
             ->innerJoin('t.project', 'p')
-            ->where('p.owner = :user')
+            ->where('(p.owner = :user OR t.assignee = :user)')
             ->andWhere('t.dueDate < :now')
             ->andWhere('t.status != :completed')
             ->setParameter('user', $user)
             ->setParameter('now', new \DateTime())
             ->setParameter('completed', Task::STATUS_COMPLETED)
             ->orderBy('t.dueDate', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findTasksByUser($user, int $limit = 10): array
+    {
+        return $this->createQueryBuilder('t')
+            ->join('t.project', 'p')
+            ->where('p.owner = :user OR t.assignee = :user')
+            ->setParameter('user', $user)
+            ->orderBy('t.createdAt', 'DESC')
+            ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
     }
@@ -90,17 +154,17 @@ class TaskRepository extends ServiceEntityRepository
 
         if ($status) {
             $qb->andWhere('t.status = :status')
-               ->setParameter('status', $status);
+                ->setParameter('status', $status);
         }
 
         if ($priority) {
             $qb->andWhere('t.priority = :priority')
-               ->setParameter('priority', $priority);
+                ->setParameter('priority', $priority);
         }
 
         return $qb->orderBy('t.createdAt', 'DESC')
-                  ->getQuery()
-                  ->getResult();
+            ->getQuery()
+            ->getResult();
     }
 
     /**
@@ -237,12 +301,12 @@ class TaskRepository extends ServiceEntityRepository
 
         if (!empty($status)) {
             $qb->andWhere('t.status = :status')
-               ->setParameter('status', $status);
+                ->setParameter('status', $status);
         }
 
         if (!empty($priority)) {
             $qb->andWhere('t.priority = :priority')
-               ->setParameter('priority', $priority);
+                ->setParameter('priority', $priority);
         }
 
         return $qb->getQuery()->getResult();
@@ -258,12 +322,12 @@ class TaskRepository extends ServiceEntityRepository
 
         if (!empty($status)) {
             $qb->andWhere('t.status = :status')
-               ->setParameter('status', $status);
+                ->setParameter('status', $status);
         }
 
         if (!empty($priority)) {
             $qb->andWhere('t.priority = :priority')
-               ->setParameter('priority', $priority);
+                ->setParameter('priority', $priority);
         }
 
         return (int) $qb->getQuery()->getSingleScalarResult();
@@ -379,7 +443,7 @@ class TaskRepository extends ServiceEntityRepository
     {
         $startOfWeek = new \DateTime();
         $startOfWeek->modify('monday this week')->setTime(0, 0, 0);
-        
+
         return $this->createQueryBuilder('t')
             ->innerJoin('t.project', 'p')
             ->where('p.owner = :user')

@@ -12,28 +12,6 @@
 
 {% block body %}
 	<div class="container-fluid">
-		<nav aria-label="breadcrumb" class="mb-3">
-			<ol class="breadcrumb">
-				{% if project %}
-					<li class="breadcrumb-item">
-						<a href="{{ path('project_index') }}" class="text-decoration-none">
-							<i class="fas fa-folder me-1"></i>Mes Projets
-						</a>
-					</li>
-					<li class="breadcrumb-item">
-						<a href="{{ path('project_show', {id: project.id}) }}" class="text-decoration-none">
-							{{ project.title }}
-						</a>
-					</li>
-					<li class="breadcrumb-item active">Tâches</li>
-				{% else %}
-					<li class="breadcrumb-item active">
-						<i class="fas fa-tasks me-1"></i>Mes Tâches
-					</li>
-				{% endif %}
-			</ol>
-		</nav>
-
 		<div class="row mb-4">
 			<div class="col-12">
 				<div class="d-flex justify-content-between align-items-center flex-wrap">
@@ -63,8 +41,7 @@
 							<i class="fas fa-check-double fa-5x text-success"></i>
 						</div>
 						{% if project %}
-							<h4 class="mb-3">Toutes les tâches du projet ont été terminées !
-								🎉</h4>
+							<h4 class="mb-3">Toutes les tâches du projet ont été terminées ! 🎉</h4>
 							<p class="text-muted mb-4">Bravo ! Ce projet est terminé. Vous pouvez en ajouter d'autres depuis votre tableau de bord.</p>
 							<a href="{{ path('task_new', {project: project.id}) }}" class="btn btn-primary">
 								<i class="fas fa-plus me-2"></i>Ajouter une nouvelle tâche
@@ -106,7 +83,8 @@
 													{% if not project %}
 														<td data-label="Projet">
 															<span class="text-muted">
-																<i class="fas fa-folder me-1"></i>{{ task.project.title }}
+																<i class="fas fa-folder me-1"></i>
+																{{ task.project.title }}
 															</span>
 														</td>
 													{% endif %}
@@ -134,25 +112,35 @@
 														{% endif %}
 													</td>
 													<td data-label="Statut">
-														<span class="badge bg-{{ task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">{{ task.statusLabel }}</span>
+														<span class="badge bg-{{ task.status == 'completed' ?
+															'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">{{ task.statusLabel }}</span>
 													</td>
 													<td data-label="Actions" class="text-end">
 														<div class="d-flex justify-content-end align-items-center gap-2">
 															<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-sm btn-outline-info" title="Voir les détails">
 																<i class="fas fa-eye"></i>
 															</a>
-															<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-sm btn-outline-warning" title="Modifier la tâche">
-																<i class="fas fa-edit"></i>
-															</a>
-															<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
-																<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
-																<button type="submit" class="btn btn-sm btn-outline-secondary" title="Actualiser le statut">
-																	<i class="fas fa-sync"></i>
+
+															{% if task.assignee == app.user or task.project.owner == app.user %}
+																<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-sm btn-outline-warning" title="Modifier la tâche">
+																	<i class="fas fa-edit"></i>
+																</a>
+															{% endif %}
+
+															{% if task.assignee == app.user or task.project.owner == app.user %}
+																<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
+																	<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
+																	<button type="submit" class="btn btn-sm btn-outline-secondary" title="Actualiser le statut">
+																		<i class="fas fa-sync"></i>
+																	</button>
+																</form>
+															{% endif %}
+
+															{% if task.project.owner == app.user %}
+																<button type="button" class="btn btn-sm btn-outline-danger delete-task-btn" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" title="Supprimer la tâche">
+																	<i class="fas fa-trash"></i>
 																</button>
-															</form>
-															<button type="button" class="btn btn-sm btn-outline-danger delete-task-btn" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" title="Supprimer la tâche">
-																<i class="fas fa-trash"></i>
-															</button>
+															{% endif %}
 														</div>
 													</td>
 												</tr>
@@ -165,17 +153,20 @@
 								{% if pages is defined and pages > 1 %}
 									<nav aria-label="Page navigation" class="mt-4">
 										<ul class="pagination justify-content-center">
-											<li class="page-item {{ currentPage == 1 ? 'disabled' : '' }}">
+											<li class="page-item {{ currentPage == 1 ?
+												'disabled' : '' }}">
 												<a class="page-link" href="{{ path('task_index', {project: project ? project.id : null, page: currentPage - 1}) }}" aria-label="Previous">
 													<span aria-hidden="true">&laquo;</span>
 												</a>
 											</li>
 											{% for page in 1..pages %}
-												<li class="page-item {{ currentPage == page ? 'active' : '' }}">
+												<li class="page-item {{ currentPage == page ?
+													'active' : '' }}">
 													<a class="page-link" href="{{ path('task_index', {project: project ? project.id : null, page: page}) }}">{{ page }}</a>
 												</li>
 											{% endfor %}
-											<li class="page-item {{ currentPage == pages ? 'disabled' : '' }}">
+											<li class="page-item {{ currentPage == pages ?
+												'disabled' : '' }}">
 												<a class="page-link" href="{{ path('task_index', {project: project ? project.id : null, page: currentPage + 1}) }}" aria-label="Next">
 													<span aria-hidden="true">&raquo;</span>
 												</a>
@@ -198,14 +189,15 @@
 									<ul class="list-unstyled mb-0 small text-muted">
 										{% if not project %}
 											<li class="mb-1">
-												<strong class="text-dark">Projet :</strong> 
+												<strong class="text-dark">Projet :</strong>
 												<span class="text-muted">
-													<i class="fas fa-folder me-1"></i>{{ task.project.title }}
+													<i class="fas fa-folder me-1"></i>
+													{{ task.project.title }}
 												</span>
 											</li>
 										{% endif %}
 										<li class="mb-1">
-											<strong class="text-dark">Responsable :</strong> 
+											<strong class="text-dark">Responsable :</strong>
 											{% if task.assignee %}
 												{{ task.assignee.fullName }}
 											{% else %}
@@ -213,7 +205,7 @@
 											{% endif %}
 										</li>
 										<li class="mb-1">
-											<strong class="text-dark">Priorité :</strong> 
+											<strong class="text-dark">Priorité :</strong>
 											{% if task.priority == 'high' %}
 												<span class="badge bg-danger">Haute</span>
 											{% elseif task.priority == 'medium' %}
@@ -223,7 +215,7 @@
 											{% endif %}
 										</li>
 										<li class="mb-1">
-											<strong class="text-dark">Date limite :</strong> 
+											<strong class="text-dark">Date limite :</strong>
 											{% if task.dueDate %}
 												{{ task.dueDate|date('d/m/Y') }}
 											{% else %}
@@ -231,178 +223,188 @@
 											{% endif %}
 										</li>
 										<li>
-											<strong class="text-dark">Statut :</strong> 
-											<span class="badge bg-{{ task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">{{ task.statusLabel }}</span>
+											<strong class="text-dark">Statut :</strong>
+											<span class="badge bg-{{ task.status == 'completed' ?
+												'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">{{ task.statusLabel }}</span>
 										</li>
 									</ul>
 									<div class="d-flex justify-content-end align-items-center gap-2 mt-3">
-										<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-sm btn-outline-info" title="Voir les détails">
+										<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-sm btn-outline-info btn-icon" title="Voir les détails">
 											<i class="fas fa-eye"></i>
 										</a>
-										<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-sm btn-outline-warning" title="Modifier la tâche">
-											<i class="fas fa-edit"></i>
-										</a>
-										<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
-											<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
-											<button type="submit" class="btn btn-sm btn-outline-secondary" title="Actualiser le statut">
-												<i class="fas fa-sync"></i>
-											</button>
-										</form>
-										<button type="button" class="btn btn-sm btn-outline-danger delete-task-btn" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" title="Supprimer la tâche">
+
+										{% if task.assignee == app.user or task.project.owner == app.user %}
+											<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-sm btn-outline-warning btn-icon" title="Modifier la tâche">
+												<i class="fas fa-edit"></i>
+											</a>
+											<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
+												<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
+												<button type="submit" class="btn btn-sm btn-outline-secondary btn-icon" title="Actualiser le statut">
+													<i class="fas fa-sync"></i>
+												</button>
+											</form>
+										{% endif %}
+
+										{% if task.project.owner == app.user %}
+											<button type="button" class="btn btn-sm btn-outline-danger btn-icon" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" title="Supprimer la tâche">
 												<i class="fas fa-trash"></i>
 											</button>
-										</div>
+										{% endif %}
 									</div>
 								</div>
-							{% endfor %}
-						</div>
-					{% endif %}
+							</div>
+						{% endfor %}
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="deleteTaskModalLabel">
+						<i class="fas fa-exclamation-triangle text-danger me-2"></i>
+						Confirmer la suppression
+					</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>Êtes-vous sûr de vouloir supprimer la tâche
+						<strong id="taskTitlePlaceholder"></strong>
+						?</p>
+					<div class="alert alert-warning">
+						<i class="fas fa-exclamation-triangle me-2"></i>
+						<strong>Attention :</strong>
+						Cette action est irréversible.
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+					<form method="post" id="deleteTaskForm" class="d-inline">
+						<input type="hidden" name="_token" id="deleteTaskToken">
+						<button type="submit" class="btn btn-danger">
+							<i class="fas fa-trash me-2"></i>Supprimer définitivement
+						</button>
+					</form>
 				</div>
 			</div>
 		</div>
+	</div>
+{% endblock %}
 
-		<div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true">
-			<div class="modal-dialog">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h5 class="modal-title" id="deleteTaskModalLabel">
-							<i class="fas fa-exclamation-triangle text-danger me-2"></i>
-							Confirmer la suppression
-						</h5>
-						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-					</div>
-					<div class="modal-body">
-						<p>Êtes-vous sûr de vouloir supprimer la tâche
-							<strong id="taskTitlePlaceholder"></strong>
-							?</p>
-						<div class="alert alert-warning">
-							<i class="fas fa-exclamation-triangle me-2"></i>
-							<strong>Attention :</strong>
-							Cette action est irréversible.
-						</div>
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-						<form method="post" id="deleteTaskForm" class="d-inline">
-							<input type="hidden" name="_token" id="deleteTaskToken">
-							<button type="submit" class="btn btn-danger">
-								<i class="fas fa-trash me-2"></i>Supprimer définitivement
-							</button>
-						</form>
-					</div>
-				</div>
-			</div>
-		</div>
-	{% endblock %}
+{% block javascripts %}
+	{{ parent() }}
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			const deleteTaskModal = new bootstrap.Modal(document.getElementById('deleteTaskModal'));
+			const taskTitleElement = document.getElementById('taskTitlePlaceholder');
+			const deleteTaskForm = document.getElementById('deleteTaskForm');
+			const deleteTaskTokenInput = document.getElementById('deleteTaskToken');
+			const deleteButtons = document.querySelectorAll('.delete-task-btn');
 
-	{% block javascripts %}
-		{{ parent() }}
-		<script>
-			document.addEventListener('DOMContentLoaded', function() {
-				const deleteTaskModal = new bootstrap.Modal(document.getElementById('deleteTaskModal'));
-				const taskTitleElement = document.getElementById('taskTitlePlaceholder');
-				const deleteTaskForm = document.getElementById('deleteTaskForm');
-				const deleteTaskTokenInput = document.getElementById('deleteTaskToken');
-				const deleteButtons = document.querySelectorAll('.delete-task-btn');
+			deleteButtons.forEach(button => {
+				button.addEventListener('click', function (event) {
+					const taskId = this.getAttribute('data-task-id');
+					const taskTitle = this.getAttribute('data-task-title');
+					const csrfToken = this.getAttribute('data-token');
 
-				deleteButtons.forEach(button => {
-					button.addEventListener('click', function(event) {
-						const taskId = this.getAttribute('data-task-id');
-						const taskTitle = this.getAttribute('data-task-title');
-						const csrfToken = this.getAttribute('data-token');
+					if (taskTitleElement) {
+						taskTitleElement.textContent = taskTitle;
+					}
 
-						if (taskTitleElement) {
-							taskTitleElement.textContent = taskTitle;
-						}
+					if (deleteTaskForm) {
+						const deletePath = "{{ path('task_delete', {id: 'TASK_ID'}) }}";
+						deleteTaskForm.action = deletePath.replace('TASK_ID', taskId);
+					}
 
-						if (deleteTaskForm) {
-							const deletePath = "{{ path('task_delete', {id: 'TASK_ID'}) }}";
-							deleteTaskForm.action = deletePath.replace('TASK_ID', taskId);
-						}
+					if (deleteTaskTokenInput) {
+						deleteTaskTokenInput.value = csrfToken;
+					}
 
-						if (deleteTaskTokenInput) {
-							deleteTaskTokenInput.value = csrfToken;
-						}
-
-						deleteTaskModal.show();
-					});
+					deleteTaskModal.show();
 				});
 			});
-		</script>
-	{% endblock %}
+		});
+	</script>
+{% endblock %}
 
-	{% block stylesheets %}
-		{{ parent() }}
-		<style>
-			/* Styles pour rendre le tableau responsive en mode "carte" */
-			@media screen and (max-width: 767px) {
-				.table-responsive .table thead {
-					display: none;
-					/* Masque l'en-tête du tableau sur mobile */
-				}
-
-				.table-responsive .table tbody,
-				.table-responsive .table tr,
-				.table-responsive .table td {
-					display: block;
-					/* Chaque élément devient un bloc */
-					width: 100%;
-				}
-
-				.table-responsive .table tr {
-					margin-bottom: 1rem;
-					border: 1px solid #dee2e6;
-					border-radius: 0.375rem;
-					/* Bords arrondis pour l'effet "carte" */
-				}
-
-				.table-responsive .table td {
-					/* Affiche les données à droite et l'étiquette à gauche */
-					text-align: right;
-					padding-left: 50%;
-					position: relative;
-					border: none;
-					border-bottom: 1px solid #f0f0f0;
-				}
-				
-				.table-responsive .table tr td:last-child {
-					border-bottom: none;
-					/* Pas de bordure pour la dernière cellule (Actions) */
-				}
-
-				.table-responsive .table td::before {
-					/* Affiche l'étiquette (depuis l'attribut data-label) */
-					content: attr(data-label);
-					position: absolute;
-					left: 10px;
-					width: calc(50% - 20px);
-					text-align: left;
-					font-weight: bold;
-					white-space: nowrap;
-				}
-
-				/* Mise à jour des styles pour les boutons d'action en mode mobile */
-				.table-responsive .table td[data-label="Actions"] {
-					text-align: center;
-					padding-left: 10px;
-					padding-right: 10px;
-					padding-top: 15px;
-					padding-bottom: 10px;
-				}
-				
-				.table-responsive .table td[data-label="Actions"]::before {
-					content: "";
-				}
-
-				.table-responsive .table td[data-label="Actions"] .d-flex {
-					justify-content: center !important;
-					/* Alignement des boutons au centre */
-				}
-				
-				/* Nouveaux styles pour corriger l'alignement vertical des icônes */
-				.btn-sm i.fas {
-					vertical-align: middle;
-				}
+{% block stylesheets %}
+	{{ parent() }}
+	<style>
+		/* Styles pour rendre le tableau responsive en mode "carte" */
+		@media screen and(max-width: 767px) {
+			.table-responsive .table thead {
+				display: none;
 			}
-		</style>
-	{% endblock %}
+
+			.table-responsive .table tbody,
+			.table-responsive .table tr,
+			.table-responsive .table td {
+				display: block;
+				width: 100%;
+			}
+
+			.table-responsive .table tr {
+				margin-bottom: 1rem;
+				border: 1px solid #dee2e6;
+				border-radius: 0.375rem;
+			}
+
+			.table-responsive .table td {
+				text-align: right;
+				padding-left: 50%;
+				position: relative;
+				border: none;
+				border-bottom: 1px solid #f0f0f0;
+			}
+
+			.table-responsive .table tr td:last-child {
+				border-bottom: none;
+			}
+
+			.table-responsive .table td::before {
+				content: attr(data-label);
+				position: absolute;
+				left: 10px;
+				width: calc(50% - 20px);
+				text-align: left;
+				font-weight: bold;
+				white-space: nowrap;
+			}
+
+			/* Mise à jour des styles pour les boutons d'action en mode mobile */
+			.table-responsive .table td[data-label="Actions"] {
+				text-align: center;
+				padding: 15px 10px 10px;
+			}
+
+			.table-responsive .table td[data-label="Actions"]::before {
+				content: "";
+			}
+
+			.table-responsive .table td[data-label="Actions"] .d-flex {
+				justify-content: center !important;
+			}
+
+			/* Nouveaux styles pour corriger l'alignement vertical des icônes */
+			.btn-sm i.fas {
+				vertical-align: middle;
+			}
+		}
+
+		.btn-icon {
+			width: 38px;
+			height: 38px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 0;
+		}
+
+		.project-title {
+			font-size: 2rem;
+		}
+	</style>
+{% endblock %}

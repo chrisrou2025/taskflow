@@ -4,20 +4,7 @@
 {% endblock %}
 
 {% block body %}
-	<div
-		class="container">
-		<!-- Header avec breadcrumb -->
-		<nav aria-label="breadcrumb" class="mb-4">
-			<ol class="breadcrumb">
-				<li class="breadcrumb-item">
-					<a href="{{ path('app_dashboard') }}" class="text-decoration-none">
-						<i class="fas fa-tachometer-alt me-1"></i>Tableau de bord
-					</a>
-				</li>
-				<li class="breadcrumb-item active">Mon Profil</li>
-			</ol>
-		</nav>
-
+	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 mx-auto">
 				<div class="card border-0 shadow-sm">
@@ -28,28 +15,24 @@
 					</div>
 					<div class="card-body p-4">
 						<div class="row">
-							<div
-								class="col-md-4 text-center mb-4">
-								<!-- Avatar -->
+							<div class="col-md-4 text-center mb-4">
 								<div class="bg-primary bg-opacity-10 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
-									<i class="fas fa-user text-primary fa-3x"></i>
+									<span class="text-primary fw-bold h2 mb-0">{{ user.firstName|first }}{{ user.lastName|first }}</span>
 								</div>
 								<h5 class="mb-1">{{ user.fullName }}</h5>
 								<p class="text-muted">{{ user.email }}</p>
 
-								<!-- Badges de rôle -->
 								{% for role in user.roles %}
 									{% if role != 'ROLE_USER' %}
 										<span class="badge bg-warning mb-2">
-											{{ role == 'ROLE_ADMIN' ? 'Administrateur' : role }}
+											{{ role == 'ROLE_ADMIN' ?
+												'Administrateur' : role }}
 										</span>
 									{% endif %}
 								{% endfor %}
 							</div>
 
-							<div
-								class="col-md-8">
-								<!-- Informations personnelles -->
+							<div class="col-md-8">
 								<h6 class="text-primary mb-3">
 									<i class="fas fa-info-circle me-2"></i>Informations personnelles
 								</h6>
@@ -76,8 +59,7 @@
 							</div>
 						</div>
 
-						<!-- Actions -->
-						<div class="d-flex gap-2 justify-content-center mt-4">
+						<div class="d-flex gap-2 justify-content-center mt-4 flex-wrap">
 							<a href="{{ path('user_profile_edit') }}" class="btn btn-primary">
 								<i class="fas fa-edit me-2"></i>Modifier mes informations
 							</a>
@@ -91,7 +73,6 @@
 					</div>
 				</div>
 
-				<!-- Statistiques personnelles -->
 				<div class="card border-0 shadow-sm mt-4">
 					<div class="card-header bg-white">
 						<h6 class="card-title mb-0">
@@ -100,33 +81,108 @@
 					</div>
 					<div class="card-body">
 						<div class="row text-center">
-							<div class="col-md-4 mb-3">
+							<div class="col-6 mb-3">
 								<div class="border-end">
 									<h4 class="text-primary mb-1">{{ user.projects|length }}</h4>
 									<small class="text-muted">Projet(s) créé(s)</small>
 								</div>
 							</div>
-							<div class="col-md-4 mb-3">
+							<div class="col-6 mb-3">
 								<div class="border-end">
-									{% set totalTasks = 0 %}
-									{% for project in user.projects %}
-										{% set totalTasks = totalTasks + project.tasksCount %}
-									{% endfor %}
-									<h4 class="text-success mb-1">{{ totalTasks }}</h4>
-									<small class="text-muted">Tâche(s) au total</small>
+									<h4 class="text-info mb-1">{{ user.collaboratingProjects|length }}</h4>
+									<small class="text-muted">Projet(s) collaboratif(s)</small>
 								</div>
 							</div>
-							<div class="col-md-4 mb-3">
-								{% set completedTasks = 0 %}
-								{% for project in user.projects %}
-									{% set completedTasks = completedTasks + project.completedTasksCount %}
-								{% endfor %}
-								<h4 class="text-warning mb-1">{{ completedTasks }}</h4>
+							<div class="col-6 mb-3">
+								<div class="border-end">
+									<h4 class="text-warning mb-1">{{ user.assignedTasksCount }}</h4>
+									<small class="text-muted">Tâche(s) assignée(s)</small>
+								</div>
+							</div>
+							<div class="col-6 mb-3">
+								<h4 class="text-success mb-1">{{ user.completedAssignedTasksCount }}</h4>
 								<small class="text-muted">Tâche(s) terminée(s)</small>
 							</div>
 						</div>
+
+						{% if user.assignedTasksCount > 0 %}
+							<div class="mt-3">
+								<div class="d-flex justify-content-between align-items-center mb-1">
+									<small class="text-muted fw-semibold">Progression de mes tâches</small>
+									<small class="text-muted">{{ user.taskCompletionPercentage }}%</small>
+								</div>
+								<div class="progress" style="height: 6px;">
+									<div class="progress-bar bg-success" role="progressbar" style="width: {{ user.taskCompletionPercentage }}%;"
+										aria-valuenow="{{ user.taskCompletionPercentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+								</div>
+							</div>
+						{% endif %}
 					</div>
 				</div>
+
+				{% if user.collaboratingProjects|length > 0 %}
+					<div class="card border-0 shadow-sm mt-4">
+						<div class="card-header bg-light">
+							<h6 class="card-title mb-0">
+								<i class="fas fa-users me-2 text-primary"></i>Mes projets collaboratifs
+							</h6>
+						</div>
+						<div class="card-body">
+							<div class="row">
+								{% for project in user.collaboratingProjects %}
+									<div class="col-md-6 mb-3">
+										<div class="card border">
+											<div class="card-body p-3">
+												<h6 class="card-title mb-2">
+													<a href="{{ path('project_show',
+														{id: project.id}) }}" class="text-decoration-none">
+														<i class="fas fa-folder me-1"></i>{{ project.title }}
+													</a>
+												</h6>
+												<div class="small text-muted mb-2">
+													<i class="fas fa-user me-1"></i>Propriétaire : {{ project.owner.fullName }}
+												</div>
+												<div class="d-flex justify-content-between align-items-center">
+													<small class="text-muted">
+														<i class="fas fa-tasks me-1"></i>
+														{{ user.assignedTasksInProject(project)|length }} tâche(s) assignée(s)
+													</small>
+													<div class="d-flex align-items-center">
+														<small class="text-muted me-2">{{ project.progressPercentage }}%</small>
+														<div class="progress" style="width: 50px; height: 4px;">
+															<div class="progress-bar bg-success" style="width: {{ project.progressPercentage }}%;"></div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								{% endfor %}
+							</div>
+						</div>
+					</div>
+				{% endif %}
+
+				{% if user.hasOverdueTasks %}
+					<div class="card border-0 shadow-sm mt-4 border-warning">
+						<div class="card-header bg-warning bg-opacity-10">
+							<h6 class="card-title mb-0 text-warning">
+								<i class="fas fa-exclamation-triangle me-2"></i>Attention : Tâches en retard
+							</h6>
+						</div>
+						<div class="card-body">
+							<p class="text-muted mb-3">
+								Vous avez {{ user.overdueTasks|length }} tâche(s) en retard qui nécessite(nt) votre attention.
+							</p>
+							<div class="d-flex justify-content-between align-items-center">
+								<small class="text-muted">N'hésitez pas à mettre à jour vos échéances</small>
+								<a href="{{ path('task_index') }}" class="btn btn-warning btn-sm">
+									<i class="fas fa-eye me-1"></i>Voir mes tâches
+								</a>
+							</div>
+						</div>
+					</div>
+				{% endif %}
 			</div>
 		</div>
 	</div>

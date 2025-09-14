@@ -6,24 +6,7 @@
 {% endblock %}
 
 {% block body %}
-	<div
-		class="container">
-		<nav aria-label="breadcrumb" class="mb-4">
-			<ol class="breadcrumb">
-				<li class="breadcrumb-item">
-					<a href="{{ path('project_index') }}" class="text-decoration-none">
-						<i class="fas fa-folder me-1"></i>Mes Projets
-					</a>
-				</li>
-				<li class="breadcrumb-item">
-					<a href="{{ path('project_show', {id: project.id}) }}" class="text-decoration-none">
-						{{ project.title }}
-					</a>
-				</li>
-				<li class="breadcrumb-item active">Modifier</li>
-			</ol>
-		</nav>
-
+	<div class="container">
 		<div class="row justify-content-center">
 			<div class="col-md-8 col-lg-6">
 				<div class="card border-0 shadow-sm">

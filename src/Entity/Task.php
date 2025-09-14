@@ -123,7 +123,7 @@ class Task
     }
 
     public function setStatus(string $status): static
-    {
+{
         // Vérifier si le statut change réellement
         if ($this->status !== $status) {
             $this->status = $status;

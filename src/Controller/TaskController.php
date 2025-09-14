@@ -25,27 +25,42 @@ class TaskController extends AbstractController
         TaskRepository $taskRepository,
         ProjectRepository $projectRepository
     ): Response {
-        // Récupération des paramètres de filtrage
+        $user = $this->getUser();
         $projectId = $request->query->get('project');
         $status = $request->query->get('status');
         $priority = $request->query->get('priority');
 
-        // Récupération des projets de l'utilisateur pour le filtre
-        $userProjects = $projectRepository->findBy(['owner' => $this->getUser()]);
+        // 🔥 récupérer les projets dont l’utilisateur est owner OU collaborateur (assignee)
+        $userProjects = $projectRepository->createQueryBuilder('p')
+            ->leftJoin('p.tasks', 't')
+            ->where('p.owner = :user OR t.assignee = :user')
+            ->setParameter('user', $user)
+            ->groupBy('p.id')
+            ->getQuery()
+            ->getResult();
 
         $project = null;
         $tasks = [];
 
         if ($projectId) {
             $project = $projectRepository->find($projectId);
-            if ($project && $project->getOwner() === $this->getUser()) {
+
+            // 🔒 accès si propriétaire ou collaborateur
+            if ($project && ($project->getOwner() === $user || $project->hasCollaborator($user))) {
                 $tasks = $taskRepository->findByProjectWithFilters($project, $status, $priority);
             }
         } else {
-            // Si aucun projet spécifié, récupérer toutes les tâches de l'utilisateur
-            $tasks = $taskRepository->findRecentTasksByUser($this->getUser(), 50);
+            // 🔥 toutes les tâches visibles (owner ou assignee)
+            $qb = $taskRepository->createQueryBuilder('t')
+                ->join('t.project', 'p')
+                ->where('p.owner = :user OR t.assignee = :user')
+                ->setParameter('user', $user)
+                ->orderBy('t.createdAt', 'DESC')
+                ->setMaxResults(50);
 
-            // Appliquer les filtres si nécessaire
+            $tasks = $qb->getQuery()->getResult();
+
+            // Appliquer les filtres si nécessaires
             if ($status || $priority) {
                 $tasks = array_filter($tasks, function ($task) use ($status, $priority) {
                     $statusMatch = !$status || $task->getStatus() === $status;
@@ -73,18 +88,21 @@ class TaskController extends AbstractController
         ProjectRepository $projectRepository
     ): Response {
         $task = new Task();
+        $user = $this->getUser();
 
-        // Si un projet est spécifié dans l'URL, l'associer à la tâche
+        // Projet précisé dans l’URL
         $projectId = $request->query->get('project');
         if ($projectId) {
             $project = $projectRepository->find($projectId);
-            if ($project && $project->getOwner() === $this->getUser()) {
+
+            // 🔒 autorisé si propriétaire ou collaborateur
+            if ($project && ($project->getOwner() === $user || $project->hasCollaborator($user))) {
                 $task->setProject($project);
             }
         }
 
         $form = $this->createForm(TaskType::class, $task, [
-            'user' => $this->getUser()
+            'user' => $user
         ]);
         $form->handleRequest($request);
 
@@ -94,7 +112,6 @@ class TaskController extends AbstractController
 
             $this->addFlash('success', 'La tâche "' . $task->getTitle() . '" a été créée avec succès !');
 
-            // Redirection vers la liste des tâches du projet ou générale
             if ($task->getProject()) {
                 return $this->redirectToRoute('task_index', ['project' => $task->getProject()->getId()]);
             }
@@ -110,29 +127,44 @@ class TaskController extends AbstractController
     #[Route('/{id}', name: 'task_show', methods: ['GET'])]
     public function show(Task $task): Response
     {
-        // Vérification que l'utilisateur est propriétaire de la tâche
-        $this->denyAccessUnlessGranted('TASK_VIEW', $task);
+        $user = $this->getUser();
+
+        // 🔒 accès si propriétaire du projet ou assignee de la tâche
+        if ($task->getProject()->getOwner() !== $user && $task->getAssignee() !== $user) {
+            $this->addFlash('error', 'Vous n\'avez pas l\'autorisation de consulter cette tâche.');
+            return $this->redirectToRoute('project_index');
+        }
+
+        $isOwner = $user === $task->getProject()->getOwner();
 
         return $this->render('task/show.html.twig', [
             'task' => $task,
+            'isOwner' => $isOwner,
         ]);
     }
 
     #[Route('/{id}/edit', name: 'task_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Task $task, EntityManagerInterface $entityManager): Response
     {
-        // Vérification que l'utilisateur est propriétaire de la tâche
-        $this->denyAccessUnlessGranted('TASK_EDIT', $task);
+        $user = $this->getUser();
 
-        $form = $this->createForm(TaskType::class, $task, [
-            'user' => $this->getUser()
-        ]);
+        // 🔒 propriétaire du projet ou assignee
+        if ($task->getAssignee() !== $user && $task->getProject()->getOwner() !== $user) {
+            $this->addFlash('error', 'Vous ne pouvez modifier que vos propres tâches.');
+            return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
+        }
+        
+        $formOptions = ['user' => $user];
+
+        if ($task->getAssignee() === $user && $task->getProject()->getOwner() !== $user) {
+            $formOptions['is_collaborator'] = true; // désactiver certains champs
+        }
+
+        $form = $this->createForm(TaskType::class, $task, $formOptions);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Mise à jour de la date de modification
             $task->setUpdatedAt(new \DateTimeImmutable());
-
             $entityManager->flush();
 
             $this->addFlash('success', 'La tâche "' . $task->getTitle() . '" a été modifiée avec succès !');
@@ -149,8 +181,13 @@ class TaskController extends AbstractController
     #[Route('/{id}', name: 'task_delete', methods: ['POST'])]
     public function delete(Request $request, Task $task, EntityManagerInterface $entityManager): Response
     {
-        // Vérification que l'utilisateur est propriétaire de la tâche
-        $this->denyAccessUnlessGranted('TASK_DELETE', $task);
+        $user = $this->getUser();
+
+        // 🔒 seul le propriétaire du projet peut supprimer
+        if ($task->getProject()->getOwner() !== $user) {
+            $this->addFlash('error', 'Seul le propriétaire du projet peut supprimer une tâche.');
+            return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
+        }
 
         if ($this->isCsrfTokenValid('delete' . $task->getId(), $request->request->get('_token'))) {
             $taskTitle = $task->getTitle();
@@ -161,46 +198,39 @@ class TaskController extends AbstractController
 
             $this->addFlash('success', 'La tâche "' . $taskTitle . '" a été supprimée.');
 
-            // Redirection vers la liste des tâches du projet
             if ($project) {
                 return $this->redirectToRoute('task_index', ['project' => $project->getId()]);
             }
             return $this->redirectToRoute('task_index');
-        } else {
-            $this->addFlash('error', 'Token CSRF invalide. La suppression a échoué.');
         }
 
+        $this->addFlash('error', 'Token CSRF invalide. La suppression a échoué.');
         return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
     }
 
     #[Route('/{id}/toggle-status', name: 'task_toggle_status', methods: ['POST'])]
     public function toggleStatus(Request $request, Task $task, EntityManagerInterface $entityManager): Response
     {
-        // Vérification que l'utilisateur est propriétaire de la tâche
-        $this->denyAccessUnlessGranted('TASK_EDIT', $task);
+        $user = $this->getUser();
+
+        // 🔒 propriétaire du projet ou assignee
+        if ($task->getAssignee() !== $user && $task->getProject()->getOwner() !== $user) {
+            $this->addFlash('error', 'Vous ne pouvez modifier que les tâches qui vous sont assignées.');
+            return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
+        }
 
         if ($this->isCsrfTokenValid('toggle-status' . $task->getId(), $request->request->get('_token'))) {
-            // Basculer entre les statuts
             switch ($task->getStatus()) {
-                case Task::STATUS_TODO:
-                    $newStatus = Task::STATUS_IN_PROGRESS;
-                    break;
-                case Task::STATUS_IN_PROGRESS:
-                    $newStatus = Task::STATUS_COMPLETED;
-                    break;
-                case Task::STATUS_COMPLETED:
-                    $newStatus = Task::STATUS_TODO;
-                    break;
-                default:
-                    $newStatus = Task::STATUS_TODO;
+                case Task::STATUS_TODO: $newStatus = Task::STATUS_IN_PROGRESS; break;
+                case Task::STATUS_IN_PROGRESS: $newStatus = Task::STATUS_COMPLETED; break;
+                case Task::STATUS_COMPLETED: $newStatus = Task::STATUS_TODO; break;
+                default: $newStatus = Task::STATUS_TODO;
             }
 
             $task->setStatus($newStatus);
             $task->setUpdatedAt(new \DateTimeImmutable());
-
             $entityManager->flush();
 
-            // Vérifier si c'est une requête AJAX
             if ($request->isXmlHttpRequest()) {
                 return new JsonResponse([
                     'success' => true,
@@ -210,84 +240,34 @@ class TaskController extends AbstractController
                 ]);
             }
 
-            // Pour les requêtes normales, ajouter un flash message et rediriger
             $this->addFlash('success', 'Statut mis à jour avec succès');
-
-            // Rediriger vers la page précédente ou la page de la tâche
-            $referer = $request->headers->get('referer');
-            if ($referer) {
-                return $this->redirect($referer);
-            }
-
             return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
         }
 
-        // Token CSRF invalide
         if ($request->isXmlHttpRequest()) {
-            return new JsonResponse([
-                'success' => false,
-                'message' => 'Token CSRF invalide'
-            ], 400);
+            return new JsonResponse(['success' => false, 'message' => 'Token CSRF invalide'], 400);
         }
 
         $this->addFlash('error', 'Token CSRF invalide. Le changement de statut a échoué.');
         return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
     }
 
-    #[Route('/{id}/duplicate', name: 'task_duplicate', methods: ['POST'])]
-    public function duplicate(Request $request, Task $task, EntityManagerInterface $entityManager): Response
-    {
-        // Vérification que l'utilisateur est propriétaire de la tâche
-        $this->denyAccessUnlessGranted('TASK_VIEW', $task);
-
-        if ($this->isCsrfTokenValid('duplicate' . $task->getId(), $request->request->get('_token'))) {
-            // Création d'une copie de la tâche
-            $newTask = new Task();
-            $newTask->setTitle($task->getTitle() . ' (Copie)');
-            $newTask->setDescription($task->getDescription());
-            $newTask->setPriority($task->getPriority());
-            $newTask->setProject($task->getProject());
-            // La nouvelle tâche commence avec le statut "À faire"
-            $newTask->setStatus(Task::STATUS_TODO);
-
-            // Si la tâche originale a une échéance, l'ajouter à la copie avec +1 jour
-            if ($task->getDueDate()) {
-                $originalDate = $task->getDueDate();
-                // Créer une nouvelle instance DateTime pour pouvoir utiliser add()
-                $newDueDate = new \DateTime($originalDate->format('Y-m-d H:i:s'));
-                $newDueDate->add(new \DateInterval('P1D'));
-                $newTask->setDueDate($newDueDate);
-            }
-
-            $entityManager->persist($newTask);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'La tâche a été dupliquée avec succès !');
-
-            return $this->redirectToRoute('task_show', ['id' => $newTask->getId()]);
-        } else {
-            $this->addFlash('error', 'Token CSRF invalide. La duplication a échoué.');
-        }
-
-        return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
-    }
-
     #[Route('/project/{id}/quick-add', name: 'task_quick_add', methods: ['POST'])]
-    public function quickAdd(
-        Request $request,
-        Project $project,
-        EntityManagerInterface $entityManager
-    ): JsonResponse {
-        // Vérification que l'utilisateur est propriétaire du projet
-        $this->denyAccessUnlessGranted('PROJECT_VIEW', $project);
+    public function quickAdd(Request $request, Project $project, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $user = $this->getUser();
 
-        $title = $request->request->get('title');
-
-        if (empty(trim($title))) {
+        // 🔒 seul le propriétaire peut ajouter rapidement
+        if ($project->getOwner() !== $user) {
             return new JsonResponse([
                 'success' => false,
-                'message' => 'Le titre ne peut pas être vide'
-            ], 400);
+                'message' => 'Vous n\'avez pas l\'autorisation d\'ajouter une tâche à ce projet.'
+            ], 403);
+        }
+
+        $title = $request->request->get('title');
+        if (empty(trim($title))) {
+            return new JsonResponse(['success' => false, 'message' => 'Le titre ne peut pas être vide'], 400);
         }
 
         if ($this->isCsrfTokenValid('quick-add', $request->request->get('_token'))) {
@@ -313,9 +293,6 @@ class TaskController extends AbstractController
             ]);
         }
 
-        return new JsonResponse([
-            'success' => false,
-            'message' => 'Token CSRF invalide'
-        ], 400);
+        return new JsonResponse(['success' => false, 'message' => 'Token CSRF invalide'], 400);
     }
 }

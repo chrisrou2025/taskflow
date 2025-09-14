@@ -7,6 +7,7 @@ use App\Repository\TaskRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class MainController extends AbstractController
 {
@@ -22,29 +23,26 @@ class MainController extends AbstractController
     }
 
     #[Route('/dashboard', name: 'app_dashboard')]
+    #[IsGranted('ROLE_USER')]
     public function dashboard(
         ProjectRepository $projectRepository,
         TaskRepository $taskRepository
     ): Response {
         $user = $this->getUser();
 
-        // Récupération des projets de l'utilisateur connecté
-        $projects = $projectRepository->findBy(
-            ['owner' => $user],
-            ['createdAt' => 'DESC'],
-            5 // Limite aux 5 derniers projets
-        );
+        // Récupération des projets de l'utilisateur connecté (propriétaire + collaborateur via tâches assignées)
+        $projects = $projectRepository->findProjectsByUserWithCollaborations($user);
 
-        // Statistiques globales
-        $totalProjects = $projectRepository->count(['owner' => $user]);
+        // ✅ Statistiques globales corrigées : inclut aussi les projets collaboratifs
+        $totalProjects = $projectRepository->countProjectsByUserWithCollaborations($user);
 
-        // Récupération des tâches récentes de l'utilisateur
-        $recentTasks = $taskRepository->findRecentTasksByUser($user, 10);
+        // Récupération des tâches récentes de l'utilisateur (assignées ou projets collaboratifs)
+        $recentTasks = $taskRepository->findTasksByUser($user, 10);
 
-        // Tâches par statut
+        // ✅ Tâches par statut (corrigé pour inclure propriétaire + collaborateur + assignées)
         $tasksByStatus = $taskRepository->getTasksCountByStatusForUser($user);
 
-        // Tâches en retard
+        // ✅ Tâches en retard (corrigé idem)
         $overdueTasks = $taskRepository->findOverdueTasksByUser($user);
 
         return $this->render('main/dashboard.html.twig', [
@@ -53,6 +51,7 @@ class MainController extends AbstractController
             'recent_tasks' => $recentTasks,
             'tasks_by_status' => $tasksByStatus,
             'overdue_tasks' => $overdueTasks,
+            'tasks' => $recentTasks,
         ]);
     }
 }

@@ -11,20 +11,14 @@
                     <h1 class="h3 mb-2">🔧 Administration TaskFlow</h1>
                     <p class="text-muted mb-0">Tableau de bord administrateur</p>
                 </div>
-                <div class="d-flex gap-2">
-                    <a href="{{ path('admin_statistics') }}" class="btn btn-outline-info">
-                        <i class="fas fa-chart-bar me-2"></i>Statistiques
-                    </a>
-                    <a href="{{ path('admin_maintenance') }}" class="btn btn-outline-warning">
-                        <i class="fas fa-tools me-2"></i>Maintenance
-                    </a>
-                </div>
+                {# Les boutons ont été supprimés ici #}
             </div>
         </div>
     </div>
 
+    {# AMÉLIORATION RESPONSIVE : Les cartes s'empilent sur les très petits écrans #}
     <div class="row mb-4">
-        <div class="col-6 col-md-3 mb-3">
+        <div class="col-12 col-sm-6 col-lg-3 mb-3">
             <div class="card border-0 bg-gradient-primary text-white h-100">
                 <div class="card-body d-flex flex-column align-items-center text-center">
                     <div class="mb-3">
@@ -42,7 +36,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-6 col-md-3 mb-3">
+        <div class="col-12 col-sm-6 col-lg-3 mb-3">
             <div class="card border-0 bg-gradient-success text-white h-100">
                 <div class="card-body d-flex flex-column align-items-center text-center">
                     <div class="mb-3">
@@ -60,7 +54,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-6 col-md-3 mb-3">
+        <div class="col-12 col-sm-6 col-lg-3 mb-3">
             <div class="card border-0 bg-gradient-warning text-white h-100">
                 <div class="card-body d-flex flex-column align-items-center text-center">
                     <div class="mb-3">
@@ -78,7 +72,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-6 col-md-3 mb-3">
+        <div class="col-12 col-sm-6 col-lg-3 mb-3">
             <div class="card border-0 bg-gradient-info text-white h-100">
                 <div class="card-body d-flex flex-column align-items-center text-center">
                     <div class="mb-3">

@@ -6,182 +6,169 @@
 {% endblock %}
 
 {% block body %}
-	<div class="container-fluid pb-5 mb-5 pb-lg-0 mb-lg-0">
-		<nav aria-label="breadcrumb" class="mb-3">
-			<ol class="breadcrumb">
-				<li class="breadcrumb-item">
-					<a href="{{ path('project_index') }}" class="text-decoration-none">
-						<i class="fas fa-folder me-1"></i>Mes Projets
-					</a>
-				</li>
-				<li class="breadcrumb-item">
-					<a href="{{ path('project_show', {id: task.project.id}) }}" class="text-decoration-none">
-						{{ task.project.title }}
-					</a>
-				</li>
-				<li class="breadcrumb-item">
-					<a href="{{ path('task_index', {project: task.project.id}) }}" class="text-decoration-none">
-						Tâches
-					</a>
-				</li>
-				<li class="breadcrumb-item active">{{ task.title }}</li>
-			</ol>
-		</nav>
-
-		<div class="row mb-4">
-			<div class="col-12">
-				<div class="d-flex justify-content-between align-items-start">
-					<div class="flex-grow-1">
-						<h1 class="h3 mb-2">{{ task.title }}</h1>
-						{% if task.isOverdue and not task.isCompleted %}
-							<div class="d-flex gap-3 align-items-center mb-3">
-								<span class="badge bg-danger fs-6">
-									<i class="fas fa-exclamation-triangle me-1"></i>En retard
-								</span>
+	<div class="container-fluid px-2 px-md-3">
+		<div class="pb-5 mb-5 pb-lg-0 mb-lg-0">
+			<div class="row mb-4">
+				<div class="col-12">
+					<div class="d-flex justify-content-between align-items-start">
+						<div class="flex-grow-1 me-2">
+							<h1 class="h3 mb-2">{{ task.title }}</h1>
+							{% if task.isOverdue and not task.isCompleted %}
+								<div class="d-flex gap-3 align-items-center mb-3">
+									<span class="badge bg-danger fs-6">
+										<i class="fas fa-exclamation-triangle me-1"></i>En retard
+									</span>
+								</div>
+							{% endif %}
+							<div class="d-flex gap-3 text-muted">
+								<small>
+									<i class="fas fa-calendar-plus me-1"></i>
+									Créée le
+									{{ task.createdAt|date('d/m/Y à H:i') }}
+								</small>
+								{% if task.updatedAt %}
+									<small>
+										<i class="fas fa-edit me-1"></i>
+										Mise à jour le
+										{{ task.updatedAt|date('d/m/Y à H:i') }}
+									</small>
+								{% endif %}
+								{% if task.completedAt %}
+									<small>
+										<i class="fas fa-check-circle me-1 text-success"></i>
+										Terminée le
+										{{ task.completedAt|date('d/m/Y à H:i') }}
+									</small>
+								{% endif %}
 							</div>
-						{% endif %}
-						<div class="d-flex gap-3 text-muted">
-							<small>
-								<i class="fas fa-calendar-plus me-1"></i>
-								Créée le
-								{{ task.createdAt|date('d/m/Y à H:i') }}
-							</small>
-							{% if task.updatedAt %}
-								<small>
-									<i class="fas fa-edit me-1"></i>
-									Mise à jour le
-									{{ task.updatedAt|date('d/m/Y à H:i') }}
-								</small>
-							{% endif %}
-							{% if task.completedAt %}
-								<small>
-									<i class="fas fa-check-circle me-1 text-success"></i>
-									Terminée le
-									{{ task.completedAt|date('d/m/Y à H:i') }}
-								</small>
-							{% endif %}
 						</div>
-					</div>
-					
-					{# Boutons pour la vue desktop (grands écrans) #}
-					<div class="d-none d-lg-flex gap-2">
-						<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-primary">
-							<i class="fas fa-edit me-2"></i>Modifier
-						</a>
-						<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
-							<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
-							<button type="submit" class="btn btn-outline-secondary" title="Actualiser la tâche">
-								<i class="fas fa-sync me-2"></i>Actualiser
-							</button>
-						</form>
-						<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" title="Supprimer cette tâche">
-							<i class="fas fa-trash me-2"></i>Supprimer
-						</button>
-					</div>
-				</div>
-			</div>
-		</div>
 
-		<div class="row">
-			<div class="col-lg-8">
-				<div class="card border-0 shadow-sm mb-4">
-					<div class="card-header bg-white">
-						<h5 class="card-title mb-0">
-							<i class="fas fa-align-left me-2 text-primary"></i>Description
-						</h5>
-					</div>
-					<div class="card-body">
-						{% if task.description %}
-							<p class="mb-0">{{ task.description|nl2br }}</p>
-						{% else %}
-							<p class="text-muted mb-0">Aucune description n'a été ajoutée à cette tâche.</p>
-						{% endif %}
-					</div>
-				</div>
-
-				<div class="card border-0 shadow-sm">
-					<div class="card-header bg-white">
-						<h5 class="card-title mb-0">
-							<i class="fas fa-folder me-2 text-primary"></i>Projet associé
-						</h5>
-					</div>
-					<div class="card-body">
-						<div class="d-flex align-items-center justify-content-between mb-2">
-							<h6 class="mb-0">{{ task.project.title }}</h6>
-							<a href="{{ path('project_show', {id: task.project.id}) }}" class="btn btn-outline-primary btn-sm">
-								<i class="fas fa-external-link-alt me-1"></i>Voir
+						{# Boutons pour la vue desktop (grands écrans) #}
+						<div class="d-none d-lg-flex gap-2">
+							<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-primary">
+								<i class="fas fa-edit me-2"></i>Modifier
 							</a>
-						</div>
-						{% if task.project.description %}
-							<p class="text-muted mb-0">{{ task.project.description|striptags|length > 150 ? task.project.description|striptags|slice(0, 150) ~ '...' : task.project.description|striptags }}</p>
-						{% endif %}
-					</div>
-				</div>
-			</div>
-			<div class="col-lg-4">
-				<div class="card border-0 shadow-sm mb-4">
-					<div class="card-header bg-white">
-						<h6 class="card-title mb-0">
-							<i class="fas fa-info-circle me-2 text-primary"></i>États de la tâche
-						</h6>
-					</div>
-					<div class="card-body">
-						<div class="d-flex justify-content-between align-items-center mb-2">
-							<small class="text-muted">Statut :</small>
-							<span class="badge bg-{{ task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">{{ task.statusLabel }}</span>
-						</div>
-						<div class="d-flex justify-content-between align-items-center mb-2">
-							<small class="text-muted">Priorité :</small>
-							{% if task.priority == 'high' %}
-								<span class="badge bg-danger">Haute</span>
-							{% elseif task.priority == 'medium' %}
-								<span class="badge bg-warning text-dark">Moyenne</span>
-							{% else %}
-								<span class="badge bg-info text-dark">Basse</span>
+							<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
+								<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
+								<button type="submit" class="btn btn-outline-secondary" title="Actualiser la tâche">
+									<i class="fas fa-sync me-2"></i>Actualiser
+								</button>
+							</form>
+							{% if isOwner %}
+								<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" title="Supprimer cette tâche">
+									<i class="fas fa-trash me-2"></i>Supprimer
+								</button>
 							{% endif %}
 						</div>
-						<div class="d-flex justify-content-between align-items-center">
-							<small class="text-muted">Date limite :</small>
-							<small class="text-muted">{{ task.dueDate ? task.dueDate|date('d/m/Y') : 'Non définie' }}</small>
+
+						{# Boutons pour la vue mobile (petits écrans) #}
+						<div class="d-lg-none d-flex gap-2">
+							<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-primary btn-sm btn-icon" title="Modifier la tâche">
+								<i class="fas fa-edit"></i>
+							</a>
+							<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
+								<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
+								<button type="submit" class="btn btn-outline-secondary btn-sm btn-icon" title="Actualiser le statut">
+									<i class="fas fa-sync"></i>
+								</button>
+							</form>
+							{% if isOwner %}
+								<button type="button" class="btn btn-danger btn-sm btn-icon" data-bs-toggle="modal" data-bs-target="#deleteModal" title="Supprimer la tâche">
+									<i class="fas fa-trash"></i>
+								</button>
+							{% endif %}
 						</div>
 					</div>
 				</div>
-				<div class="card border-0 shadow-sm">
-					<div class="card-header bg-white">
-						<h6 class="card-title mb-0">
-							<i class="fas fa-user-circle me-2 text-primary"></i>Responsable
-						</h6>
+			</div>
+
+			<div class="row">
+				<div class="col-lg-8">
+					<div class="card border-0 shadow-sm mb-4">
+						<div class="card-header bg-white">
+							<h5 class="card-title mb-0">
+								<i class="fas fa-align-left me-2 text-primary"></i>Description
+							</h5>
+						</div>
+						<div class="card-body">
+							{% if task.description %}
+								<p class="mb-0">{{ task.description|nl2br }}</p>
+							{% else %}
+								<p class="text-muted mb-0">Aucune description n'a été ajoutée à cette tâche.</p>
+							{% endif %}
+						</div>
 					</div>
-					<div class="card-body text-center">
-						{% if task.assignee %}
-							<img src="https://via.placeholder.com/80" alt="Avatar" class="rounded-circle mb-2">
-							<h5 class="mb-0">{{ task.assignee.fullName }}</h5>
-							<p class="text-muted mb-0">Responsable de la tâche</p>
-						{% else %}
-							<img src="https://via.placeholder.com/80" alt="Avatar par défaut" class="rounded-circle mb-2">
-							<h5 class="mb-0">Non attribué</h5>
-							<p class="text-muted mb-0">Cette tâche n'a pas de responsable</p>
-						{% endif %}
+
+					<div class="card border-0 shadow-sm">
+						<div class="card-header bg-white">
+							<h5 class="card-title mb-0">
+								<i class="fas fa-folder me-2 text-primary"></i>Projet associé
+							</h5>
+						</div>
+						<div class="card-body">
+							<div class="d-flex align-items-center justify-content-between mb-2">
+								<h6 class="mb-0 fs-4">
+									{{ task.project.title }}
+								</h6>
+								<a href="{{ path('project_show', {id: task.project.id}) }}" class="btn btn-outline-primary btn-sm">
+									<i class="fas fa-external-link-alt me-1"></i>Voir
+								</a>
+							</div>
+							{% if task.project.description %}
+								<p class="text-muted mb-0">{{ task.project.description|striptags|length > 150 ?
+									task.project.description|striptags|slice(0, 150) ~ '...' : task.project.description|striptags }}</p>
+							{% endif %}
+						</div>
 					</div>
 				</div>
-			</div>
-		</div>
-
-		{# Boutons pour la vue mobile (petits écrans) #}
-		<div class="row d-lg-none mt-4">
-			<div class="col-12 d-flex flex-wrap gap-2 justify-content-center">
-				<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-sm btn-primary" title="Modifier la tâche">
-					<i class="fas fa-edit"></i>
-				</a>
-				<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
-					<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
-					<button type="submit" class="btn btn-sm btn-outline-secondary" title="Actualiser le statut">
-						<i class="fas fa-sync"></i>
-					</button>
-				</form>
-				<button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" title="Supprimer la tâche">
-					<i class="fas fa-trash"></i>
-				</button>
+				<div class="col-lg-4">
+					<div class="card border-0 shadow-sm mb-4">
+						<div class="card-header bg-white">
+							<h6 class="card-title mb-0">
+								<i class="fas fa-info-circle me-2 text-primary"></i>États de la tâche
+							</h6>
+						</div>
+						<div class="card-body">
+							<div class="d-flex justify-content-between align-items-center mb-2">
+								<small class="text-muted">Statut :</small>
+								<span class="badge bg-{{ task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">{{ task.statusLabel }}</span>
+							</div>
+							<div class="d-flex justify-content-between align-items-center mb-2">
+								<small class="text-muted">Priorité :</small>
+								{% if task.priority == 'high' %}
+									<span class="badge bg-danger">Haute</span>
+								{% elseif task.priority == 'medium' %}
+									<span class="badge bg-warning text-dark">Moyenne</span>
+								{% else %}
+									<span class="badge bg-info text-dark">Basse</span>
+								{% endif %}
+							</div>
+							<div class="d-flex justify-content-between align-items-center">
+								<small class="text-muted">Date limite :</small>
+								<small class="text-muted">{{ task.dueDate ?
+									task.dueDate|date('d/m/Y') : 'Non définie' }}</small>
+							</div>
+						</div>
+					</div>
+					<div class="card border-0 shadow-sm">
+						<div class="card-header bg-white">
+							<h6 class="card-title mb-0">
+								<i class="fas fa-user-circle me-2 text-primary"></i>Responsable
+							</h6>
+						</div>
+						<div class="card-body text-center">
+							{% if task.assignee %}
+								<img src="https://via.placeholder.com/80" alt="Avatar" class="rounded-circle mb-2">
+								<h5 class="mb-0">{{ task.assignee.fullName }}</h5>
+								<p class="text-muted mb-0">Responsable de la tâche</p>
+							{% else %}
+								<img src="https://via.placeholder.com/80" alt="Avatar par défaut" class="rounded-circle mb-2">
+								<h5 class="mb-0">Non attribué</h5>
+								<p class="text-muted mb-0">Cette tâche n'a pas de responsable</p>
+							{% endif %}
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -223,10 +210,114 @@
 {% block stylesheets %}
 	{{ parent() }}
 	<style>
-		.task-badge-small {
-			font-size: 0.75rem;
-			padding: 0.25em 0.5em;
-			border-radius: 0.25rem;
+		/* Styles pour rendre le tableau responsive en mode "carte" */
+		@media screen and(max-width: 767px) {
+			.table-responsive .table thead {
+				display: none;
+			}
+
+			.table-responsive .table tbody,
+			.table-responsive .table tr,
+			.table-responsive .table td {
+				display: block;
+				width: 100%;
+			}
+
+			.table-responsive .table tr {
+				margin-bottom: 1rem;
+				border: 1px solid #dee2e6;
+				border-radius: 0.375rem;
+			}
+
+			.table-responsive .table td {
+				text-align: right;
+				padding-left: 50%;
+				position: relative;
+				border: none;
+				border-bottom: 1px solid #f0f0f0;
+			}
+
+			.table-responsive .table tr td:last-child {
+				border-bottom: none;
+			}
+
+			.table-responsive .table td::before {
+				content: attr(data-label);
+				position: absolute;
+				left: 10px;
+				width: calc(50% - 20px);
+				text-align: left;
+				font-weight: bold;
+				white-space: nowrap;
+			}
+
+			/* Mise à jour des styles pour les boutons d'action en mode mobile */
+			.table-responsive .table td[data-label="Actions"] {
+				text-align: center;
+				padding: 15px 10px 10px;
+			}
+
+			.table-responsive .table td[data-label="Actions"]::before {
+				content: "";
+			}
+
+			.table-responsive .table td[data-label="Actions"] .d-flex {
+				justify-content: center !important;
+			}
+
+			/* Nouveaux styles pour corriger l'alignement vertical des icônes */
+			.btn-sm i.fas {
+				vertical-align: middle;
+			}
+		}
+
+		.btn-icon {
+			width: 38px;
+			height: 38px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 0;
+		}
+
+		.project-title {
+			font-size: 2rem;
 		}
 	</style>
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			const deleteTaskModal = new bootstrap.Modal(document.getElementById('deleteTaskModal'));
+			const taskTitleElement = document.getElementById('taskTitlePlaceholder');
+			const deleteTaskForm = document.getElementById('deleteTaskForm');
+			const deleteTaskTokenInput = document.getElementById('deleteTaskToken');
+			const deleteButtons = document.querySelectorAll('.delete-task-btn');
+
+			deleteButtons.forEach(button => {
+				button.addEventListener('click', function (event) {
+					const taskId = this.getAttribute('data-task-id');
+					const taskTitle = this.getAttribute('data-task-title');
+					const csrfToken = this.getAttribute('data-token');
+
+					if (taskTitleElement) {
+						taskTitleElement.textContent = taskTitle;
+					}
+
+					if (deleteTaskForm) {
+						const deletePath = "{{ path('task_delete', {id: 'TASK_ID'}) }}";
+						deleteTaskForm.action = deletePath.replace('TASK_ID', taskId);
+					}
+
+					if (deleteTaskTokenInput) {
+						deleteTaskTokenInput.value = csrfToken;
+					}
+
+					deleteTaskModal.show();
+				});
+			});
+		});
+	</script>
 {% endblock %}

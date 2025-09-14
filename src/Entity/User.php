@@ -69,14 +69,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'owner', targetEntity: Project::class, orphanRemoval: true)]
     private Collection $projects;
 
-    // Relation OneToMany avec Task pour l'assignation (AJOUT PRINCIPAL)
+    // Relation OneToMany avec Task pour l'assignation
     #[ORM\OneToMany(mappedBy: 'assignee', targetEntity: Task::class)]
     private Collection $assignedTasks;
 
     public function __construct()
     {
         $this->projects = new ArrayCollection();
-        $this->assignedTasks = new ArrayCollection(); // Initialisation de la nouvelle collection
+        $this->assignedTasks = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
     }
 
@@ -230,7 +230,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    // Méthodes pour la gestion des tâches assignées (NOUVELLES MÉTHODES)
+    // Méthodes pour la gestion des tâches assignées
     /**
      * @return Collection<int, Task>
      */
@@ -306,6 +306,67 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
+     * Retourne les tâches assignées dans un projet spécifique
+     */
+    public function getAssignedTasksInProject(Project $project): Collection
+    {
+        return $this->assignedTasks->filter(
+            function (Task $task) use ($project) {
+                return $task->getProject() === $project;
+            }
+        );
+    }
+
+    /**
+     * Retourne le nombre de tâches assignées dans un projet spécifique
+     */
+    public function getAssignedTasksCountInProject(Project $project): int
+    {
+        return $this->getAssignedTasksInProject($project)->count();
+    }
+
+    /**
+     * Retourne les projets où l'utilisateur est collaborateur (a des tâches assignées)
+     */
+    public function getCollaboratingProjects(): Collection
+    {
+        $projects = new ArrayCollection();
+        
+        foreach ($this->assignedTasks as $task) {
+            $project = $task->getProject();
+            if (!$projects->contains($project)) {
+                $projects->add($project);
+            }
+        }
+        
+        return $projects;
+    }
+
+    /**
+     * Retourne tous les projets auxquels l'utilisateur participe (propriétaire ou collaborateur)
+     */
+    public function getAllRelatedProjects(): Collection
+    {
+        $allProjects = new ArrayCollection();
+        
+        // Ajouter les projets possédés
+        foreach ($this->projects as $project) {
+            if (!$allProjects->contains($project)) {
+                $allProjects->add($project);
+            }
+        }
+        
+        // Ajouter les projets où on collabore
+        foreach ($this->getCollaboratingProjects() as $project) {
+            if (!$allProjects->contains($project)) {
+                $allProjects->add($project);
+            }
+        }
+        
+        return $allProjects;
+    }
+
+    /**
      * Vérifie si l'utilisateur a des tâches en retard
      */
     public function hasOverdueTasks(): bool
@@ -328,6 +389,43 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 return $task->isOverdue();
             }
         );
+    }
+
+    /**
+     * Retourne les tâches récentes assignées à l'utilisateur
+     */
+    public function getRecentAssignedTasks(int $limit = 5): array
+    {
+        $tasks = $this->assignedTasks->toArray();
+        
+        // Trier par date de création décroissante
+        usort($tasks, function (Task $a, Task $b) {
+            return $b->getCreatedAt() <=> $a->getCreatedAt();
+        });
+        
+        return array_slice($tasks, 0, $limit);
+    }
+
+    /**
+     * Calcule le pourcentage de tâches terminées par l'utilisateur
+     */
+    public function getTaskCompletionPercentage(): int
+    {
+        $totalTasks = $this->getAssignedTasksCount();
+        if ($totalTasks === 0) {
+            return 0;
+        }
+
+        $completedTasks = $this->getCompletedAssignedTasksCount();
+        return round(($completedTasks / $totalTasks) * 100);
+    }
+
+    /**
+     * Vérifie si l'utilisateur collabore sur un projet spécifique
+     */
+    public function collaboratesOnProject(Project $project): bool
+    {
+        return $this->getAssignedTasksCountInProject($project) > 0;
     }
 
     /**
