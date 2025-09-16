@@ -4,16 +4,18 @@ namespace App\Controller;
 
 use App\Entity\Project;
 use App\Entity\Task;
+use App\Entity\CollaborationRequest;
 use App\Form\ProjectType;
 use App\Repository\ProjectRepository;
 use App\Repository\TaskRepository;
+use App\Repository\CollaborationRequestRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 #[Route('/projects')]
 #[IsGranted('ROLE_USER')]
@@ -53,18 +55,35 @@ class ProjectController extends AbstractController
     }
 
     #[Route('/{id}', name: 'project_show', methods: ['GET'])]
-    public function show(Project $project, TaskRepository $taskRepository): Response
-    {
-        if ($project->getOwner() !== $this->getUser() && !$project->hasCollaborator($this->getUser())) {
+    public function show(
+        Project $project, 
+        TaskRepository $taskRepository,
+        CollaborationRequestRepository $collaborationRequestRepository
+    ): Response {
+        $currentUser = $this->getUser();
+        
+        if ($project->getOwner() !== $currentUser && !$project->hasCollaborator($currentUser)) {
             $this->addFlash('error', 'Vous n\'avez pas les permissions pour accéder à ce projet.');
             return $this->redirectToRoute('project_index');
         }
 
         $tasks = $taskRepository->findByProjectWithFilters($project);
+        
+        // Récupérer les demandes de collaboration en attente si l'utilisateur est propriétaire
+        $pendingRequests = [];
+        if ($project->getOwner() === $currentUser) {
+            $pendingRequests = $collaborationRequestRepository->findBy([
+                'project' => $project,
+                'status' => CollaborationRequest::STATUS_PENDING
+            ], ['createdAt' => 'DESC']);
+        }
 
         return $this->render('project/show.html.twig', [
             'project' => $project,
             'tasks' => $tasks,
+            'pending_requests' => $pendingRequests,
+            'is_owner' => $project->getOwner() === $currentUser,
+            'is_collaborator' => $project->hasCollaborator($currentUser),
         ]);
     }
 
@@ -121,26 +140,34 @@ class ProjectController extends AbstractController
         }
 
         if ($this->isCsrfTokenValid('duplicate' . $project->getId(), $request->request->get('_token'))) {
-            $newProject = new Project();
-            $newProject->setTitle($project->getTitle() . ' (Copie)');
-            $newProject->setDescription($project->getDescription());
-            $newProject->setOwner($this->getUser());
+            try {
+                $newProject = new Project();
+                $newProject->setTitle($project->getTitle() . ' (Copie)');
+                $newProject->setDescription($project->getDescription());
+                $newProject->setOwner($this->getUser());
 
-            foreach ($project->getTasks() as $task) {
-                $newTask = clone $task;
-                $newTask->setProject($newProject);
-                $newTask->setStatus(Task::STATUS_TODO);
-                $newTask->setCompletedAt(null);
-                $newTask->setCreatedAt(new \DateTimeImmutable());
-                $newTask->setUpdatedAt(null);
-                $newProject->addTask($newTask);
+                foreach ($project->getTasks() as $task) {
+                    $newTask = clone $task;
+                    $newTask->setProject($newProject);
+                    $newTask->setStatus(Task::STATUS_TODO);
+                    $newTask->setCompletedAt(null);
+                    $newTask->setCreatedAt(new \DateTimeImmutable());
+                    $newTask->setUpdatedAt(null);
+                    // Réassigner la tâche seulement si l'assigné original est collaborateur du nouveau projet
+                    if ($task->getAssignee() && $task->getAssignee() !== $this->getUser()) {
+                        $newTask->setAssignee(null);
+                    }
+                    $newProject->addTask($newTask);
+                }
+
+                $entityManager->persist($newProject);
+                $entityManager->flush();
+
+                $this->addFlash('success', 'Le projet a été dupliqué avec succès !');
+                return $this->redirectToRoute('project_show', ['id' => $newProject->getId()]);
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Une erreur est survenue lors de la duplication du projet.');
             }
-
-            $entityManager->persist($newProject);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Le projet a été dupliqué avec succès !');
-            return $this->redirectToRoute('project_show', ['id' => $newProject->getId()]);
         }
 
         return $this->redirectToRoute('project_show', ['id' => $project->getId()]);
@@ -161,5 +188,25 @@ class ProjectController extends AbstractController
         }
 
         return $this->redirectToRoute('project_show', ['id' => $project->getId()]);
+    }
+
+    #[Route('/api/{id}/collaborators', name: 'api_project_collaborators', methods: ['GET'])]
+    public function getCollaborators(Project $project): JsonResponse
+    {
+        // Toujours commencer par le propriétaire
+        $collaborators = [[
+            'id' => $project->getOwner()->getId(),
+            'fullName' => $project->getOwner()->getFullName() . ' (Propriétaire)',
+        ]];
+
+        // Ajouter les collaborateurs
+        foreach ($project->getCollaborators() as $collaborator) {
+            $collaborators[] = [
+                'id' => $collaborator->getId(),
+                'fullName' => $collaborator->getFullName(),
+            ];
+        }
+
+        return new JsonResponse($collaborators);
     }
 }

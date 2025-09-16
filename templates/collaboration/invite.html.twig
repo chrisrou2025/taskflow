@@ -1,0 +1,132 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inviter à collaborer sur {{ project.title }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-2 px-md-4 fade-in">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8 col-xl-6">
+            <div class="text-center mb-4">
+                <div class="bg-success bg-opacity-10 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" 
+                     style="width: 80px; height: 80px;">
+                    <i class="fas fa-user-plus fa-2x text-success"></i>
+                </div>
+                <h1 class="h3 h2-md mb-2">Inviter des collaborateurs</h1>
+                <p class="text-muted">
+                    Invitez des utilisateurs à collaborer sur votre projet
+                </p>
+            </div>
+
+            <div class="card border-0 bg-light mb-4">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary bg-opacity-10 rounded-circle me-3 d-flex align-items-center justify-content-center" 
+                             style="width: 48px; height: 48px;">
+                            <i class="fas fa-folder fa-lg text-primary"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">{{ project.title }}</h6>
+                            {% if project.description %}
+                                <small class="text-muted">{{ project.description|length > 60 ? project.description|slice(0, 60) ~ '...' : project.description }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-paper-plane me-2 text-primary"></i>
+                        Envoyer une invitation
+                    </h5>
+                </div>
+                <div class="card-body p-3 p-md-4">
+                    {{ form_start(form) }}
+                    
+                    <div class="mb-4">
+                        {{ form_label(form.invitedUser, 'Utilisateur à inviter', {'label_attr': {'class': 'form-label fw-medium mb-2'}}) }}
+                        <div class="position-relative">
+                            {{ form_widget(form.invitedUser, {'attr': {'class': 'form-select form-select-lg'}}) }}
+                            <div class="position-absolute top-50 end-0 translate-middle-y me-3 pe-none">
+                                <i class="fas fa-user text-muted"></i>
+                            </div>
+                        </div>
+                        {{ form_errors(form.invitedUser) }}
+                        {% if form.invitedUser.vars.choices|length == 0 %}
+                            <div class="alert alert-info mt-2 mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <small>Tous les utilisateurs disponibles ont déjà été invités ou collaborent déjà sur ce projet.</small>
+                            </div>
+                        {% endif %}
+                        
+                        {% if form.invitedUser.vars.help %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                {{ form.invitedUser.vars.help }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        {{ form_label(form.message, 'Message personnalisé', {'label_attr': {'class': 'form-label fw-medium mb-2'}}) }}
+                        {{ form_widget(form.message, {
+                            'attr': {
+                                'class': 'form-control', 
+                                'rows': '4', 
+                                'placeholder': 'Expliquez pourquoi vous souhaitez collaborer avec cette personne sur votre projet...'
+                            }
+                        }) }}
+                        {{ form_errors(form.message) }}
+                        {% if form.message.vars.help %}
+                            <div class="form-text">
+                                <i class="fas fa-lightbulb me-1"></i>
+                                {{ form.message.vars.help }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <input type="hidden" name="_token" value="{{ csrf_token('invite-user') }}">
+
+                    <div class="d-flex flex-column flex-sm-row gap-2 justify-content-end">
+                        <a href="{{ path('project_show', {id: project.id}) }}" 
+                           class="btn btn-light border order-2 order-sm-1">
+                            <i class="fas fa-arrow-left me-2"></i>Annuler
+                        </a>
+                        <button type="submit" 
+                                class="btn btn-success btn-lg order-1 order-sm-2" 
+                                {{ form.invitedUser.vars.choices|length == 0 ? 'disabled' : '' }}>
+                            <i class="fas fa-paper-plane me-2"></i>
+                            <span>Envoyer l'invitation</span>
+                        </button>
+                    </div>
+                    
+                    {{ form_end(form) }}
+                </div>
+            </div>
+
+            <div class="card border-0 bg-light mt-4">
+                <div class="card-body p-3">
+                    <h6 class="text-dark mb-2">
+                        <i class="fas fa-question-circle me-2 text-info"></i>Comment ça marche ?
+                    </h6>
+                    <ul class="list-unstyled mb-0 small text-muted">
+                        <li class="mb-1">
+                            <i class="fas fa-check text-success me-2"></i>
+                            L'utilisateur recevra une notification d'invitation
+                        </li>
+                        <li class="mb-1">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Il pourra accepter ou refuser votre demande
+                        </li>
+                        <li class="mb-0">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Vous serez notifié de sa réponse
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

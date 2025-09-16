@@ -1,3 +1,5 @@
+{# templates/task/new.html.twig #}
+
 {% extends 'base.html.twig' %}
 
 {% block title %}Nouvelle tâche - TaskFlow
@@ -75,7 +77,7 @@
 								<span class="input-group-text bg-light">
 									<i class="fas fa-user-circle text-primary"></i>
 								</span>
-								{{ form_widget(form.assignee) }}
+								{{ form_widget(form.assignee, {'id': 'assignee-select'}) }}
 							</div>
 							{{ form_errors(form.assignee) }}
 						</div>
@@ -97,7 +99,7 @@
 								<span class="input-group-text bg-light">
 									<i class="fas fa-folder text-success"></i>
 								</span>
-								{{ form_widget(form.project, {'attr': {'class': 'form-select'}}) }}
+								{{ form_widget(form.project, {'id': 'project-select', 'attr': {'class': 'form-select'}}) }}
 							</div>
 							{{ form_errors(form.project) }}
 						</div>
@@ -138,4 +140,37 @@
 			border-left: none;
 		}
 	</style>
+
+	<script>
+		document.addEventListener('DOMContentLoaded', () => {
+			const projectSelect = document.getElementById('project-select');
+			const assigneeSelect = document.getElementById('assignee-select');
+			
+			const updateAssignees = () => {
+				const projectId = projectSelect.value;
+				
+				// Efface les options actuelles sauf la première
+				assigneeSelect.innerHTML = '<option value>Non attribuée</option>';
+
+				if (projectId) {
+					fetch(`/projects/api/${projectId}/collaborators`)
+						.then(response => response.json())
+						.then(collaborators => {
+							collaborators.forEach(collaborator => {
+								const option = document.createElement('option');
+								option.value = collaborator.id;
+								option.textContent = collaborator.fullName;
+								assigneeSelect.appendChild(option);
+							});
+						})
+						.catch(error => {
+							console.error('Erreur lors de la récupération des collaborateurs :', error);
+						});
+				}
+			};
+			
+			// Écoute l'événement de changement sur le menu déroulant des projets
+			projectSelect.addEventListener('change', updateAssignees);
+		});
+	</script>
 {% endblock %}

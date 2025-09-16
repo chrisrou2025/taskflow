@@ -68,6 +68,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     // Relation OneToMany avec Project (projets possédés)
     #[ORM\OneToMany(mappedBy: 'owner', targetEntity: Project::class, orphanRemoval: true)]
     private Collection $projects;
+    
+    // Relation ManyToMany avec Project (projets sur lesquels l'utilisateur collabore)
+    #[ORM\ManyToMany(targetEntity: Project::class, mappedBy: 'collaborators')]
+    private Collection $collaborations;
 
     // Relation OneToMany avec Task pour l'assignation
     #[ORM\OneToMany(mappedBy: 'assignee', targetEntity: Task::class)]
@@ -76,6 +80,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct()
     {
         $this->projects = new ArrayCollection();
+        $this->collaborations = new ArrayCollection();
         $this->assignedTasks = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
     }
@@ -156,7 +161,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->lastName = $lastName;
         return $this;
     }
-
+    
+    public function getFullName(): string
+    {
+        return trim($this->firstName . ' ' . $this->lastName);
+    }
+    
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
@@ -203,6 +213,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     // Méthodes pour la gestion des projets
+    /**
+     * @return Collection<int, Project>
+     */
     public function getProjects(): Collection
     {
         return $this->projects;
@@ -225,6 +238,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             if ($project->getOwner() === $this) {
                 $project->setOwner(null);
             }
+        }
+
+        return $this;
+    }
+    
+    /**
+     * @return Collection<int, Project>
+     */
+    public function getCollaborations(): Collection
+    {
+        return $this->collaborations;
+    }
+
+    public function addCollaboration(Project $collaboration): static
+    {
+        if (!$this->collaborations->contains($collaboration)) {
+            $this->collaborations->add($collaboration);
+            $collaboration->addCollaborator($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCollaboration(Project $collaboration): static
+    {
+        if ($this->collaborations->removeElement($collaboration)) {
+            $collaboration->removeCollaborator($this);
         }
 
         return $this;
@@ -426,14 +466,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function collaboratesOnProject(Project $project): bool
     {
         return $this->getAssignedTasksCountInProject($project) > 0;
-    }
-
-    /**
-     * Retourne le nom complet de l'utilisateur
-     */
-    public function getFullName(): string
-    {
-        return trim($this->firstName . ' ' . $this->lastName);
     }
 
     /**

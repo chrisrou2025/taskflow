@@ -22,6 +22,7 @@ class TaskType extends AbstractType
         /** @var User $user */
         $user = $options['user'];
         $isCollaborator = $options['is_collaborator'];
+        $currentProject = $options['current_project'] ?? null;
 
         $builder
             ->add('title', TextType::class, [
@@ -77,12 +78,32 @@ class TaskType extends AbstractType
                 ],
                 'help' => 'Attribuez cette tâche à un membre de votre équipe (optionnel)',
                 'placeholder' => 'Non attribuée',
-                'query_builder' => function (UserRepository $repository) use ($user) {
-                    return $repository->createQueryBuilder('u')
-                        ->where('u.isVerified = :verified')
-                        ->setParameter('verified', true)
-                        ->orderBy('u.firstName', 'ASC')
-                        ->addOrderBy('u.lastName', 'ASC');
+                'query_builder' => function (UserRepository $repository) use ($currentProject, $user) {
+                    $qb = $repository->createQueryBuilder('u');
+                    
+                    if ($currentProject) {
+                        // Récupérer le propriétaire et tous les collaborateurs du projet
+                        $qb->where('u = :owner')
+                           ->setParameter('owner', $currentProject->getOwner());
+                           
+                        // Si le projet a des collaborateurs, les inclure
+                        if (!$currentProject->getCollaborators()->isEmpty()) {
+                            $collaboratorIds = [];
+                            foreach ($currentProject->getCollaborators() as $collaborator) {
+                                $collaboratorIds[] = $collaborator->getId();
+                            }
+                            if (!empty($collaboratorIds)) {
+                                $qb->orWhere('u.id IN (:collaborators)')
+                                   ->setParameter('collaborators', $collaboratorIds);
+                            }
+                        }
+                    } else {
+                        // Si pas de projet spécifique, montrer seulement l'utilisateur connecté
+                        $qb->where('u = :user')
+                           ->setParameter('user', $user);
+                    }
+                    
+                    return $qb->orderBy('u.firstName', 'ASC');
                 }
             ])
             ->add('dueDate', DateTimeType::class, [
@@ -102,7 +123,7 @@ class TaskType extends AbstractType
                 'class' => Project::class,
                 'choice_label' => 'title',
                 'query_builder' => function ($repository) use ($user) {
-                    // Utilisation de la nouvelle méthode pour inclure les projets collaboratifs
+                    // Utilisation de la méthode pour inclure les projets collaboratifs
                     return $repository->findProjectsByUserQueryBuilder($user);
                 },
                 'attr' => [
@@ -119,10 +140,12 @@ class TaskType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Task::class,
             'is_collaborator' => false,
+            'current_project' => null,
         ]);
 
         $resolver->setRequired(['user']);
         $resolver->setAllowedTypes('user', [User::class]);
         $resolver->setAllowedTypes('is_collaborator', 'bool');
+        $resolver->setAllowedTypes('current_project', ['null', Project::class]);
     }
 }

@@ -46,14 +46,24 @@ class Project
     #[ORM\JoinColumn(nullable: false)]
     private ?User $owner = null;
 
+    // Relation ManyToMany avec User (collaborateurs)
+    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'collaborations')]
+    private Collection $collaborators;
+
     // Relation OneToMany avec Task
-    #[ORM\OneToMany(mappedBy: 'project', targetEntity: Task::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'project', targetEntity: Task::class, orphanRemoval: true, cascade: ['remove'])]
     private Collection $tasks;
+    
+    // Relation OneToMany avec Notification
+    #[ORM\OneToMany(mappedBy: 'project', targetEntity: Notification::class, orphanRemoval: true, cascade: ['remove'])]
+    private Collection $notifications;
 
     public function __construct()
     {
         $this->tasks = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
+        $this->collaborators = new ArrayCollection();
+        $this->notifications = new ArrayCollection();
     }
 
     #[ORM\PreUpdate]
@@ -136,7 +146,6 @@ class Project
             $this->tasks->add($task);
             $task->setProject($this);
         }
-
         return $this;
     }
 
@@ -148,7 +157,55 @@ class Project
                 $task->setProject(null);
             }
         }
+        return $this;
+    }
 
+    /**
+     * @return Collection<int, User>
+     */
+    public function getCollaborators(): Collection
+    {
+        return $this->collaborators;
+    }
+
+    public function addCollaborator(User $collaborator): static
+    {
+        if (!$this->collaborators->contains($collaborator)) {
+            $this->collaborators->add($collaborator);
+        }
+        return $this;
+    }
+
+    public function removeCollaborator(User $collaborator): static
+    {
+        $this->collaborators->removeElement($collaborator);
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Notification>
+     */
+    public function getNotifications(): Collection
+    {
+        return $this->notifications;
+    }
+
+    public function addNotification(Notification $notification): static
+    {
+        if (!$this->notifications->contains($notification)) {
+            $this->notifications->add($notification);
+            $notification->setProject($this);
+        }
+        return $this;
+    }
+
+    public function removeNotification(Notification $notification): static
+    {
+        if ($this->notifications->removeElement($notification)) {
+            if ($notification->getProject() === $this) {
+                $notification->setProject(null);
+            }
+        }
         return $this;
     }
 
@@ -202,29 +259,11 @@ class Project
     public function getProgressPercentage(): float
     {
         $totalTasks = $this->getTasksCount();
-
         if ($totalTasks === 0) {
             return 0.0;
         }
 
         return round(($this->getCompletedTasksCount() / $totalTasks) * 100, 1);
-    }
-
-    /**
-     * Retourne tous les collaborateurs uniques du projet (users assignés aux tâches)
-     */
-    public function getCollaborators(): Collection
-    {
-        $collaborators = new ArrayCollection();
-        
-        foreach ($this->tasks as $task) {
-            $assignee = $task->getAssignee();
-            if ($assignee !== null && !$collaborators->contains($assignee)) {
-                $collaborators->add($assignee);
-            }
-        }
-        
-        return $collaborators;
     }
 
     /**
@@ -255,114 +294,8 @@ class Project
         );
     }
 
-    /**
-     * Retourne les tâches en retard du projet
-     */
-    public function getOverdueTasks(): Collection
-    {
-        return $this->tasks->filter(
-            function (Task $task) {
-                return $task->isOverdue();
-            }
-        );
-    }
-
-    /**
-     * Vérifie si le projet a des tâches en retard
-     */
-    public function hasOverdueTasks(): bool
-    {
-        return $this->getOverdueTasks()->count() > 0;
-    }
-
-    /**
-     * Retourne les tâches récentes (limitées à un nombre donné)
-     */
-    public function getRecentTasks(int $limit = 5): array
-    {
-        $tasks = $this->tasks->toArray();
-        
-        // Trier par date de création décroissante
-        usort($tasks, function (Task $a, Task $b) {
-            return $b->getCreatedAt() <=> $a->getCreatedAt();
-        });
-        
-        return array_slice($tasks, 0, $limit);
-    }
-
-    /**
-     * Vérifie si le projet est terminé (toutes les tâches sont terminées)
-     */
-    public function isCompleted(): bool
-    {
-        $totalTasks = $this->getTasksCount();
-        
-        if ($totalTasks === 0) {
-            return false;
-        }
-        
-        return $this->getCompletedTasksCount() === $totalTasks;
-    }
-
-    /**
-     * Retourne le statut global du projet
-     */
-    public function getStatus(): string
-    {
-        if ($this->isCompleted()) {
-            return 'completed';
-        }
-        
-        if ($this->getInProgressTasksCount() > 0) {
-            return 'in_progress';
-        }
-        
-        if ($this->getTodoTasksCount() > 0) {
-            return 'pending';
-        }
-        
-        return 'empty';
-    }
-
-    /**
-     * Retourne le libellé du statut en français
-     */
-    public function getStatusLabel(): string
-    {
-        return match ($this->getStatus()) {
-            'completed' => 'Terminé',
-            'in_progress' => 'En cours',
-            'pending' => 'En attente',
-            'empty' => 'Vide',
-            default => 'Inconnu'
-        };
-    }
-
-    /**
-     * Retourne les statistiques complètes du projet
-     */
-    public function getProjectStatistics(): array
-    {
-        return [
-            'total_tasks' => $this->getTasksCount(),
-            'completed_tasks' => $this->getCompletedTasksCount(),
-            'in_progress_tasks' => $this->getInProgressTasksCount(),
-            'todo_tasks' => $this->getTodoTasksCount(),
-            'overdue_tasks' => $this->getOverdueTasks()->count(),
-            'collaborators_count' => $this->getCollaboratorsCount(),
-            'progress_percentage' => $this->getProgressPercentage(),
-            'status' => $this->getStatus(),
-            'status_label' => $this->getStatusLabel(),
-            'has_overdue_tasks' => $this->hasOverdueTasks(),
-            'is_completed' => $this->isCompleted()
-        ];
-    }
-
-    /**
-     * Méthode utile pour l'affichage
-     */
     public function __toString(): string
     {
-        return $this->title ?? '';
+        return $this->title ?? 'Projet sans titre';
     }
 }
