@@ -7,168 +7,230 @@
 			{% block title %}TaskFlow - Gestion de tâches collaboratives
 			{% endblock %}
 		</title>
-		<link
-		rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>📋</text></svg>">
+		<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>📋</text></svg>">
 
-		<!-- Bootstrap CSS -->
-		<link
-		href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-		<!-- Font Awesome pour les icônes -->
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 		<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
 		{% block stylesheets %}
-			<style>
-			/* Variables CSS personnalisées */:root
-			{
-				--primary-color: #3b82f6;
-				--secondary-color: #64748b;
-				--success-color: #10b981;
-				--warning-color: #f59e0b;
-				--danger-color: #ef4444;
-				--light-bg: #f8fafc;
-				--dark-text: #1e293b;
-			}
+			<link rel="stylesheet" href="/css/app.css">
+		{% endblock %}
 
-			/* Styles généraux */
-			body {
-				background-color: var(--light-bg);
-				color: var(--dark-text);
-				font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-			}
+		<style>
+		/* Variables CSS personnalisées */:root
+		{
+			--primary-color: #3b82f6;
+			--secondary-color: #64748b;
+			--success-color: #10b981;
+			--warning-color: #f59e0b;
+			--danger-color: #ef4444;
+			--light-bg: #f8fafc;
+			--dark-text: #1e293b;
+		}
 
-			/* Navigation */
-			.navbar-brand {
-				font-weight: 700;
-				font-size: 1.5rem;
-			}
+		/* Solution pour le footer collant */
+		html,
+		body {
+			height: 100%;
+		}
 
-			/* Sidebar */
+		body {
+			display: flex;
+			flex-direction: column;
+			background-color: var(--light-bg);
+			color: var(--dark-text);
+			font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+		}
+
+		/* Le contenu principal doit grandir pour occuper l'espace disponible */
+		.main-content {
+			flex: 1;
+		}
+
+		/* Navigation */
+		.navbar-brand {
+			font-weight: 700;
+			font-size: 1.5rem;
+		}
+
+		/* Sidebar */
+		.sidebar {
+			background: white;
+			box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+			min-height: calc(100vh - 76px);
+		}
+
+		.sidebar .nav-link {
+			color: var(--dark-text);
+			padding: 0.75rem 1rem;
+			border-radius: 8px;
+			margin: 0.25rem 0;
+			transition: all 0.2s;
+		}
+
+		.sidebar .nav-link:hover,
+		.sidebar .nav-link.active {
+			background-color: var(--primary-color);
+			color: white;
+		}
+
+		/* Cards */
+		.card {
+			border: none;
+			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+			border-radius: 12px;
+			transition: transform 0.2s, box-shadow 0.2s;
+		}
+
+		.card:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+		}
+
+		/* Boutons */
+		.btn {
+			border-radius: 8px;
+			font-weight: 500;
+			padding: 0.5rem 1rem;
+		}
+
+		.btn-primary {
+			background-color: var(--primary-color);
+			border-color: var(--primary-color);
+		}
+
+		/* Badges de statut */
+		.badge-todo {
+			background-color: var(--secondary-color);
+		}
+		.badge-progress {
+			background-color: var(--warning-color);
+		}
+		.badge-completed {
+			background-color: var(--success-color);
+		}
+
+		/* Badges de priorité */
+		.badge-priority-low {
+			background-color: #6b7280;
+		}
+		.badge-priority-medium {
+			background-color: var(--warning-color);
+		}
+		.badge-priority-high {
+			background-color: var(--danger-color);
+		}
+
+		/* Barres de progression */
+		.progress {
+			height: 8px;
+			border-radius: 4px;
+		}
+
+		/* Alertes */
+		.alert {
+			border: none;
+			border-radius: 8px;
+		}
+
+		/* Footer */
+		footer {
+			background: white;
+			border-top: 1px solid #e2e8f0;
+			margin-top: auto;
+			/* Important pour pousser le footer vers le bas */
+		}
+
+		/* Animations */
+		.fade-in {
+			animation: fadeIn 0.5s ease-in;
+		}
+
+		@keyframes fadeIn {
+			from {
+				opacity: 0;
+				transform: translateY(10px);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		/* Responsive */
+		@media(max-width: 768px) {
 			.sidebar {
-				background: white;
-				box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
-				min-height: calc(100vh - 76px);
+				margin-bottom: 2rem;
 			}
+		}
 
-			.sidebar .nav-link {
-				color: var(--dark-text);
-				padding: 0.75rem 1rem;
-				border-radius: 8px;
-				margin: 0.25rem 0;
-				transition: all 0.2s;
-			}
+		/* Position du badge de notification sur mobile */
+		.navbar-toggler-notifications {
+			position: relative;
+		}
+		.navbar-toggler-notifications .badge {
+			position: absolute;
+			top: 0;
+			right: -5px;
+		}
 
-			.sidebar .nav-link:hover,
-			.sidebar .nav-link.active {
-				background-color: var(--primary-color);
-				color: white;
+		/* Nouveaux styles pour le positionnement en version mobile */
+		@media(max-width: 991.98px) {
+			.navbar-header-mobile {
+				display: flex;
+				width: 100%;
+				justify-content: space-between;
+				align-items: center;
 			}
-
-			/* Cards */
-			.card {
-				border: none;
-				box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-				border-radius: 12px;
-				transition: transform 0.2s, box-shadow 0.2s;
+			.navbar-header-mobile .navbar-brand {
+				order: 2; /* Place le logo au centre */
+				flex-grow: 1;
+				text-align: center;
 			}
-
-			.card:hover {
-				transform: translateY(-2px);
-				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+			.navbar-header-mobile .navbar-toggler-notifications {
+				order: 3; /* Place la cloche à droite */
 			}
-
-			/* Boutons */
-			.btn {
-				border-radius: 8px;
-				font-weight: 500;
-				padding: 0.5rem 1rem;
+			.navbar-header-mobile .navbar-toggler {
+				order: 1; /* Place le menu burger à gauche */
 			}
-
-			.btn-primary {
-				background-color: var(--primary-color);
-				border-color: var(--primary-color);
-			}
-
-			/* Badges de statut */
-			.badge-todo {
-				background-color: var(--secondary-color);
-			}
-			.badge-progress {
-				background-color: var(--warning-color);
-			}
-			.badge-completed {
-				background-color: var(--success-color);
-			}
-
-			/* Badges de priorité */
-			.badge-priority-low {
-				background-color: #6b7280;
-			}
-			.badge-priority-medium {
-				background-color: var(--warning-color);
-			}
-			.badge-priority-high {
-				background-color: var(--danger-color);
-			}
-
-			/* Barres de progression */
-			.progress {
-				height: 8px;
-				border-radius: 4px;
-			}
-
-			/* Alertes */
-			.alert {
-				border: none;
-				border-radius: 8px;
-			}
-
-			/* Footer */
-			footer {
-				background: white;
-				border-top: 1px solid #e2e8f0;
-			}
-
-			/* Animations */
-			.fade-in {
-				animation: fadeIn 0.5s ease-in;
-			}
-
-			@keyframes fadeIn {
-				from {
-					opacity: 0;
-					transform: translateY(10px);
-				}
-				to {
-					opacity: 1;
-					transform: translateY(0);
-				}
-			}
-
-			/* Responsive */
-			@media(max-width: 768px) {
-				.sidebar {
-					margin-bottom: 2rem;
-				}
-			}
-		</style>
-	{% endblock %}
+		}
+	</style>
 </head>
 
 <body>
-	<!-- Navigation -->
 	<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
 		<div class="container-fluid">
-			<a class="navbar-brand" href="{{ path('app_home') }}">
-				📋 TaskFlow
-			</a>
-
-			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-				<span class="navbar-toggler-icon"></span>
-			</button>
-
+			<div
+				class="d-flex d-lg-none navbar-header-mobile">
+				{# Le menu burger est à gauche #}
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				{# Le logo est centré #}
+				<a class="navbar-brand" href="{{ path('app_home') }}">
+					📋 TaskFlow
+				</a>
+				{# La cloche est à droite, mais ouvre un modal au lieu d'un dropdown #}
+				{% if app.user %}
+					<ul class="navbar-nav me-2 navbar-toggler-notifications">
+						<li class="nav-item">
+							<a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#notificationModal">
+								<i class="fas fa-bell"></i>
+								<span class="badge rounded-pill bg-danger" id="notification-count" style="position: absolute;
+																																				top: 5px; right: -5px; display: none;"></span>
+							</a>
+						</li>
+					</ul>
+				{% endif %}
+			</div>
 			<div class="collapse navbar-collapse" id="navbarNav">
 				<ul class="navbar-nav me-auto">
 					{% if app.user %}
+						<li class="nav-item d-lg-block d-none">
+							<a class="navbar-brand" href="{{ path('app_home') }}">
+								📋 TaskFlow
+							</a>
+						</li>
 						<li class="nav-item">
 							<a class="nav-link" href="{{ path('app_dashboard') }}">
 								<i class="fas fa-tachometer-alt"></i>
@@ -189,9 +251,29 @@
 						</li>
 					{% endif %}
 				</ul>
-
 				<ul class="navbar-nav">
 					{% if app.user %}
+						<li
+							class="nav-item dropdown d-none d-lg-block">
+							{# Version desktop de la cloche (inchangée) #}
+							<a class="nav-link" href="#" id="notificationDropdownDesktop" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+								<i class="fas fa-bell"></i>
+								<span class="badge rounded-pill bg-danger" id="notification-count-desktop" style="position: absolute;
+																																				top: 10px; right: -5px; display: none;"></span>
+							</a>
+							<ul class="dropdown-menu dropdown-menu-end" id="notification-list-desktop" aria-labelledby="notificationDropdownDesktop" style="width: 350px;">
+								<li>
+									<p class="text-center my-2">Chargement...</p>
+								</li>
+								<li><hr class="dropdown-divider"></li>
+								<li>
+									<a href="{{ path('notification_index') }}" class="dropdown-item text-center">
+										Voir toutes les notifications
+									</a>
+								</li>
+							</ul>
+
+						</li>
 						<li class="nav-item dropdown">
 							<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
 								<i class="fas fa-user"></i>
@@ -237,24 +319,22 @@
 		</div>
 	</nav>
 
-	<!-- Contenu principal -->
-	<div
-		class="container-fluid py-4">
-		<!-- Messages Flash -->
-		{% for type, messages in app.flashes %}
-			{% for message in messages %}
-				<div class="alert alert-{{ type == 'error' ? 'danger' : type }} alert-dismissible fade show" role="alert">
-					<i class="fas fa-{{ type == 'success' ? 'check-circle' : (type == 'error' ? 'exclamation-triangle' : 'info-circle') }}"></i>
-					{{ message }}
-					<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-				</div>
+	<div class="main-content">
+		<div class="container-fluid py-4">
+			{% for type, messages in app.flashes %}
+				{% for message in messages %}
+					<div class="alert alert-{{ type == 'error' ? 'danger' : type }} alert-dismissible fade show" role="alert">
+						<i class="fas fa-{{ type == 'success' ? 'check-circle' : (type == 'error' ? 'exclamation-triangle' : 'info-circle') }}"></i>
+						{{ message }}
+						<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+					</div>
+				{% endfor %}
 			{% endfor %}
-		{% endfor %}
 
-		{% block body %}{% endblock %}
+			{% block body %}{% endblock %}
+		</div>
 	</div>
 
-	<!-- Footer -->
 	<footer class="mt-5 py-4 text-center text-muted">
 		<div class="container">
 			<div class="row">
@@ -276,8 +356,26 @@
 		</div>
 	</footer>
 
-	<!-- Scripts -->
+	{# Structure de la modale de notification pour la version mobile #}
+	<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="notificationModalLabel">Mes Notifications</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div
+					class="modal-body">{# Le contenu sera inséré par le JavaScript #}
+				</div>
+				<div class="modal-footer">
+					<a href="{{ path('notification_index') }}" class="btn btn-outline-primary w-100">Voir toutes les notifications</a>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 	{% block javascripts %}
 		<script>
 			// Auto-hide alerts after 5 seconds
@@ -289,7 +387,116 @@ const bsAlert = new bootstrap.Alert(alert);
 bsAlert.close();
 }, 5000);
 });
+
+// --- SCRIPT POUR LES NOTIFICATIONS ---
+const notificationCountEl = document.getElementById('notification-count');
+const notificationCountElDesktop = document.getElementById('notification-count-desktop');
+const notificationListElDesktop = document.getElementById('notification-list-desktop');
+const notificationModal = document.getElementById('notificationModal');
+const notificationModalBody = document.querySelector('#notificationModal .modal-body');
+
+const unreadCountUrl = "{{ path('api_notification_unread_count') }}";
+const recentNotificationsUrl = "{{ path('api_notification_recent') }}?limit=5";
+
+// Met à jour le compteur de notifications
+const updateUnreadCount = () => {
+fetch(unreadCountUrl).then(response => response.json()).then(data => {
+if (data.count > 0) {
+if (notificationCountEl) {
+notificationCountEl.innerText = data.count;
+notificationCountEl.style.display = 'block';
+}
+if (notificationCountElDesktop) {
+notificationCountElDesktop.innerText = data.count;
+notificationCountElDesktop.style.display = 'block';
+}
+} else {
+if (notificationCountEl) {
+notificationCountEl.style.display = 'none';
+}
+if (notificationCountElDesktop) {
+notificationCountElDesktop.style.display = 'none';
+}
+}
+});
+};
+
+// Charge les notifications récentes dans un conteneur donné
+const loadRecentNotifications = (containerElement, isModal = false) => {
+containerElement.innerHTML = '<p class="text-center text-muted my-4">Chargement...</p>';
+fetch(recentNotificationsUrl).then(response => response.json()).then(data => {
+containerElement.innerHTML = ''; // Vider le conteneur
+
+if (data.length === 0) {
+containerElement.innerHTML = '<p class="text-center text-muted my-4">Aucune nouvelle notification</p>';
+} else {
+const listGroup = document.createElement('div');
+listGroup.className = isModal ? 'list-group list-group-flush' : 'list-group';
+
+data.forEach(notif => {
+const item = document.createElement('a');
+item.href = notif.read_url;
+item.className = 'list-group-item list-group-item-action d-flex align-items-start';
+if (!notif.is_read) {
+item.classList.add('fw-bold', 'list-group-item-light');
+}
+
+item.innerHTML = `
+										<i class="${
+notif.icon
+} ${
+notif.color_class
+} mt-1 me-3"></i>
+										<div>
+											<div class="small">${
+notif.message
+}</div>
+											<small class="text-muted">${
+notif.time_ago
+}</small>
+										</div>
+									`;
+listGroup.appendChild(item);
+});
+containerElement.appendChild(listGroup);
+}
+// ✅ Réinjecter le bouton "Voir toutes les notifications" uniquement pour desktop
+        if (!isModal) {
+            const divider = document.createElement('li');
+            divider.innerHTML = '<hr class="dropdown-divider">';
+            const link = document.createElement('a');
+            link.href = "{{ path('notification_index') }}";
+            link.className = "dropdown-item text-center";
+            link.textContent = "Voir toutes les notifications";
+
+            containerElement.appendChild(divider);
+            containerElement.appendChild(link);
+        }
+    });
+};
+
+// Mettre à jour le compteur au chargement de la page
+updateUnreadCount();
+
+// Charger les notifications quand on ouvre la modale (version mobile)
+if (notificationModal) {
+notificationModal.addEventListener('show.bs.modal', function () {
+loadRecentNotifications(notificationModalBody, true);
+});
+}
+
+// Charger les notifications quand on clique sur la cloche desktop
+const notificationDropdownDesktop = document.getElementById('notificationDropdownDesktop');
+if (notificationDropdownDesktop) {
+notificationDropdownDesktop.addEventListener('show.bs.dropdown', function () {
+loadRecentNotifications(notificationListElDesktop);
+});
+}
+
+// Optionnel : Mettre à jour le compteur toutes les minutes
+setInterval(updateUnreadCount, 60000);
 });
 		</script>
 	{% endblock %}
 </body></html>
+

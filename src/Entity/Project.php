@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProjectRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Project
 {
     #[ORM\Id]
@@ -45,14 +46,30 @@ class Project
     #[ORM\JoinColumn(nullable: false)]
     private ?User $owner = null;
 
+    // Relation ManyToMany avec User (collaborateurs)
+    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'collaborations')]
+    private Collection $collaborators;
+
     // Relation OneToMany avec Task
-    #[ORM\OneToMany(mappedBy: 'project', targetEntity: Task::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'project', targetEntity: Task::class, orphanRemoval: true, cascade: ['remove'])]
     private Collection $tasks;
+    
+    // Relation OneToMany avec Notification
+    #[ORM\OneToMany(mappedBy: 'project', targetEntity: Notification::class, orphanRemoval: true, cascade: ['remove'])]
+    private Collection $notifications;
 
     public function __construct()
     {
         $this->tasks = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
+        $this->collaborators = new ArrayCollection();
+        $this->notifications = new ArrayCollection();
+    }
+
+    #[ORM\PreUpdate]
+    public function setUpdatedAtValue(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -129,7 +146,6 @@ class Project
             $this->tasks->add($task);
             $task->setProject($this);
         }
-
         return $this;
     }
 
@@ -141,7 +157,55 @@ class Project
                 $task->setProject(null);
             }
         }
+        return $this;
+    }
 
+    /**
+     * @return Collection<int, User>
+     */
+    public function getCollaborators(): Collection
+    {
+        return $this->collaborators;
+    }
+
+    public function addCollaborator(User $collaborator): static
+    {
+        if (!$this->collaborators->contains($collaborator)) {
+            $this->collaborators->add($collaborator);
+        }
+        return $this;
+    }
+
+    public function removeCollaborator(User $collaborator): static
+    {
+        $this->collaborators->removeElement($collaborator);
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Notification>
+     */
+    public function getNotifications(): Collection
+    {
+        return $this->notifications;
+    }
+
+    public function addNotification(Notification $notification): static
+    {
+        if (!$this->notifications->contains($notification)) {
+            $this->notifications->add($notification);
+            $notification->setProject($this);
+        }
+        return $this;
+    }
+
+    public function removeNotification(Notification $notification): static
+    {
+        if ($this->notifications->removeElement($notification)) {
+            if ($notification->getProject() === $this) {
+                $notification->setProject(null);
+            }
+        }
         return $this;
     }
 
@@ -154,13 +218,23 @@ class Project
     }
 
     /**
+     * Retourne les tâches par statut
+     */
+    public function getTasksByStatus(string $status): Collection
+    {
+        return $this->tasks->filter(
+            function (Task $task) use ($status) {
+                return $task->getStatus() === $status;
+            }
+        );
+    }
+
+    /**
      * Retourne le nombre de tâches terminées
      */
     public function getCompletedTasksCount(): int
     {
-        return $this->tasks->filter(function (Task $task) {
-            return $task->getStatus() === Task::STATUS_COMPLETED;
-        })->count();
+        return $this->getTasksByStatus(Task::STATUS_COMPLETED)->count();
     }
 
     /**
@@ -168,9 +242,7 @@ class Project
      */
     public function getInProgressTasksCount(): int
     {
-        return $this->tasks->filter(function (Task $task) {
-            return $task->getStatus() === Task::STATUS_IN_PROGRESS;
-        })->count();
+        return $this->getTasksByStatus(Task::STATUS_IN_PROGRESS)->count();
     }
 
     /**
@@ -178,9 +250,7 @@ class Project
      */
     public function getTodoTasksCount(): int
     {
-        return $this->tasks->filter(function (Task $task) {
-            return $task->getStatus() === Task::STATUS_TODO;
-        })->count();
+        return $this->getTasksByStatus(Task::STATUS_TODO)->count();
     }
 
     /**
@@ -189,7 +259,6 @@ class Project
     public function getProgressPercentage(): float
     {
         $totalTasks = $this->getTasksCount();
-
         if ($totalTasks === 0) {
             return 0.0;
         }
@@ -198,10 +267,35 @@ class Project
     }
 
     /**
-     * Méthode utile pour l'affichage
+     * Retourne le nombre de collaborateurs uniques
      */
+    public function getCollaboratorsCount(): int
+    {
+        return $this->getCollaborators()->count();
+    }
+
+    /**
+     * Vérifie si un utilisateur est collaborateur sur ce projet
+     */
+    public function hasCollaborator(User $user): bool
+    {
+        return $this->getCollaborators()->contains($user);
+    }
+
+    /**
+     * Retourne les tâches assignées à un utilisateur spécifique dans ce projet
+     */
+    public function getTasksForCollaborator(User $collaborator): Collection
+    {
+        return $this->tasks->filter(
+            function (Task $task) use ($collaborator) {
+                return $task->getAssignee() === $collaborator;
+            }
+        );
+    }
+
     public function __toString(): string
     {
-        return $this->title ?? '';
+        return $this->title ?? 'Projet sans titre';
     }
 }

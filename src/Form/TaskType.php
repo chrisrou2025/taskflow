@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\Task;
 use App\Entity\Project;
 use App\Entity\User;
+use App\Repository\UserRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -20,6 +21,8 @@ class TaskType extends AbstractType
     {
         /** @var User $user */
         $user = $options['user'];
+        $isCollaborator = $options['is_collaborator'];
+        $currentProject = $options['current_project'] ?? null;
 
         $builder
             ->add('title', TextType::class, [
@@ -36,15 +39,18 @@ class TaskType extends AbstractType
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Décrivez en détail cette tâche...',
                     'rows' => 4,
-                    'maxlength' => 2000
+                    'placeholder' => 'Une description détaillée de la tâche...'
                 ],
-                'help' => 'Description détaillée de la tâche (maximum 2000 caractères)'
+                'help' => 'Ajoutez des détails pour décrire la tâche (optionnel)'
             ])
             ->add('status', ChoiceType::class, [
                 'label' => 'Statut',
-                'choices' => Task::getStatusChoices(),
+                'choices' => [
+                    'À faire' => Task::STATUS_TODO,
+                    'En cours' => Task::STATUS_IN_PROGRESS,
+                    'Terminée' => Task::STATUS_COMPLETED,
+                ],
                 'attr' => [
                     'class' => 'form-select'
                 ],
@@ -52,11 +58,53 @@ class TaskType extends AbstractType
             ])
             ->add('priority', ChoiceType::class, [
                 'label' => 'Priorité',
-                'choices' => Task::getPriorityChoices(),
+                'choices' => [
+                    'Basse' => Task::PRIORITY_LOW,
+                    'Moyenne' => Task::PRIORITY_MEDIUM,
+                    'Haute' => Task::PRIORITY_HIGH,
+                ],
                 'attr' => [
                     'class' => 'form-select'
                 ],
-                'help' => 'Niveau de priorité de la tâche'
+                'help' => 'Niveau d\'importance de la tâche'
+            ])
+            ->add('assignee', EntityType::class, [
+                'label' => 'Assignée à',
+                'class' => User::class,
+                'choice_label' => 'fullName',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-select'
+                ],
+                'help' => 'Attribuez cette tâche à un membre de votre équipe (optionnel)',
+                'placeholder' => 'Non attribuée',
+                'query_builder' => function (UserRepository $repository) use ($currentProject, $user) {
+                    $qb = $repository->createQueryBuilder('u');
+                    
+                    if ($currentProject) {
+                        // Récupérer le propriétaire et tous les collaborateurs du projet
+                        $qb->where('u = :owner')
+                           ->setParameter('owner', $currentProject->getOwner());
+                           
+                        // Si le projet a des collaborateurs, les inclure
+                        if (!$currentProject->getCollaborators()->isEmpty()) {
+                            $collaboratorIds = [];
+                            foreach ($currentProject->getCollaborators() as $collaborator) {
+                                $collaboratorIds[] = $collaborator->getId();
+                            }
+                            if (!empty($collaboratorIds)) {
+                                $qb->orWhere('u.id IN (:collaborators)')
+                                   ->setParameter('collaborators', $collaboratorIds);
+                            }
+                        }
+                    } else {
+                        // Si pas de projet spécifique, montrer seulement l'utilisateur connecté
+                        $qb->where('u = :user')
+                           ->setParameter('user', $user);
+                    }
+                    
+                    return $qb->orderBy('u.firstName', 'ASC');
+                }
             ])
             ->add('dueDate', DateTimeType::class, [
                 'label' => 'Date d\'échéance',
@@ -67,16 +115,16 @@ class TaskType extends AbstractType
                     'type' => 'datetime-local'
                 ],
                 'help' => 'Date et heure limite pour cette tâche (optionnel)'
-            ])
-            ->add('project', EntityType::class, [
+            ]);
+
+        if (!$isCollaborator) {
+            $builder->add('project', EntityType::class, [
                 'label' => 'Projet',
                 'class' => Project::class,
                 'choice_label' => 'title',
                 'query_builder' => function ($repository) use ($user) {
-                    return $repository->createQueryBuilder('p')
-                        ->where('p.owner = :user')
-                        ->setParameter('user', $user)
-                        ->orderBy('p.title', 'ASC');
+                    // Utilisation de la méthode pour inclure les projets collaboratifs
+                    return $repository->findProjectsByUserQueryBuilder($user);
                 },
                 'attr' => [
                     'class' => 'form-select'
@@ -84,15 +132,20 @@ class TaskType extends AbstractType
                 'help' => 'Projet auquel appartient cette tâche',
                 'placeholder' => 'Sélectionnez un projet...'
             ]);
+        }
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Task::class,
+            'is_collaborator' => false,
+            'current_project' => null,
         ]);
 
         $resolver->setRequired(['user']);
         $resolver->setAllowedTypes('user', [User::class]);
+        $resolver->setAllowedTypes('is_collaborator', 'bool');
+        $resolver->setAllowedTypes('current_project', ['null', Project::class]);
     }
 }

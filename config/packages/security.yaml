@@ -22,8 +22,10 @@ security:
                 login_path: app_login
                 check_path: app_login
                 default_target_path: app_dashboard
-                always_use_default_target_path: false
-                use_referer: true
+                # CORRECTION : Forcer la redirection vers le dashboard
+                always_use_default_target_path: true
+                # CORRECTION : Ne pas utiliser la page précédente
+                use_referer: false
                 username_parameter: _username
                 password_parameter: _password
             logout:
@@ -41,6 +43,9 @@ security:
         - { path: ^/$, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/forgot-password, roles: PUBLIC_ACCESS }
+        - { path: ^/reset-password, roles: PUBLIC_ACCESS }
+        - { path: ^/verify/email, roles: PUBLIC_ACCESS }
         
         # Pages utilisateur authentifié
         - { path: ^/dashboard, roles: ROLE_USER }

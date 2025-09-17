@@ -6,24 +6,7 @@
 {% endblock %}
 
 {% block body %}
-	<div
-		class="container">
-		<nav aria-label="breadcrumb" class="mb-4">
-			<ol class="breadcrumb">
-				<li class="breadcrumb-item">
-					<a href="{{ path('project_index') }}" class="text-decoration-none">
-						<i class="fas fa-folder me-1"></i>Mes Projets
-					</a>
-				</li>
-				<li class="breadcrumb-item">
-					<a href="{{ path('project_show', {id: project.id}) }}" class="text-decoration-none">
-						{{ project.title }}
-					</a>
-				</li>
-				<li class="breadcrumb-item active">Modifier</li>
-			</ol>
-		</nav>
-
+	<div class="container">
 		<div class="row justify-content-center">
 			<div class="col-md-8 col-lg-6">
 				<div class="card border-0 shadow-sm">
@@ -34,7 +17,8 @@
 					</div>
 					<div class="card-body p-4">
 						<p class="text-muted mb-4">
-							Modifiez les informations de votre projet. Les changements seront appliqués immédiatement.
+							Modifiez les informations de votre projet.
+							Les changements seront appliqués immédiatement.
 						</p>
 
 						{{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
@@ -102,20 +86,4 @@
 			</div>
 		</div>
 	</div>
-
-	<style>
-		.input-group-text {
-			border-right: none;
-			background-color: #f8f9fa !important;
-		}
-
-		.input-group .form-control {
-			border-left: none;
-		}
-
-		.input-group .form-control:focus {
-			border-color: #86b7fe;
-			box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-		}
-	</style>
 {% endblock %}

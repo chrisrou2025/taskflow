@@ -3,15 +3,19 @@
 namespace App\Controller;
 
 use App\Entity\Project;
+use App\Entity\Task;
+use App\Entity\CollaborationRequest;
 use App\Form\ProjectType;
 use App\Repository\ProjectRepository;
 use App\Repository\TaskRepository;
+use App\Repository\CollaborationRequestRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 #[Route('/projects')]
 #[IsGranted('ROLE_USER')]
@@ -20,11 +24,7 @@ class ProjectController extends AbstractController
     #[Route('/', name: 'project_index', methods: ['GET'])]
     public function index(ProjectRepository $projectRepository): Response
     {
-        // Récupération des projets de l'utilisateur connecté
-        $projects = $projectRepository->findBy(
-            ['owner' => $this->getUser()],
-            ['createdAt' => 'DESC']
-        );
+        $projects = $projectRepository->findProjectsByUserWithCollaborations($this->getUser());
 
         return $this->render('project/index.html.twig', [
             'projects' => $projects,
@@ -39,9 +39,7 @@ class ProjectController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Attribution du projet à l'utilisateur connecté
             $project->setOwner($this->getUser());
-
             $entityManager->persist($project);
             $entityManager->flush();
 
@@ -57,46 +55,56 @@ class ProjectController extends AbstractController
     }
 
     #[Route('/{id}', name: 'project_show', methods: ['GET'])]
-    public function show(Project $project, TaskRepository $taskRepository): Response
-    {
-        // Vérification que l'utilisateur est propriétaire du projet
-        $this->denyAccessUnlessGranted('PROJECT_VIEW', $project);
+    public function show(
+        Project $project, 
+        TaskRepository $taskRepository,
+        CollaborationRequestRepository $collaborationRequestRepository
+    ): Response {
+        $currentUser = $this->getUser();
+        
+        if ($project->getOwner() !== $currentUser && !$project->hasCollaborator($currentUser)) {
+            $this->addFlash('error', 'Vous n\'avez pas les permissions pour accéder à ce projet.');
+            return $this->redirectToRoute('project_index');
+        }
 
-        // Récupération des statistiques du projet
-        $statistics = $taskRepository->getProjectStatistics($project);
-
-        // Récupération des tâches récentes du projet
-        $recentTasks = $taskRepository->findBy(
-            ['project' => $project],
-            ['createdAt' => 'DESC'],
-            5
-        );
+        $tasks = $taskRepository->findByProjectWithFilters($project);
+        
+        // Récupérer les demandes de collaboration en attente si l'utilisateur est propriétaire
+        $pendingRequests = [];
+        if ($project->getOwner() === $currentUser) {
+            $pendingRequests = $collaborationRequestRepository->findBy([
+                'project' => $project,
+                'status' => CollaborationRequest::STATUS_PENDING
+            ], ['createdAt' => 'DESC']);
+        }
 
         return $this->render('project/show.html.twig', [
             'project' => $project,
-            'statistics' => $statistics,
-            'recent_tasks' => $recentTasks,
+            'tasks' => $tasks,
+            'pending_requests' => $pendingRequests,
+            'is_owner' => $project->getOwner() === $currentUser,
+            'is_collaborator' => $project->hasCollaborator($currentUser),
         ]);
     }
 
     #[Route('/{id}/edit', name: 'project_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Project $project, EntityManagerInterface $entityManager): Response
     {
-        // Vérification que l'utilisateur est propriétaire du projet
-        $this->denyAccessUnlessGranted('PROJECT_EDIT', $project);
+        if ($project->getOwner() !== $this->getUser()) {
+            $this->addFlash('error', 'Seul le propriétaire du projet peut le modifier.');
+            return $this->redirectToRoute('project_show', ['id' => $project->getId()]);
+        }
 
         $form = $this->createForm(ProjectType::class, $project);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Mise à jour de la date de modification
             $project->setUpdatedAt(new \DateTimeImmutable());
-
             $entityManager->flush();
 
-            $this->addFlash('success', 'Le projet "' . $project->getTitle() . '" a été modifié avec succès !');
+            $this->addFlash('success', 'Le projet "' . $project->getTitle() . '" a été mis à jour avec succès !');
 
-            return $this->redirectToRoute('project_show', ['id' => $project->getId()]);
+            return $this->redirectToRoute('project_index');
         }
 
         return $this->render('project/edit.html.twig', [
@@ -108,17 +116,16 @@ class ProjectController extends AbstractController
     #[Route('/{id}', name: 'project_delete', methods: ['POST'])]
     public function delete(Request $request, Project $project, EntityManagerInterface $entityManager): Response
     {
-        // Vérification que l'utilisateur est propriétaire du projet
-        $this->denyAccessUnlessGranted('PROJECT_DELETE', $project);
+        if ($project->getOwner() !== $this->getUser()) {
+            $this->addFlash('error', 'Seul le propriétaire du projet peut le supprimer.');
+            return $this->redirectToRoute('project_show', ['id' => $project->getId()]);
+        }
 
         if ($this->isCsrfTokenValid('delete' . $project->getId(), $request->request->get('_token'))) {
-            $projectTitle = $project->getTitle();
+            $title = $project->getTitle();
             $entityManager->remove($project);
             $entityManager->flush();
-
-            $this->addFlash('success', 'Le projet "' . $projectTitle . '" et toutes ses tâches ont été supprimés.');
-        } else {
-            $this->addFlash('error', 'Token CSRF invalide. La suppression a échoué.');
+            $this->addFlash('success', "Le projet \"$title\" a été supprimé.");
         }
 
         return $this->redirectToRoute('project_index');
@@ -127,24 +134,40 @@ class ProjectController extends AbstractController
     #[Route('/{id}/duplicate', name: 'project_duplicate', methods: ['POST'])]
     public function duplicate(Request $request, Project $project, EntityManagerInterface $entityManager): Response
     {
-        // Vérification que l'utilisateur est propriétaire du projet
-        $this->denyAccessUnlessGranted('PROJECT_VIEW', $project);
+        if ($project->getOwner() !== $this->getUser() && !$project->hasCollaborator($this->getUser())) {
+            $this->addFlash('error', 'Vous ne pouvez pas dupliquer ce projet.');
+            return $this->redirectToRoute('project_index');
+        }
 
         if ($this->isCsrfTokenValid('duplicate' . $project->getId(), $request->request->get('_token'))) {
-            // Création d'une copie du projet
-            $newProject = new Project();
-            $newProject->setTitle($project->getTitle() . ' (Copie)');
-            $newProject->setDescription($project->getDescription());
-            $newProject->setOwner($this->getUser());
+            try {
+                $newProject = new Project();
+                $newProject->setTitle($project->getTitle() . ' (Copie)');
+                $newProject->setDescription($project->getDescription());
+                $newProject->setOwner($this->getUser());
 
-            $entityManager->persist($newProject);
-            $entityManager->flush();
+                foreach ($project->getTasks() as $task) {
+                    $newTask = clone $task;
+                    $newTask->setProject($newProject);
+                    $newTask->setStatus(Task::STATUS_TODO);
+                    $newTask->setCompletedAt(null);
+                    $newTask->setCreatedAt(new \DateTimeImmutable());
+                    $newTask->setUpdatedAt(null);
+                    // Réassigner la tâche seulement si l'assigné original est collaborateur du nouveau projet
+                    if ($task->getAssignee() && $task->getAssignee() !== $this->getUser()) {
+                        $newTask->setAssignee(null);
+                    }
+                    $newProject->addTask($newTask);
+                }
 
-            $this->addFlash('success', 'Le projet a été dupliqué avec succès !');
+                $entityManager->persist($newProject);
+                $entityManager->flush();
 
-            return $this->redirectToRoute('project_show', ['id' => $newProject->getId()]);
-        } else {
-            $this->addFlash('error', 'Token CSRF invalide. La duplication a échoué.');
+                $this->addFlash('success', 'Le projet a été dupliqué avec succès !');
+                return $this->redirectToRoute('project_show', ['id' => $newProject->getId()]);
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Une erreur est survenue lors de la duplication du projet.');
+            }
         }
 
         return $this->redirectToRoute('project_show', ['id' => $project->getId()]);
@@ -153,19 +176,37 @@ class ProjectController extends AbstractController
     #[Route('/{id}/archive', name: 'project_archive', methods: ['POST'])]
     public function archive(Request $request, Project $project, EntityManagerInterface $entityManager): Response
     {
-        // Vérification que l'utilisateur est propriétaire du projet
-        $this->denyAccessUnlessGranted('PROJECT_EDIT', $project);
-
-        if ($this->isCsrfTokenValid('archive' . $project->getId(), $request->request->get('_token'))) {
-            // Pour l'instant, on utilise la date de mise à jour pour marquer l'archivage
-            // Dans une version future, on pourrait ajouter un champ "archived" à l'entité
-            $project->setUpdatedAt(new \DateTimeImmutable());
-
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Le projet "' . $project->getTitle() . '" a été archivé.');
+        if ($project->getOwner() !== $this->getUser()) {
+            $this->addFlash('error', 'Seul le propriétaire du projet peut l\'archiver.');
+            return $this->redirectToRoute('project_show', ['id' => $project->getId()]);
         }
 
-        return $this->redirectToRoute('project_index');
+        if ($this->isCsrfTokenValid('archive' . $project->getId(), $request->request->get('_token'))) {
+            $project->setUpdatedAt(new \DateTimeImmutable());
+            $entityManager->flush();
+            $this->addFlash('success', 'Projet archivé avec succès.');
+        }
+
+        return $this->redirectToRoute('project_show', ['id' => $project->getId()]);
+    }
+
+    #[Route('/api/{id}/collaborators', name: 'api_project_collaborators', methods: ['GET'])]
+    public function getCollaborators(Project $project): JsonResponse
+    {
+        // Toujours commencer par le propriétaire
+        $collaborators = [[
+            'id' => $project->getOwner()->getId(),
+            'fullName' => $project->getOwner()->getFullName() . ' (Propriétaire)',
+        ]];
+
+        // Ajouter les collaborateurs
+        foreach ($project->getCollaborators() as $collaborator) {
+            $collaborators[] = [
+                'id' => $collaborator->getId(),
+                'fullName' => $collaborator->getFullName(),
+            ];
+        }
+
+        return new JsonResponse($collaborators);
     }
 }

@@ -1,0 +1,10 @@
+/* app.css (global de ton projet) */
+
+/* Import des styles spécifiques */
+@import url('./_home.css');
+@import url('./_dashboard.css');
+
+/* Tu peux ajouter ici tes styles globaux communs à tout le site */
+body {
+    background-color: skyblue;
+}

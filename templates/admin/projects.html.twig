@@ -4,20 +4,11 @@
 {% endblock %}
 
 {% block body %}
-	<div
-		class="container-fluid">
+	<div class="container-fluid">
 		<div class="row mb-4">
 			<div class="col-12">
 				<div class="d-flex justify-content-between align-items-center">
 					<div>
-						<nav aria-label="breadcrumb">
-							<ol class="breadcrumb">
-								<li class="breadcrumb-item">
-									<a href="{{ path('admin_dashboard') }}" class="text-decoration-none">Administration</a>
-								</li>
-								<li class="breadcrumb-item active">Projets</li>
-							</ol>
-						</nav>
 						<h1 class="h3 mb-2">Gestion des projets</h1>
 						<p class="text-muted mb-0">{{ total_projects }}
 							projet(s) au total</p>
@@ -97,7 +88,8 @@
 														<small class="text-muted">Tâches :</small>
 														<span>
 															<span class="badge bg-primary">{{ project.tasksCount }}</span>
-															<small class="text-muted">{{ project.completedTasksCount }} terminées</small>
+															<small class="text-muted">{{ project.completedTasksCount }}
+																terminées</small>
 														</span>
 													</li>
 													<li class="list-group-item d-flex justify-content-between align-items-center">
@@ -178,49 +170,49 @@
 
 	<script>
 		// Gestion de la modal de suppression
-		const deleteModal = new bootstrap.Modal(document.getElementById('deleteProjectModal'));
-		const deleteForm = document.getElementById('delete-project-form');
-		const projectTitleElement = document.getElementById('modal-project-title');
-		const projectNameElement = document.getElementById('project-name');
-		const projectTasksElement = document.getElementById('project-tasks');
-		const projectOwnerElement = document.getElementById('project-owner');
-		const projectOwnerEmailElement = document.getElementById('project-owner-email');
-		const tokenInput = document.getElementById('deleteProjectToken');
+const deleteModal = new bootstrap.Modal(document.getElementById('deleteProjectModal'));
+const deleteForm = document.getElementById('delete-project-form');
+const projectTitleElement = document.getElementById('modal-project-title');
+const projectNameElement = document.getElementById('project-name');
+const projectTasksElement = document.getElementById('project-tasks');
+const projectOwnerElement = document.getElementById('project-owner');
+const projectOwnerEmailElement = document.getElementById('project-owner-email');
+const tokenInput = document.getElementById('deleteProjectToken');
 
-		document.querySelectorAll('.delete-project-btn').forEach(button => {
-			button.addEventListener('click', function (e) {
-				e.preventDefault();
-				e.stopPropagation();
+document.querySelectorAll('.delete-project-btn').forEach(button => {
+button.addEventListener('click', function (e) {
+e.preventDefault();
+e.stopPropagation();
 
-				const projectId = this.getAttribute('data-project-id');
-				const projectTitle = this.getAttribute('data-project-title');
-				const projectTasks = this.getAttribute('data-project-tasks');
-				const projectOwner = this.getAttribute('data-project-owner');
-				const projectOwnerEmail = this.getAttribute('data-project-owner-email');
+const projectId = this.getAttribute('data-project-id');
+const projectTitle = this.getAttribute('data-project-title');
+const projectTasks = this.getAttribute('data-project-tasks');
+const projectOwner = this.getAttribute('data-project-owner');
+const projectOwnerEmail = this.getAttribute('data-project-owner-email');
 
-				// Configurer la modal
-				projectTitleElement.textContent = `"${projectTitle}"`;
-				projectNameElement.textContent = projectTitle;
-				projectTasksElement.textContent = projectTasks;
-				projectOwnerElement.textContent = projectOwner;
-				projectOwnerEmailElement.textContent = projectOwnerEmail;
+// Configurer la modal
+projectTitleElement.textContent = `"${projectTitle}"`;
+projectNameElement.textContent = projectTitle;
+projectTasksElement.textContent = projectTasks;
+projectOwnerElement.textContent = projectOwner;
+projectOwnerEmailElement.textContent = projectOwnerEmail;
 
-				deleteForm.action = `{{ path('admin_project_delete', {id: '__PROJECT_ID__'}) }}`.replace('__PROJECT_ID__', projectId);
-				tokenInput.value = `{{ csrf_token('delete-project__PROJECT_ID__') }}`.replace('__PROJECT_ID__', projectId);
+deleteForm.action = `{{ path('admin_project_delete', {id: '__PROJECT_ID__'}) }}`.replace('__PROJECT_ID__', projectId);
+tokenInput.value = `{{ csrf_token('delete-project__PROJECT_ID__') }}`.replace('__PROJECT_ID__', projectId);
 
-				// Petit délai pour éviter les conflits
-				setTimeout(() => {
-					deleteModal.show();
-				}, 100);
-			});
-		});
+// Petit délai pour éviter les conflits
+setTimeout(() => {
+deleteModal.show();
+}, 100);
+});
+});
 
-		// Double confirmation avant suppression
-		deleteForm.addEventListener('submit', function (e) {
-			const projectName = projectNameElement.textContent;
-			if (!confirm(`Êtes-vous absolument sûr de vouloir supprimer le projet "${projectName}" ? Cette action est irréversible et supprimera également toutes les tâches associées.`)) {
-				e.preventDefault();
-			}
-		});
+// Double confirmation avant suppression
+deleteForm.addEventListener('submit', function (e) {
+const projectName = projectNameElement.textContent;
+if (!confirm (`Êtes-vous absolument sûr de vouloir supprimer le projet "${projectName}" ? Cette action est irréversible et supprimera également toutes les tâches associées.`)) {
+e.preventDefault();
+}
+});
 	</script>
 {% endblock %}

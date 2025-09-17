@@ -62,13 +62,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $resetTokenExpiresAt = null;
 
-    // Relation OneToMany avec Project
+    #[ORM\Column(type: 'boolean')]
+    private bool $isVerified = false;
+
+    // Relation OneToMany avec Project (projets possédés)
     #[ORM\OneToMany(mappedBy: 'owner', targetEntity: Project::class, orphanRemoval: true)]
     private Collection $projects;
+    
+    // Relation ManyToMany avec Project (projets sur lesquels l'utilisateur collabore)
+    #[ORM\ManyToMany(targetEntity: Project::class, mappedBy: 'collaborators')]
+    private Collection $collaborations;
+
+    // Relation OneToMany avec Task pour l'assignation
+    #[ORM\OneToMany(mappedBy: 'assignee', targetEntity: Task::class)]
+    private Collection $assignedTasks;
 
     public function __construct()
     {
         $this->projects = new ArrayCollection();
+        $this->collaborations = new ArrayCollection();
+        $this->assignedTasks = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
     }
 
@@ -148,7 +161,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->lastName = $lastName;
         return $this;
     }
-
+    
+    public function getFullName(): string
+    {
+        return trim($this->firstName . ' ' . $this->lastName);
+    }
+    
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
@@ -157,6 +175,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+        return $this;
+    }
+
+    public function isVerified(): bool
+    {
+        return $this->isVerified;
+    }
+
+    public function setIsVerified(bool $isVerified): static
+    {
+        $this->isVerified = $isVerified;
         return $this;
     }
 
@@ -182,7 +211,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->resetTokenExpiresAt = $resetTokenExpiresAt;
         return $this;
     }
-    
+
+    // Méthodes pour la gestion des projets
+    /**
+     * @return Collection<int, Project>
+     */
     public function getProjects(): Collection
     {
         return $this->projects;
@@ -209,13 +242,230 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+    
+    /**
+     * @return Collection<int, Project>
+     */
+    public function getCollaborations(): Collection
+    {
+        return $this->collaborations;
+    }
+
+    public function addCollaboration(Project $collaboration): static
+    {
+        if (!$this->collaborations->contains($collaboration)) {
+            $this->collaborations->add($collaboration);
+            $collaboration->addCollaborator($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCollaboration(Project $collaboration): static
+    {
+        if ($this->collaborations->removeElement($collaboration)) {
+            $collaboration->removeCollaborator($this);
+        }
+
+        return $this;
+    }
+
+    // Méthodes pour la gestion des tâches assignées
+    /**
+     * @return Collection<int, Task>
+     */
+    public function getAssignedTasks(): Collection
+    {
+        return $this->assignedTasks;
+    }
+
+    public function addAssignedTask(Task $task): static
+    {
+        if (!$this->assignedTasks->contains($task)) {
+            $this->assignedTasks->add($task);
+            $task->setAssignee($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAssignedTask(Task $task): static
+    {
+        if ($this->assignedTasks->removeElement($task)) {
+            // Définit la relation à null si c'était l'utilisateur assigné
+            if ($task->getAssignee() === $this) {
+                $task->setAssignee(null);
+            }
+        }
+
+        return $this;
+    }
 
     /**
-     * Retourne le nom complet de l'utilisateur
+     * Retourne le nombre de tâches assignées à cet utilisateur
      */
-    public function getFullName(): string
+    public function getAssignedTasksCount(): int
     {
-        return $this->firstName . ' ' . $this->lastName;
+        return $this->assignedTasks->count();
+    }
+
+    /**
+     * Retourne les tâches assignées par statut
+     */
+    public function getAssignedTasksByStatus(string $status): Collection
+    {
+        return $this->assignedTasks->filter(
+            function (Task $task) use ($status) {
+                return $task->getStatus() === $status;
+            }
+        );
+    }
+
+    /**
+     * Retourne le nombre de tâches terminées assignées à cet utilisateur
+     */
+    public function getCompletedAssignedTasksCount(): int
+    {
+        return $this->getAssignedTasksByStatus(Task::STATUS_COMPLETED)->count();
+    }
+
+    /**
+     * Retourne le nombre de tâches en cours assignées à cet utilisateur
+     */
+    public function getInProgressAssignedTasksCount(): int
+    {
+        return $this->getAssignedTasksByStatus(Task::STATUS_IN_PROGRESS)->count();
+    }
+
+    /**
+     * Retourne le nombre de tâches à faire assignées à cet utilisateur
+     */
+    public function getTodoAssignedTasksCount(): int
+    {
+        return $this->getAssignedTasksByStatus(Task::STATUS_TODO)->count();
+    }
+
+    /**
+     * Retourne les tâches assignées dans un projet spécifique
+     */
+    public function getAssignedTasksInProject(Project $project): Collection
+    {
+        return $this->assignedTasks->filter(
+            function (Task $task) use ($project) {
+                return $task->getProject() === $project;
+            }
+        );
+    }
+
+    /**
+     * Retourne le nombre de tâches assignées dans un projet spécifique
+     */
+    public function getAssignedTasksCountInProject(Project $project): int
+    {
+        return $this->getAssignedTasksInProject($project)->count();
+    }
+
+    /**
+     * Retourne les projets où l'utilisateur est collaborateur (a des tâches assignées)
+     */
+    public function getCollaboratingProjects(): Collection
+    {
+        $projects = new ArrayCollection();
+        
+        foreach ($this->assignedTasks as $task) {
+            $project = $task->getProject();
+            if (!$projects->contains($project)) {
+                $projects->add($project);
+            }
+        }
+        
+        return $projects;
+    }
+
+    /**
+     * Retourne tous les projets auxquels l'utilisateur participe (propriétaire ou collaborateur)
+     */
+    public function getAllRelatedProjects(): Collection
+    {
+        $allProjects = new ArrayCollection();
+        
+        // Ajouter les projets possédés
+        foreach ($this->projects as $project) {
+            if (!$allProjects->contains($project)) {
+                $allProjects->add($project);
+            }
+        }
+        
+        // Ajouter les projets où on collabore
+        foreach ($this->getCollaboratingProjects() as $project) {
+            if (!$allProjects->contains($project)) {
+                $allProjects->add($project);
+            }
+        }
+        
+        return $allProjects;
+    }
+
+    /**
+     * Vérifie si l'utilisateur a des tâches en retard
+     */
+    public function hasOverdueTasks(): bool
+    {
+        foreach ($this->assignedTasks as $task) {
+            if ($task->isOverdue()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Retourne les tâches en retard assignées à cet utilisateur
+     */
+    public function getOverdueTasks(): Collection
+    {
+        return $this->assignedTasks->filter(
+            function (Task $task) {
+                return $task->isOverdue();
+            }
+        );
+    }
+
+    /**
+     * Retourne les tâches récentes assignées à l'utilisateur
+     */
+    public function getRecentAssignedTasks(int $limit = 5): array
+    {
+        $tasks = $this->assignedTasks->toArray();
+        
+        // Trier par date de création décroissante
+        usort($tasks, function (Task $a, Task $b) {
+            return $b->getCreatedAt() <=> $a->getCreatedAt();
+        });
+        
+        return array_slice($tasks, 0, $limit);
+    }
+
+    /**
+     * Calcule le pourcentage de tâches terminées par l'utilisateur
+     */
+    public function getTaskCompletionPercentage(): int
+    {
+        $totalTasks = $this->getAssignedTasksCount();
+        if ($totalTasks === 0) {
+            return 0;
+        }
+
+        $completedTasks = $this->getCompletedAssignedTasksCount();
+        return round(($completedTasks / $totalTasks) * 100);
+    }
+
+    /**
+     * Vérifie si l'utilisateur collabore sur un projet spécifique
+     */
+    public function collaboratesOnProject(Project $project): bool
+    {
+        return $this->getAssignedTasksCountInProject($project) > 0;
     }
 
     /**

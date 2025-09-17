@@ -41,22 +41,45 @@ class ProjectVoter extends Voter
 
     private function canView(Project $project, User $user): bool
     {
-        // L'utilisateur peut voir ses propres projets
         // Un administrateur peut voir tous les projets
-        return $project->getOwner() === $user || in_array('ROLE_ADMIN', $user->getRoles());
+        if (in_array('ROLE_ADMIN', $user->getRoles())) {
+            return true;
+        }
+
+        // L'utilisateur peut voir ses propres projets
+        if ($project->getOwner() === $user) {
+            return true;
+        }
+
+        // L'utilisateur peut voir les projets où il collabore (a des tâches assignées)
+        if ($project->hasCollaborator($user)) {
+            return true;
+        }
+
+        return false;
     }
 
     private function canEdit(Project $project, User $user): bool
     {
-        // L'utilisateur peut modifier ses propres projets
         // Un administrateur peut modifier tous les projets
-        return $project->getOwner() === $user || in_array('ROLE_ADMIN', $user->getRoles());
+        if (in_array('ROLE_ADMIN', $user->getRoles())) {
+            return true;
+        }
+
+        // Seul le propriétaire peut modifier le projet
+        // Les collaborateurs ne peuvent pas modifier les informations du projet
+        return $project->getOwner() === $user;
     }
 
     private function canDelete(Project $project, User $user): bool
     {
-        // L'utilisateur peut supprimer ses propres projets
         // Un administrateur peut supprimer tous les projets
-        return $project->getOwner() === $user || in_array('ROLE_ADMIN', $user->getRoles());
+        if (in_array('ROLE_ADMIN', $user->getRoles())) {
+            return true;
+        }
+
+        // Seul le propriétaire peut supprimer le projet
+        // Les collaborateurs ne peuvent pas supprimer le projet
+        return $project->getOwner() === $user;
     }
 }

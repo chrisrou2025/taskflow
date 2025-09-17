@@ -94,15 +94,27 @@ class AdminController extends AbstractController
         ProjectRepository $projectRepository,
         TaskRepository $taskRepository
     ): Response {
-        // Statistiques de l'utilisateur
-        $userProjects = $projectRepository->findBy(['owner' => $user], ['createdAt' => 'DESC']);
-        $userTasksStats = $taskRepository->getTasksCountByStatusForUser($user);
-        $recentTasks = $taskRepository->findRecentTasksByUser($user, 10);
-        $overdueTasks = $taskRepository->findOverdueTasksByUser($user);
+        // --- MÉTHODE MODIFIÉE ---
+
+        // Projets où l'utilisateur est le propriétaire
+        $ownedProjects = $projectRepository->findBy(['owner' => $user], ['createdAt' => 'DESC']);
+
+        // Projets où l'utilisateur est collaborateur
+        $collaborativeProjects = $projectRepository->findCollaborativeProjects($user);
+
+        // Statistiques des tâches où l'utilisateur est assigné
+        $userTasksStats = $taskRepository->getTasksStatisticsForUser($user);
+
+        // Tâches récentes assignées à l'utilisateur (plus pertinent que par propriétaire)
+        $recentTasks = $taskRepository->findBy(['assignee' => $user], ['createdAt' => 'DESC'], 10);
+        
+        // Tâches en retard assignées à l'utilisateur
+        $overdueTasks = $taskRepository->findOverdueTasksByAssignee($user);
 
         return $this->render('admin/user_show.html.twig', [
             'user' => $user,
-            'projects' => $userProjects,
+            'projects' => $ownedProjects,
+            'collaborative_projects' => $collaborativeProjects,
             'tasks_stats' => $userTasksStats,
             'recent_tasks' => $recentTasks,
             'overdue_tasks' => $overdueTasks,
