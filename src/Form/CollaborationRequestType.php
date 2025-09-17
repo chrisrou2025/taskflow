@@ -14,16 +14,14 @@ class CollaborationRequestType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $availableUsers = $options['available_users'] ?? [];
-        
+
         $builder
             ->add('invitedUser', EntityType::class, [
                 'class' => User::class,
                 'choices' => $availableUsers,
-                'choice_label' => function (User $user) {
-                    return $user->getFullName() . ' (' . $user->getEmail() . ')';
-                },
+                'choice_label' => 'fullName', // Seulement le nom complet
                 'choice_value' => 'id',
-                'placeholder' => count($availableUsers) > 0 
+                'placeholder' => count($availableUsers) > 0
                     ? '-- Sélectionner un utilisateur --'
                     : 'Aucun utilisateur disponible',
                 'label' => 'Utilisateur à inviter',
@@ -32,7 +30,7 @@ class CollaborationRequestType extends AbstractType
                 ],
                 'required' => true,
                 'disabled' => count($availableUsers) === 0,
-                'help' => count($availableUsers) === 0 
+                'help' => count($availableUsers) === 0
                     ? 'Tous les utilisateurs disponibles ont déjà été invités ou collaborent déjà sur ce projet.'
                     : 'Sélectionnez l\'utilisateur que vous souhaitez inviter à collaborer.'
             ])

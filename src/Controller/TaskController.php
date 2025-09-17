@@ -90,7 +90,7 @@ class TaskController extends AbstractController
         $task = new Task();
         $user = $this->getUser();
 
-        // Projet précisé dans l’URL
+        // Projet précisé dans l'URL
         $projectId = $request->query->get('project');
         if ($projectId) {
             $project = $projectRepository->find($projectId);
@@ -153,7 +153,7 @@ class TaskController extends AbstractController
             $this->addFlash('error', 'Vous ne pouvez modifier que vos propres tâches.');
             return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
         }
-        
+
         $formOptions = ['user' => $user];
 
         if ($task->getAssignee() === $user && $task->getProject()->getOwner() !== $user) {

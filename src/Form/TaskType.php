@@ -22,7 +22,6 @@ class TaskType extends AbstractType
         /** @var User $user */
         $user = $options['user'];
         $isCollaborator = $options['is_collaborator'];
-        $currentProject = $options['current_project'] ?? null;
 
         $builder
             ->add('title', TextType::class, [
@@ -74,37 +73,13 @@ class TaskType extends AbstractType
                 'choice_label' => 'fullName',
                 'required' => false,
                 'attr' => [
-                    'class' => 'form-select'
+                    'class' => 'form-select',
+                    'id' => 'task_assignee'
                 ],
                 'help' => 'Attribuez cette tâche à un membre de votre équipe (optionnel)',
                 'placeholder' => 'Non attribuée',
-                'query_builder' => function (UserRepository $repository) use ($currentProject, $user) {
-                    $qb = $repository->createQueryBuilder('u');
-                    
-                    if ($currentProject) {
-                        // Récupérer le propriétaire et tous les collaborateurs du projet
-                        $qb->where('u = :owner')
-                           ->setParameter('owner', $currentProject->getOwner());
-                           
-                        // Si le projet a des collaborateurs, les inclure
-                        if (!$currentProject->getCollaborators()->isEmpty()) {
-                            $collaboratorIds = [];
-                            foreach ($currentProject->getCollaborators() as $collaborator) {
-                                $collaboratorIds[] = $collaborator->getId();
-                            }
-                            if (!empty($collaboratorIds)) {
-                                $qb->orWhere('u.id IN (:collaborators)')
-                                   ->setParameter('collaborators', $collaboratorIds);
-                            }
-                        }
-                    } else {
-                        // Si pas de projet spécifique, montrer seulement l'utilisateur connecté
-                        $qb->where('u = :user')
-                           ->setParameter('user', $user);
-                    }
-                    
-                    return $qb->orderBy('u.firstName', 'ASC');
-                }
+                // Initialement vide pour nouvelle tâche, sera rempli par JavaScript
+                'choices' => $this->getInitialAssigneeChoices($builder->getData(), $user, $isCollaborator),
             ])
             ->add('dueDate', DateTimeType::class, [
                 'label' => 'Date d\'échéance',
@@ -117,17 +92,22 @@ class TaskType extends AbstractType
                 'help' => 'Date et heure limite pour cette tâche (optionnel)'
             ]);
 
+        // Ajouter le champ projet seulement si l'utilisateur n'est pas un simple collaborateur
         if (!$isCollaborator) {
             $builder->add('project', EntityType::class, [
                 'label' => 'Projet',
                 'class' => Project::class,
                 'choice_label' => 'title',
                 'query_builder' => function ($repository) use ($user) {
-                    // Utilisation de la méthode pour inclure les projets collaboratifs
-                    return $repository->findProjectsByUserQueryBuilder($user);
+                    return $repository->createQueryBuilder('p')
+                        ->leftJoin('p.collaborators', 'c')
+                        ->where('p.owner = :user OR c = :user')
+                        ->setParameter('user', $user)
+                        ->orderBy('p.title', 'ASC');
                 },
                 'attr' => [
-                    'class' => 'form-select'
+                    'class' => 'form-select',
+                    'id' => 'task_project'
                 ],
                 'help' => 'Projet auquel appartient cette tâche',
                 'placeholder' => 'Sélectionnez un projet...'
@@ -135,17 +115,38 @@ class TaskType extends AbstractType
         }
     }
 
+    private function getInitialAssigneeChoices(?Task $task, User $user, bool $isCollaborator): array
+    {
+        // Si c'est une tâche existante et qu'elle a un projet
+        if ($task && $task->getProject()) {
+            $project = $task->getProject();
+            $choices = [];
+
+            // Ajouter le propriétaire
+            $choices[] = $project->getOwner();
+
+            // Ajouter tous les collaborateurs
+            foreach ($project->getCollaborators() as $collaborator) {
+                $choices[] = $collaborator;
+            }
+
+            return array_unique($choices);
+        }
+
+        // Pour une nouvelle tâche ou tâche sans projet, retourner un tableau vide
+        // (sera rempli par JavaScript quand un projet sera sélectionné)
+        return [];
+    }
+
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Task::class,
             'is_collaborator' => false,
-            'current_project' => null,
         ]);
 
         $resolver->setRequired(['user']);
         $resolver->setAllowedTypes('user', [User::class]);
         $resolver->setAllowedTypes('is_collaborator', 'bool');
-        $resolver->setAllowedTypes('current_project', ['null', Project::class]);
     }
 }

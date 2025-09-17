@@ -18,7 +18,7 @@
 					<div class="card-body p-4">
 						<p class="text-muted mb-4">
 							Modifiez les informations de cette tâche.
-							Les changements seront appliqués immédiatement.
+														Les changements seront appliqués immédiatement.
 						</p>
 
 						{{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
@@ -72,18 +72,16 @@
 							</div>
 						</div>
 
-						{% if form.assignee is defined %}
-							<div class="mb-4">
-								{{ form_label(form.assignee, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
-								<div class="input-group">
-									<span class="input-group-text bg-light">
-										<i class="fas fa-user-circle text-primary"></i>
-									</span>
-									{{ form_widget(form.assignee, {'attr': {'class': 'form-select'}}) }}
-								</div>
-								{{ form_errors(form.assignee) }}
+						<div class="mb-4">
+							{{ form_label(form.assignee, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+							<div class="input-group">
+								<span class="input-group-text bg-light">
+									<i class="fas fa-user-circle text-primary"></i>
+								</span>
+								{{ form_widget(form.assignee, {'attr': {'class': 'form-select', 'id': 'task_assignee'}}) }}
 							</div>
-						{% endif %}
+							{{ form_errors(form.assignee) }}
+						</div>
 
 						<div class="mb-4">
 							{{ form_label(form.dueDate, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
@@ -103,7 +101,7 @@
 									<span class="input-group-text bg-light">
 										<i class="fas fa-folder text-primary"></i>
 									</span>
-									{{ form_widget(form.project, {'attr': {'class': 'form-select'}}) }}
+									{{ form_widget(form.project, {'attr': {'class': 'form-select', 'id': 'task_project'}}) }}
 								</div>
 								{{ form_errors(form.project) }}
 							</div>
@@ -139,4 +137,77 @@
 			border-left: none;
 		}
 	</style>
+
+	<script>
+		document.addEventListener('DOMContentLoaded', () => {
+const projectSelect = document.getElementById('task_project');
+const assigneeSelect = document.getElementById('task_assignee');
+
+if (projectSelect && assigneeSelect) {
+const updateAssignees = () => {
+const projectId = projectSelect.value;
+const currentAssigneeId = assigneeSelect.value;
+// Sauvegarder la sélection actuelle
+
+// Effacer les options actuelles sauf la première
+assigneeSelect.innerHTML = '<option value="">Non attribuée</option>';
+
+if (projectId) {
+fetch (`/projects/api/${projectId}/collaborators`).then(response => {
+if (!response.ok) {
+throw new Error('Erreur réseau');
+}
+return response.json();
+}).then(collaborators => {
+collaborators.forEach(collaborator => {
+const option = document.createElement('option');
+option.value = collaborator.id;
+option.textContent = collaborator.fullName;
+
+// Restaurer la sélection précédente si elle existe
+if (collaborator.id == currentAssigneeId) {
+option.selected = true;
+}
+
+assigneeSelect.appendChild(option);
+});
+}).catch(error => {
+console.error('Erreur lors de la récupération des collaborateurs :', error);
+});
+}
+};
+
+// Écoute l'événement de changement sur le menu déroulant des projets
+if (projectSelect) {
+projectSelect.addEventListener('change', updateAssignees);
+}
+
+// Charger les collaborateurs au chargement de la page si un projet est sélectionné
+const initialProjectId = projectSelect ? projectSelect.value : null;
+if (initialProjectId || (typeof task !== 'undefined' && task.project)) { // Si nous sommes en mode édition, charger les collaborateurs du projet actuel
+const taskProjectId = initialProjectId || '{{ task.project ? task.project.id : "" }}';
+if (taskProjectId) {
+fetch (`/projects/api/${taskProjectId}/collaborators`).then(response => response.json()).then(collaborators => {
+const currentAssigneeId = assigneeSelect.value;
+assigneeSelect.innerHTML = '<option value="">Non attribuée</option>';
+
+collaborators.forEach(collaborator => {
+const option = document.createElement('option');
+option.value = collaborator.id;
+option.textContent = collaborator.fullName;
+
+if (collaborator.id == currentAssigneeId) {
+option.selected = true;
+}
+
+assigneeSelect.appendChild(option);
+});
+}).catch(error => {
+console.error('Erreur lors du chargement initial des collaborateurs :', error);
+});
+}
+}
+}
+});
+	</script>
 {% endblock %}

@@ -56,19 +56,19 @@ class ProjectController extends AbstractController
 
     #[Route('/{id}', name: 'project_show', methods: ['GET'])]
     public function show(
-        Project $project, 
+        Project $project,
         TaskRepository $taskRepository,
         CollaborationRequestRepository $collaborationRequestRepository
     ): Response {
         $currentUser = $this->getUser();
-        
+
         if ($project->getOwner() !== $currentUser && !$project->hasCollaborator($currentUser)) {
             $this->addFlash('error', 'Vous n\'avez pas les permissions pour accéder à ce projet.');
             return $this->redirectToRoute('project_index');
         }
 
         $tasks = $taskRepository->findByProjectWithFilters($project);
-        
+
         // Récupérer les demandes de collaboration en attente si l'utilisateur est propriétaire
         $pendingRequests = [];
         if ($project->getOwner() === $currentUser) {
@@ -190,20 +190,36 @@ class ProjectController extends AbstractController
         return $this->redirectToRoute('project_show', ['id' => $project->getId()]);
     }
 
+    /**
+     * API endpoint pour récupérer les collaborateurs d'un projet
+     */
     #[Route('/api/{id}/collaborators', name: 'api_project_collaborators', methods: ['GET'])]
     public function getCollaborators(Project $project): JsonResponse
     {
-        // Toujours commencer par le propriétaire
-        $collaborators = [[
+        $user = $this->getUser();
+
+        // Vérifier que l'utilisateur a accès au projet
+        if ($project->getOwner() !== $user && !$project->hasCollaborator($user)) {
+            return new JsonResponse(['error' => 'Accès non autorisé'], 403);
+        }
+
+        $collaborators = [];
+
+        // Ajouter le propriétaire
+        $collaborators[] = [
             'id' => $project->getOwner()->getId(),
             'fullName' => $project->getOwner()->getFullName() . ' (Propriétaire)',
-        ]];
+            'email' => $project->getOwner()->getEmail(),
+            'role' => 'owner'
+        ];
 
-        // Ajouter les collaborateurs
+        // Ajouter tous les collaborateurs
         foreach ($project->getCollaborators() as $collaborator) {
             $collaborators[] = [
                 'id' => $collaborator->getId(),
                 'fullName' => $collaborator->getFullName(),
+                'email' => $collaborator->getEmail(),
+                'role' => 'collaborator'
             ];
         }
 
