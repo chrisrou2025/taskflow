@@ -17,8 +17,8 @@
 		{% endblock %}
 
 		<style>
-		/* Variables CSS personnalisées */
-		:root {
+		/* Variables CSS personnalisées */:root
+		{
 			--primary-color: #3b82f6;
 			--secondary-color: #64748b;
 			--success-color: #10b981;
@@ -164,7 +164,7 @@
 		}
 
 		/* ===== STYLES AMÉLIORÉS POUR LA NAVIGATION ===== */
-		
+
 		/* Dimensions uniformes pour les boutons navbar */
 		.navbar-toggler,
 		.notification-bell-btn {
@@ -225,17 +225,17 @@
 				justify-content: space-between;
 				align-items: center;
 			}
-			
+
 			.navbar-header-mobile .navbar-brand {
 				order: 2;
 				flex-grow: 1;
 				text-align: center;
 			}
-			
+
 			.navbar-header-mobile .navbar-toggler-notifications {
 				order: 3;
 			}
-			
+
 			.navbar-header-mobile .navbar-toggler {
 				order: 1;
 			}
@@ -276,17 +276,18 @@
 <body>
 	<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
 		<div class="container-fluid">
-			<div class="d-flex d-lg-none navbar-header-mobile">
+			<div
+				class="d-flex d-lg-none navbar-header-mobile">
 				<!-- Le menu burger à gauche -->
 				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
 					<span class="navbar-toggler-icon"></span>
 				</button>
-				
+
 				<!-- Le logo centré -->
 				<a class="navbar-brand" href="{{ path('app_home') }}">
 					📋 TaskFlow
 				</a>
-				
+
 				<!-- La cloche à droite avec dimensions uniformes -->
 				{% if app.user %}
 					<div class="navbar-toggler-notifications">
@@ -297,15 +298,15 @@
 					</div>
 				{% endif %}
 			</div>
-			
+
 			<div class="collapse navbar-collapse" id="navbarNav">
 				<ul class="navbar-nav me-auto">
+					<li class="nav-item d-lg-block d-none">
+						<a class="navbar-brand" href="{{ path('app_home') }}">
+							📋 TaskFlow
+						</a>
+					</li>
 					{% if app.user %}
-						<li class="nav-item d-lg-block d-none">
-							<a class="navbar-brand" href="{{ path('app_home') }}">
-								📋 TaskFlow
-							</a>
-						</li>
 						<li class="nav-item">
 							<a class="nav-link" href="{{ path('app_dashboard') }}">
 								<i class="fas fa-tachometer-alt"></i>
@@ -326,10 +327,11 @@
 						</li>
 					{% endif %}
 				</ul>
-				
+
 				<ul class="navbar-nav">
 					{% if app.user %}
-						<li class="nav-item dropdown d-none d-lg-block notification-desktop">
+						<li
+							class="nav-item dropdown d-none d-lg-block notification-desktop">
 							<!-- Version desktop de la cloche avec dimensions cohérentes -->
 							<a class="nav-link notification-bell-btn" href="#" id="notificationDropdownDesktop" role="button" data-bs-toggle="dropdown" aria-expanded="false">
 								<i class="fas fa-bell"></i>
@@ -347,7 +349,7 @@
 								</li>
 							</ul>
 						</li>
-						
+
 						<li class="nav-item dropdown">
 							<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
 								<i class="fas fa-user"></i>
@@ -441,8 +443,8 @@
 					<h5 class="modal-title" id="notificationModalLabel">Mes Notifications</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
-				<div class="modal-body">
-					<!-- Le contenu sera inséré par le JavaScript -->
+				<div
+					class="modal-body"><!-- Le contenu sera inséré par le JavaScript -->
 				</div>
 				<div class="modal-footer">
 					<a href="{{ path('notification_index') }}" class="btn btn-outline-primary w-100">Voir toutes les notifications</a>
@@ -456,117 +458,124 @@
 	{% block javascripts %}
 		<script>
 			// Auto-hide alerts after 5 seconds
-			document.addEventListener('DOMContentLoaded', function () {
-				const alerts = document.querySelectorAll('.alert:not(.alert-danger)');
-				alerts.forEach(function (alert) {
-					setTimeout(function () {
-						const bsAlert = new bootstrap.Alert(alert);
-						bsAlert.close();
-					}, 5000);
-				});
+document.addEventListener('DOMContentLoaded', function () {
+const alerts = document.querySelectorAll('.alert:not(.alert-danger)');
+alerts.forEach(function (alert) {
+setTimeout(function () {
+const bsAlert = new bootstrap.Alert(alert);
+bsAlert.close();
+}, 5000);
+});
 
-				// --- SCRIPT POUR LES NOTIFICATIONS ---
-				const notificationCountEl = document.getElementById('notification-count');
-				const notificationCountElDesktop = document.getElementById('notification-count-desktop');
-				const notificationListElDesktop = document.getElementById('notification-list-desktop');
-				const notificationModal = document.getElementById('notificationModal');
-				const notificationModalBody = document.querySelector('#notificationModal .modal-body');
+// --- SCRIPT POUR LES NOTIFICATIONS ---
+const notificationCountEl = document.getElementById('notification-count');
+const notificationCountElDesktop = document.getElementById('notification-count-desktop');
+const notificationListElDesktop = document.getElementById('notification-list-desktop');
+const notificationModal = document.getElementById('notificationModal');
+const notificationModalBody = document.querySelector('#notificationModal .modal-body');
 
-				const unreadCountUrl = "{{ path('api_notification_unread_count') }}";
-				const recentNotificationsUrl = "{{ path('api_notification_recent') }}?limit=5";
+const unreadCountUrl = "{{ path('api_notification_unread_count') }}";
+const recentNotificationsUrl = "{{ path('api_notification_recent') }}?limit=5";
 
-				// Met à jour le compteur de notifications
-				const updateUnreadCount = () => {
-					fetch(unreadCountUrl).then(response => response.json()).then(data => {
-						if (data.count > 0) {
-							if (notificationCountEl) {
-								notificationCountEl.innerText = data.count;
-								notificationCountEl.style.display = 'flex';
-							}
-							if (notificationCountElDesktop) {
-								notificationCountElDesktop.innerText = data.count;
-								notificationCountElDesktop.style.display = 'flex';
-							}
-						} else {
-							if (notificationCountEl) {
-								notificationCountEl.style.display = 'none';
-							}
-							if (notificationCountElDesktop) {
-								notificationCountElDesktop.style.display = 'none';
-							}
-						}
-					});
-				};
+// Met à jour le compteur de notifications
+const updateUnreadCount = () => {
+fetch(unreadCountUrl).then(response => response.json()).then(data => {
+if (data.count > 0) {
+if (notificationCountEl) {
+notificationCountEl.innerText = data.count;
+notificationCountEl.style.display = 'flex';
+}
+if (notificationCountElDesktop) {
+notificationCountElDesktop.innerText = data.count;
+notificationCountElDesktop.style.display = 'flex';
+}
+} else {
+if (notificationCountEl) {
+notificationCountEl.style.display = 'none';
+}
+if (notificationCountElDesktop) {
+notificationCountElDesktop.style.display = 'none';
+}
+}
+});
+};
 
-				// Charge les notifications récentes dans un conteneur donné
-				const loadRecentNotifications = (containerElement, isModal = false) => {
-					containerElement.innerHTML = '<p class="text-center text-muted my-4">Chargement...</p>';
-					fetch(recentNotificationsUrl).then(response => response.json()).then(data => {
-						containerElement.innerHTML = '';
+// Charge les notifications récentes dans un conteneur donné
+const loadRecentNotifications = (containerElement, isModal = false) => {
+containerElement.innerHTML = '<p class="text-center text-muted my-4">Chargement...</p>';
+fetch(recentNotificationsUrl).then(response => response.json()).then(data => {
+containerElement.innerHTML = '';
 
-						if (data.length === 0) {
-							containerElement.innerHTML = '<p class="text-center text-muted my-4">Aucune nouvelle notification</p>';
-						} else {
-							const listGroup = document.createElement('div');
-							listGroup.className = isModal ? 'list-group list-group-flush' : 'list-group';
+if (data.length === 0) {
+containerElement.innerHTML = '<p class="text-center text-muted my-4">Aucune nouvelle notification</p>';
+} else {
+const listGroup = document.createElement('div');
+listGroup.className = isModal ? 'list-group list-group-flush' : 'list-group';
 
-							data.forEach(notif => {
-								const item = document.createElement('a');
-								item.href = notif.read_url;
-								item.className = 'list-group-item list-group-item-action d-flex align-items-start notification-item';
-								if (!notif.is_read) {
-									item.classList.add('unread');
-								}
+data.forEach(notif => {
+const item = document.createElement('a');
+item.href = notif.read_url;
+item.className = 'list-group-item list-group-item-action d-flex align-items-start notification-item';
+if (!notif.is_read) {
+item.classList.add('unread');
+}
 
-								item.innerHTML = `
-									<i class="${notif.icon} ${notif.color_class} mt-1 me-3"></i>
+item.innerHTML = `
+									<i class="${
+notif.icon
+} ${
+notif.color_class
+} mt-1 me-3"></i>
 									<div>
-										<div class="small">${notif.message}</div>
-										<small class="text-muted">${notif.time_ago}</small>
+										<div class="small">${
+notif.message
+}</div>
+										<small class="text-muted">${
+notif.time_ago
+}</small>
 									</div>
 								`;
-								listGroup.appendChild(item);
-							});
-							containerElement.appendChild(listGroup);
-						}
-						
-						// Réinjecter le bouton "Voir toutes les notifications" uniquement pour desktop
-						if (!isModal) {
-							const divider = document.createElement('li');
-							divider.innerHTML = '<hr class="dropdown-divider">';
-							const link = document.createElement('a');
-							link.href = "{{ path('notification_index') }}";
-							link.className = "dropdown-item text-center";
-							link.textContent = "Voir toutes les notifications";
+listGroup.appendChild(item);
+});
+containerElement.appendChild(listGroup);
+}
 
-							containerElement.appendChild(divider);
-							containerElement.appendChild(link);
-						}
-					});
-				};
+// Réinjecter le bouton "Voir toutes les notifications" uniquement pour desktop
+if (!isModal) {
+const divider = document.createElement('li');
+divider.innerHTML = '<hr class="dropdown-divider">';
+const link = document.createElement('a');
+link.href = "{{ path('notification_index') }}";
+link.className = "dropdown-item text-center";
+link.textContent = "Voir toutes les notifications";
 
-				// Mettre à jour le compteur au chargement de la page
-				updateUnreadCount();
+containerElement.appendChild(divider);
+containerElement.appendChild(link);
+}
+});
+};
 
-				// Charger les notifications quand on ouvre la modale (version mobile)
-				if (notificationModal) {
-					notificationModal.addEventListener('show.bs.modal', function () {
-						loadRecentNotifications(notificationModalBody, true);
-					});
-				}
+// Mettre à jour le compteur au chargement de la page
+updateUnreadCount();
 
-				// Charger les notifications quand on clique sur la cloche desktop
-				const notificationDropdownDesktop = document.getElementById('notificationDropdownDesktop');
-				if (notificationDropdownDesktop) {
-					notificationDropdownDesktop.addEventListener('show.bs.dropdown', function () {
-						loadRecentNotifications(notificationListElDesktop);
-					});
-				}
+// Charger les notifications quand on ouvre la modale (version mobile)
+if (notificationModal) {
+notificationModal.addEventListener('show.bs.modal', function () {
+loadRecentNotifications(notificationModalBody, true);
+});
+}
 
-				// Optionnel : Mettre à jour le compteur toutes les minutes
-				setInterval(updateUnreadCount, 60000);
-			});
+// Charger les notifications quand on clique sur la cloche desktop
+const notificationDropdownDesktop = document.getElementById('notificationDropdownDesktop');
+if (notificationDropdownDesktop) {
+notificationDropdownDesktop.addEventListener('show.bs.dropdown', function () {
+loadRecentNotifications(notificationListElDesktop);
+});
+}
+
+// Optionnel : Mettre à jour le compteur toutes les minutes
+setInterval(updateUnreadCount, 60000);
+});
 		</script>
 	{% endblock %}
-</body>
-</html>
+</body></html>
