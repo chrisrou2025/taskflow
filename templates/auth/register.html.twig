@@ -3,10 +3,10 @@
 {% block title %}Inscription - TaskFlow{% endblock %}
 
 {% block body %}
-<div class="container">
-    <div class="row justify-content-center align-items-center min-vh-100">
+<div class="container register-page">
+    <div class="row justify-content-center align-items-center auth-container">
         <div class="col-md-6 col-lg-4">
-            <div class="card border-0 shadow-lg">
+            <div class="card border-0 shadow-lg auth-card">
                 <div class="card-body p-5">
                     <div class="text-center mb-4">
                         <div class="mb-3">
@@ -18,13 +18,13 @@
 
                     {{ form_errors(registrationForm) }}
 
-                    {{ form_start(registrationForm) }}
+                    {{ form_start(registrationForm, {'attr': {'class': 'form-container'}}) }}
                         {# Champ Prénom #}
                         <div class="mb-3">
                             <label for="{{ registrationForm.firstName.vars.id }}" class="form-label fw-semibold">
                                 Prénom
                             </label>
-                            <div class="input-group">
+                            <div class="auth-input-group input-group">
                                 <span class="input-group-text bg-light">
                                     <i class="fas fa-user text-muted"></i>
                                 </span>
@@ -36,7 +36,7 @@
                                     }
                                 }) }}
                             </div>
-                            <div class="text-danger mt-1">
+                            <div class="form-errors text-danger mt-1">
                                 {{ form_errors(registrationForm.firstName) }}
                             </div>
                         </div>
@@ -46,7 +46,7 @@
                             <label for="{{ registrationForm.lastName.vars.id }}" class="form-label fw-semibold">
                                 Nom
                             </label>
-                            <div class="input-group">
+                            <div class="auth-input-group input-group">
                                 <span class="input-group-text bg-light">
                                     <i class="fas fa-user text-muted"></i>
                                 </span>
@@ -58,7 +58,7 @@
                                     }
                                 }) }}
                             </div>
-                            <div class="text-danger mt-1">
+                            <div class="form-errors text-danger mt-1">
                                 {{ form_errors(registrationForm.lastName) }}
                             </div>
                         </div>
@@ -68,7 +68,7 @@
                             <label for="{{ registrationForm.email.vars.id }}" class="form-label fw-semibold">
                                 Adresse email
                             </label>
-                            <div class="input-group">
+                            <div class="auth-input-group input-group">
                                 <span class="input-group-text bg-light">
                                     <i class="fas fa-envelope text-muted"></i>
                                 </span>
@@ -80,7 +80,7 @@
                                     }
                                 }) }}
                             </div>
-                            <div class="text-danger mt-1">
+                            <div class="form-errors text-danger mt-1">
                                 {{ form_errors(registrationForm.email) }}
                             </div>
                         </div>
@@ -90,7 +90,7 @@
                             <label for="{{ registrationForm.plainPassword.first.vars.id }}" class="form-label fw-semibold">
                                 Mot de passe
                             </label>
-                            <div class="input-group">
+                            <div class="auth-input-group input-group">
                                 <span class="input-group-text bg-light">
                                     <i class="fas fa-lock text-muted"></i>
                                 </span>
@@ -105,7 +105,7 @@
                                     <i class="fas fa-eye" id="{{ registrationForm.plainPassword.first.vars.id }}_icon"></i>
                                 </button>
                             </div>
-                            <div class="text-danger mt-1">
+                            <div class="form-errors text-danger mt-1">
                                 {{ form_errors(registrationForm.plainPassword.first) }}
                             </div>
                         </div>
@@ -115,7 +115,7 @@
                             <label for="{{ registrationForm.plainPassword.second.vars.id }}" class="form-label fw-semibold">
                                 Confirmer le mot de passe
                             </label>
-                            <div class="input-group">
+                            <div class="auth-input-group input-group">
                                 <span class="input-group-text bg-light">
                                     <i class="fas fa-lock text-muted"></i>
                                 </span>
@@ -130,7 +130,7 @@
                                     <i class="fas fa-eye" id="{{ registrationForm.plainPassword.second.vars.id }}_icon"></i>
                                 </button>
                             </div>
-                             <div class="text-danger mt-1">
+                            <div class="form-errors text-danger mt-1">
                                 {{ form_errors(registrationForm.plainPassword.second) }}
                             </div>
                         </div>
@@ -145,7 +145,7 @@
                         {% endif %}
                         #}
 
-                        <button class="btn btn-primary btn-lg w-100 mb-3" type="submit">
+                        <button class="btn btn-primary btn-lg w-100 mb-3 auth-btn auth-btn-primary" type="submit">
                             <i class="fas fa-user-plus me-2"></i>
                             S'inscrire
                         </button>
@@ -160,28 +160,27 @@
                         </p>
                     </div>
 
-                    <div class="text-center mt-4">
-                        <div class="row text-center">
-                            <div class="col-4">
-                                <i class="fas fa-shield-alt text-success fa-2x mb-2"></i>
-                                <p class="small mb-0">Sécurisé</p>
-                            </div>
-                            <div class="col-4">
-                                <i class="fas fa-user-shield text-primary fa-2x mb-2"></i>
-                                <p class="small mb-0">RGPD</p>
-                            </div>
-                            <div class="col-4">
-                                <i class="fas fa-eye-slash text-info fa-2x mb-2"></i>
-                                <p class="small mb-0">Privé</p>
-                            </div>
+                    <!-- Section confidentialité -->
+                    <div class="auth-security-icons text-center mt-4">
+                        <div class="auth-security-icon">
+                            <i class="fas fa-shield-alt text-success"></i>
+                            <p class="small mb-0">Sécurisé</p>
                         </div>
-                        <p class="small text-muted mt-2">
-                            Vos données sont protégées selon nos 
-                            <a href="{{ path('legal_privacy') }}" class="text-decoration-none" target="_blank">
-                                politiques de confidentialité
-                            </a>
-                        </p>
+                        <div class="auth-security-icon">
+                            <i class="fas fa-user-shield text-primary"></i>
+                            <p class="small mb-0">RGPD</p>
+                        </div>
+                        <div class="auth-security-icon">
+                            <i class="fas fa-eye-slash text-info"></i>
+                            <p class="small mb-0">Privé</p>
+                        </div>
                     </div>
+                    <p class="small text-muted mt-2 text-center">
+                        Vos données sont protégées selon nos 
+                        <a href="{{ path('legal_privacy') }}" class="text-decoration-none" target="_blank">
+                            politiques de confidentialité
+                        </a>
+                    </p>
                 </div>
             </div>
 
@@ -194,67 +193,36 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
-<style>
-    .min-vh-100 {
-        min-height: calc(100vh - 200px);
-    }
-    
-    .card {
-        border-radius: 16px;
-        backdrop-filter: blur(10px);
-    }
-    
-    .input-group-text {
-        border-right: none;
-        background-color: #f8f9fa !important;
-    }
-    
-    .input-group .form-control {
-        border-left: none;
-        border-right: none;
-    }
-    
-    .input-group .btn {
-        border-left: none;
-    }
-    
-    .form-control:focus {
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
-    }
-    
-    .btn-primary {
-        border-radius: 10px;
-        font-weight: 600;
-        padding: 12px;
-    }
-    
-    body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        background-attachment: fixed;
-    }
-    
-    .card {
-        background: rgba(255, 255, 255, 0.95);
-    }
-</style>
+{% block stylesheets %}
+    {{ parent() }}
+    <!-- L'arrière-plan dégradé pour l'inscription -->
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+        }
+    </style>
+{% endblock %}
 
-<script>
-// Fonction pour afficher/masquer le mot de passe
-function togglePassword(fieldId) {
-    const field = document.getElementById(fieldId);
-    const icon = document.getElementById(fieldId + '_icon');
-    
-    if (field.type === 'password') {
-        field.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-    } else {
-        field.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
-    }
-}
-</script>
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Fonction pour afficher/masquer le mot de passe
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const icon = document.getElementById(fieldId + '_icon');
+            
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                field.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+    </script>
 {% endblock %}

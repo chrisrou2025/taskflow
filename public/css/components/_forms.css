@@ -1,0 +1,205 @@
+/* components/_forms.css - Styles pour les formulaires */
+
+/* ===== STYLES GÉNÉRAUX FORMULAIRES ===== */
+.form-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+}
+
+/* ===== GROUPES D'INPUT AVEC ICÔNES ===== */
+.input-group-text {
+    border-right: none;
+    background-color: #f8f9fa;
+    border-color: #ced4da;
+}
+
+.form-control,
+.form-select {
+    border-left: none;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+}
+
+/* ===== FORMULAIRES AVEC THÈMES COLORÉS ===== */
+/* Formulaire de création (vert) */
+.form-create .input-group-text i {
+    color: var(--success-color);
+}
+
+.form-create .btn-primary {
+    background-color: var(--success-color);
+    border-color: var(--success-color);
+}
+
+/* Formulaire d'édition (bleu) */
+.form-edit .input-group-text i {
+    color: var(--primary-color);
+}
+
+/* Formulaire de modification profil (orange) */
+.form-profile .input-group-text i {
+    color: var(--warning-color);
+}
+
+.form-profile .btn-primary {
+    background-color: var(--warning-color);
+    border-color: var(--warning-color);
+    color: var(--dark-text);
+}
+
+/* Formulaire de suppression (rouge) */
+.form-delete .input-group-text i {
+    color: var(--danger-color);
+}
+
+.form-delete .btn-primary {
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+
+/* ===== BOUTONS D'ACTION FORMULAIRE ===== */
+.form-actions {
+    border-top: 1px solid #e9ecef;
+    padding-top: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.btn-form {
+    border-radius: 8px;
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+}
+
+/* ===== LABELS ET AIDE ===== */
+.form-label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--dark-text);
+}
+
+.form-text {
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.form-text.text-success {
+    color: var(--success-color) !important;
+}
+
+.form-text.text-danger {
+    color: var(--danger-color) !important;
+}
+
+/* ===== ERREURS DE FORMULAIRE ===== */
+.form-errors {
+    color: var(--danger-color);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    list-style: none;
+    padding: 0;
+}
+
+.form-errors li {
+    margin-bottom: 0.25rem;
+}
+
+.form-errors li:before {
+    content: "⚠️ ";
+    margin-right: 0.5rem;
+}
+
+/* ===== VALIDATION VISUELLE ===== */
+.form-control.is-valid {
+    border-color: var(--success-color);
+}
+
+.form-control.is-invalid {
+    border-color: var(--danger-color);
+}
+
+/* ===== CASES À COCHER ET RADIO ===== */
+.form-check {
+    margin-bottom: 1rem;
+}
+
+.form-check-input:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+}
+
+/* ===== TEXTAREAS REDIMENSIONNABLES ===== */
+.form-control[rows] {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* ===== FORMULAIRES EN LIGNE ===== */
+.form-inline .input-group {
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .form-inline .input-group {
+        width: 100%;
+        margin-right: 0;
+    }
+}
+
+/* ===== INDICATEURS DE CHAMP REQUIS ===== */
+.required-field:after {
+    content: " *";
+    color: var(--danger-color);
+    font-weight: bold;
+}
+
+/* ===== GROUPES DE CHAMPS ===== */
+.field-group {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.field-group-title {
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 576px) {
+    .form-container {
+        padding: 1rem;
+    }
+    
+    .form-actions {
+        text-align: center;
+    }
+    
+    .form-actions .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-actions .d-flex {
+        flex-direction: column;
+    }
+    
+    .form-actions .d-flex .btn:last-child {
+        margin-bottom: 0;
+    }
+}

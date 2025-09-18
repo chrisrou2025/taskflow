@@ -36,19 +36,19 @@
 		<div class="row">
 			<div class="col-12">
 				{% if tasks is empty %}
-					<div class="text-center py-5">
-						<div class="mb-4">
-							<i class="fas fa-check-double fa-5x text-success"></i>
+					<div class="tasks-empty-state">
+						<div class="tasks-empty-icon">
+							<i class="fas fa-check-double"></i>
 						</div>
 						{% if project %}
-							<h4 class="mb-3">Toutes les tâches du projet ont été terminées ! 🎉</h4>
-							<p class="text-muted mb-4">Bravo ! Ce projet est terminé. Vous pouvez en ajouter d'autres depuis votre tableau de bord.</p>
+							<h4 class="tasks-empty-title mb-3">Toutes les tâches du projet ont été terminées ! 🎉</h4>
+							<p class="tasks-empty-description mb-4">Bravo ! Ce projet est terminé. Vous pouvez en ajouter d'autres depuis votre tableau de bord.</p>
 							<a href="{{ path('task_new', {project: project.id}) }}" class="btn btn-primary">
 								<i class="fas fa-plus me-2"></i>Ajouter une nouvelle tâche
 							</a>
 						{% else %}
-							<h4 class="mb-3">Aucune tâche pour le moment</h4>
-							<p class="text-muted mb-4">Créez votre première tâche pour commencer à organiser votre travail.</p>
+							<h4 class="tasks-empty-title mb-3">Aucune tâche pour le moment</h4>
+							<p class="tasks-empty-description mb-4">Créez votre première tâche pour commencer à organiser votre travail.</p>
 							<a href="{{ path('task_new') }}" class="btn btn-primary">
 								<i class="fas fa-plus me-2"></i>Créer une nouvelle tâche
 							</a>
@@ -57,7 +57,7 @@
 				{% else %}
 					{# Vue Tableau pour les grands écrans #}
 					<div class="d-none d-md-block">
-						<div class="card border-0 shadow-sm">
+						<div class="custom-table responsive-table">
 							<div class="card-body">
 								<div class="table-responsive">
 									<table class="table table-hover align-middle mb-0">
@@ -97,11 +97,11 @@
 													</td>
 													<td data-label="Priorité">
 														{% if task.priority == 'high' %}
-															<span class="badge bg-danger">Haute</span>
+															<span class="table-badge danger">Haute</span>
 														{% elseif task.priority == 'medium' %}
-															<span class="badge bg-warning text-dark">Moyenne</span>
+															<span class="table-badge warning">Moyenne</span>
 														{% else %}
-															<span class="badge bg-info text-dark">Basse</span>
+															<span class="table-badge secondary">Basse</span>
 														{% endif %}
 													</td>
 													<td data-label="Date limite">
@@ -112,32 +112,16 @@
 														{% endif %}
 													</td>
 													<td data-label="Statut">
-														<span class="badge bg-{{ task.status == 'completed' ?
-															'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">{{ task.statusLabel }}</span>
+														<span class="task-status-badge task-status-{{ task.status }}">{{ task.statusLabel }}</span>
 													</td>
 													<td data-label="Actions" class="text-end">
-														<div class="d-flex justify-content-end align-items-center gap-2">
-															<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-sm btn-outline-info" title="Voir les détails">
+														<div class="table-actions">
+															<a href="{{ path('task_show', {id: task.id}) }}" class="table-action-btn view" title="Voir les détails">
 																<i class="fas fa-eye"></i>
 															</a>
 
-															{% if task.assignee == app.user or task.project.owner == app.user %}
-																<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-sm btn-outline-warning" title="Modifier la tâche">
-																	<i class="fas fa-edit"></i>
-																</a>
-															{% endif %}
-
-															{% if task.assignee == app.user or task.project.owner == app.user %}
-																<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
-																	<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
-																	<button type="submit" class="btn btn-sm btn-outline-secondary" title="Actualiser le statut">
-																		<i class="fas fa-sync"></i>
-																	</button>
-																</form>
-															{% endif %}
-
 															{% if task.project.owner == app.user %}
-																<button type="button" class="btn btn-sm btn-outline-danger delete-task-btn" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" title="Supprimer la tâche">
+																<button type="button" class="table-action-btn delete delete-task-btn" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" title="Supprimer la tâche">
 																	<i class="fas fa-trash"></i>
 																</button>
 															{% endif %}
@@ -151,22 +135,19 @@
 
 								{# Pagination #}
 								{% if pages is defined and pages > 1 %}
-									<nav aria-label="Page navigation" class="mt-4">
+									<nav aria-label="Page navigation" class="tasks-pagination">
 										<ul class="pagination justify-content-center">
-											<li class="page-item {{ currentPage == 1 ?
-												'disabled' : '' }}">
+											<li class="page-item {{ currentPage == 1 ? 'disabled' : '' }}">
 												<a class="page-link" href="{{ path('task_index', {project: project ? project.id : null, page: currentPage - 1}) }}" aria-label="Previous">
 													<span aria-hidden="true">&laquo;</span>
 												</a>
 											</li>
 											{% for page in 1..pages %}
-												<li class="page-item {{ currentPage == page ?
-													'active' : '' }}">
+												<li class="page-item {{ currentPage == page ? 'active' : '' }}">
 													<a class="page-link" href="{{ path('task_index', {project: project ? project.id : null, page: page}) }}">{{ page }}</a>
 												</li>
 											{% endfor %}
-											<li class="page-item {{ currentPage == pages ?
-												'disabled' : '' }}">
+											<li class="page-item {{ currentPage == pages ? 'disabled' : '' }}">
 												<a class="page-link" href="{{ path('task_index', {project: project ? project.id : null, page: currentPage + 1}) }}" aria-label="Next">
 													<span aria-hidden="true">&raquo;</span>
 												</a>
@@ -181,41 +162,41 @@
 					{# Vue Cartes pour les petits écrans #}
 					<div class="d-md-none">
 						{% for task in tasks %}
-							<div class="card mb-3 shadow-sm border-0">
-								<div class="card-body">
-									<h5 class="card-title fw-bold">
+							<div class="task-card">
+								<div class="task-card-body">
+									<h5 class="task-card-title">
 										{{ task.title }}
 									</h5>
-									<ul class="list-unstyled mb-0 small text-muted">
+									<ul class="task-card-meta">
 										{% if not project %}
-											<li class="mb-1">
-												<strong class="text-dark">Projet :</strong>
+											<li>
+												<strong>Projet :</strong>
 												<span class="text-muted">
 													<i class="fas fa-folder me-1"></i>
 													{{ task.project.title }}
 												</span>
 											</li>
 										{% endif %}
-										<li class="mb-1">
-											<strong class="text-dark">Responsable :</strong>
+										<li>
+											<strong>Responsable :</strong>
 											{% if task.assignee %}
 												{{ task.assignee.fullName }}
 											{% else %}
 												<span class="fst-italic">Non assigné</span>
 											{% endif %}
 										</li>
-										<li class="mb-1">
-											<strong class="text-dark">Priorité :</strong>
+										<li>
+											<strong>Priorité :</strong>
 											{% if task.priority == 'high' %}
-												<span class="badge bg-danger">Haute</span>
+												<span class="table-badge danger">Haute</span>
 											{% elseif task.priority == 'medium' %}
-												<span class="badge bg-warning text-dark">Moyenne</span>
+												<span class="table-badge warning">Moyenne</span>
 											{% else %}
-												<span class="badge bg-info text-dark">Basse</span>
+												<span class="table-badge secondary">Basse</span>
 											{% endif %}
 										</li>
-										<li class="mb-1">
-											<strong class="text-dark">Date limite :</strong>
+										<li>
+											<strong>Date limite :</strong>
 											{% if task.dueDate %}
 												{{ task.dueDate|date('d/m/Y') }}
 											{% else %}
@@ -223,30 +204,17 @@
 											{% endif %}
 										</li>
 										<li>
-											<strong class="text-dark">Statut :</strong>
-											<span class="badge bg-{{ task.status == 'completed' ?
-												'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">{{ task.statusLabel }}</span>
+											<strong>Statut :</strong>
+											<span class="task-status-badge task-status-{{ task.status }}">{{ task.statusLabel }}</span>
 										</li>
 									</ul>
-									<div class="d-flex justify-content-end align-items-center gap-2 mt-3">
-										<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-sm btn-outline-info btn-icon" title="Voir les détails">
+									<div class="table-actions mt-3">
+										<a href="{{ path('task_show', {id: task.id}) }}" class="table-action-btn view" title="Voir les détails">
 											<i class="fas fa-eye"></i>
 										</a>
 
-										{% if task.assignee == app.user or task.project.owner == app.user %}
-											<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-sm btn-outline-warning btn-icon" title="Modifier la tâche">
-												<i class="fas fa-edit"></i>
-											</a>
-											<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
-												<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
-												<button type="submit" class="btn btn-sm btn-outline-secondary btn-icon" title="Actualiser le statut">
-													<i class="fas fa-sync"></i>
-												</button>
-											</form>
-										{% endif %}
-
 										{% if task.project.owner == app.user %}
-											<button type="button" class="btn btn-sm btn-outline-danger btn-icon" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" title="Supprimer la tâche">
+											<button type="button" class="table-action-btn delete" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" title="Supprimer la tâche">
 												<i class="fas fa-trash"></i>
 											</button>
 										{% endif %}
@@ -260,7 +228,7 @@
 		</div>
 	</div>
 
-	<div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true">
+	<div class="modal fade delete-task-modal" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
@@ -304,14 +272,19 @@
 			const deleteTaskTokenInput = document.getElementById('deleteTaskToken');
 			const deleteButtons = document.querySelectorAll('.delete-task-btn');
 
+			const csrfTokens = {
+			{% for task in tasks %}
+				'{{ task.id }}': '{{ csrf_token('delete' ~ task.id) }}'{{ not loop.last ? ',' : '' }}
+			{% endfor %}
+			};
+
 			deleteButtons.forEach(button => {
 				button.addEventListener('click', function (event) {
 					const taskId = this.getAttribute('data-task-id');
 					const taskTitle = this.getAttribute('data-task-title');
-					const csrfToken = this.getAttribute('data-token');
 
 					if (taskTitleElement) {
-						taskTitleElement.textContent = taskTitle;
+						taskTitleElement.textContent = '"' + taskTitle + '"';
 					}
 
 					if (deleteTaskForm) {
@@ -320,91 +293,15 @@
 					}
 
 					if (deleteTaskTokenInput) {
-						deleteTaskTokenInput.value = csrfToken;
+						const token = csrfTokens[taskId];
+						if (token) {
+							deleteTaskTokenInput.value = token;
+						} else {
+							console.error('Token CSRF introuvable pour la tâche ID:', taskId);
+						}
 					}
-
-					deleteTaskModal.show();
 				});
 			});
 		});
 	</script>
-{% endblock %}
-
-{% block stylesheets %}
-	{{ parent() }}
-	<style>
-		/* Styles pour rendre le tableau responsive en mode "carte" */
-		@media screen and(max-width: 767px) {
-			.table-responsive .table thead {
-				display: none;
-			}
-
-			.table-responsive .table tbody,
-			.table-responsive .table tr,
-			.table-responsive .table td {
-				display: block;
-				width: 100%;
-			}
-
-			.table-responsive .table tr {
-				margin-bottom: 1rem;
-				border: 1px solid #dee2e6;
-				border-radius: 0.375rem;
-			}
-
-			.table-responsive .table td {
-				text-align: right;
-				padding-left: 50%;
-				position: relative;
-				border: none;
-				border-bottom: 1px solid #f0f0f0;
-			}
-
-			.table-responsive .table tr td:last-child {
-				border-bottom: none;
-			}
-
-			.table-responsive .table td::before {
-				content: attr(data-label);
-				position: absolute;
-				left: 10px;
-				width: calc(50% - 20px);
-				text-align: left;
-				font-weight: bold;
-				white-space: nowrap;
-			}
-
-			/* Mise à jour des styles pour les boutons d'action en mode mobile */
-			.table-responsive .table td[data-label="Actions"] {
-				text-align: center;
-				padding: 15px 10px 10px;
-			}
-
-			.table-responsive .table td[data-label="Actions"]::before {
-				content: "";
-			}
-
-			.table-responsive .table td[data-label="Actions"] .d-flex {
-				justify-content: center !important;
-			}
-
-			/* Nouveaux styles pour corriger l'alignement vertical des icônes */
-			.btn-sm i.fas {
-				vertical-align: middle;
-			}
-		}
-
-		.btn-icon {
-			width: 38px;
-			height: 38px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			padding: 0;
-		}
-
-		.project-title {
-			font-size: 2rem;
-		}
-	</style>
 {% endblock %}

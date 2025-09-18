@@ -4,270 +4,274 @@
 {% endblock %}
 
 {% block body %}
-<div
-	class="container-fluid px-2 px-md-4 fade-in">
-	<!-- En-tête -->
-	<div class="row mb-4">
-		<div class="col-12">
-			<div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center">
-				<div>
-					<h1 class="h3 h2-md mb-2">
-						<i class="fas fa-bell me-2 text-primary"></i>
-						Mes Notifications
-					</h1>
-					<p class="text-muted mb-0">
-						Restez informé de l'activité sur vos projets
-					</p>
-				</div>
-				<div class="mt-3 mt-sm-0">
-					{% if notifications|length > 0 %}
-						<form method="post" action="{{ path('notification_mark_all_read') }}" onsubmit="return confirm('Marquer toutes les notifications comme lues ?');" class="d-inline">
-							<input type="hidden" name="_token" value="{{ csrf_token('mark-all-read') }}">
-							<button class="btn btn-outline-primary btn-sm">
-								<i class="fas fa-check-double me-2"></i>
-								<span class="d-none d-sm-inline">Tout marquer comme lu</span>
-								<span class="d-sm-none">Tout marquer comme lu</span>
-							</button>
-						</form>
-						<form method="post" action="{{ path('notification_delete_read') }}" onsubmit="return confirm('Supprimer toutes les notifications lues ?');" class="d-inline ms-2">
-							<input type="hidden" name="_token" value="{{ csrf_token('delete-read-notifications') }}">
-							<button class="btn btn-outline-danger btn-sm">
-								<i class="fas fa-trash me-2"></i>
-								<span class="d-none d-sm-inline">Nettoyer</span>
-								<span class="d-sm-none">Nettoyer</i>
-							</span>
-						</button>
-					</form>
-				{% endif %}
-			</div>
-		</div>
-	</div>
-</div>
-
-<!-- Contenu principal -->
-<div class="card border-0 shadow-sm">
-	{% if notifications is empty %}
-		<!-- État vide -->
-		<div class="card-body p-5 text-center">
-			<div class="bg-primary bg-opacity-10 rounded-circle mx-auto mb-4 d-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
-				<i class="fas fa-bell-slash fa-3x text-primary"></i>
-			</div>
-			<h4 class="mb-3">Aucune notification</h4>
-			<p class="text-muted mb-4">
-				Vous n'avez aucune notification pour le moment.<br>
-				Les nouvelles activités sur vos projets apparaîtront ici.
-			</p>
-			<div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
-				<a href="{{ path('app_dashboard') }}" class="btn btn-outline-primary">
-					<i class="fas fa-tachometer-alt me-2"></i>Tableau de bord
-				</a>
-				<a href="{{ path('project_index') }}" class="btn btn-outline-secondary">
-					<i class="fas fa-folder me-2"></i>Mes projets
-				</a>
-			</div>
-		</div>
-	{% else %}
-		<!-- Filtres rapides -->
-		<div class="card-header bg-white border-0 pb-0">
-			<div class="d-flex flex-wrap gap-2 align-items-center">
-				<span class="text-muted small me-2">Filtrer :</span>
-				<button class="btn btn-sm btn-outline-secondary active filter-btn" data-filter="all">
-					Toutes ({{ notifications|length }})
-				</button>
-				<button class="btn btn-sm btn-outline-warning filter-btn" data-filter="unread">
-					Non lues ({{ notifications|filter(n => not n.isRead)|length }})
-				</button>
-				<button class="btn btn-sm btn-outline-success filter-btn" data-filter="collaboration_request">
-					Invitations ({{ notifications|filter(n => n.type == 'collaboration_request')|length }})
-				</button>
-				<button class="btn btn-sm btn-outline-info filter-btn" data-filter="task_assigned">
-					Tâches ({{ notifications|filter(n => n.type == 'task_assigned')|length }})
-				</button>
-			</div>
-		</div>
-
-		<!-- Liste des notifications -->
-		<div class="card-body p-0">
-			<div class="list-group list-group-flush" id="notifications-list">
-				{% for notification in notifications %}
-					<div class="notification-item list-group-item list-group-item-action border-0 p-3 p-md-4
-						        {{ not notification.isRead ? 'bg-light border-start border-secondary border-3' : '' }}" data-type="{{ notification.type }}" data-read="{{ notification.isRead ? 'true' : 'false' }}"></div>
-
-				<div class="row align-items-start">
-					<div class="col-12 col-md-8">
-						<div
-							class="d-flex align-items-start">
-							<!-- Icône de notification -->
-							<div class="flex-shrink-0 me-3">
-								<div class="rounded-circle {{ notification.colorClass|replace({'text-': 'bg-'}) }} bg-opacity-10 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
-									<i class="{{ notification.icon }} {{ notification.colorClass }} fa-lg"></i>
-								</div>
-							</div>
-
-							<div
-								class="flex-grow-1">
-								<!-- Titre de la notification -->
-								<h6 class="mb-2 {{ not notification.isRead ? 'fw-bold' : 'fw-medium' }}">
-									{{ notification.title }}
-								</h6>
-
-								<!-- Message -->
-								<p class="mb-2 text-muted">{{ notification.message }}</p>
-
-								<!-- Métadonnées -->
-								<div class="d-flex flex-wrap gap-3 small text-muted">
-									<span>
-										<i class="fas fa-clock me-1"></i>
-										<span class="d-inline d-sm-none">{{ notification.createdAt|date('d/m/Y') }}</span>
-										<span class="d-none d-sm-inline">{{ notification.timeAgo }}</span>
-									</span>
-									{% if notification.sender %}
-										<span>
-											<i class="fas fa-user me-1"></i>
-											{{ notification.sender.fullName }}
-										</span>
-									{% endif %}
-									{% if notification.project %}
-										<span>
-											<i class="fas fa-folder me-1"></i>
-											{{ notification.project.title }}
-										</span>
-									{% endif %}
-								</div>
-							</div>
-						</div>
+	<div
+		class="container-fluid px-2 px-md-4 fade-in">
+		<!-- En-tête -->
+		<div class="row mb-4">
+			<div class="col-12">
+				<div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center">
+					<div>
+						<h1 class="h3 h2-md mb-2">
+							<i class="fas fa-bell me-2 text-primary"></i>
+							Mes Notifications
+						</h1>
+						<p class="text-muted mb-0">
+							Restez informé de l'activité sur vos projets
+						</p>
 					</div>
-
-					<!-- Actions -->
-					<div class="col-12 col-md-4 mt-3 mt-md-0">
-						<div
-							class="d-flex justify-content-end align-items-center gap-2">
-							<!-- Badge de statut -->
-							{% if not notification.isRead %}
-								<span class="badge bg-primary">Nouveau</span>
-							{% endif %}
-
-							<!-- Bouton d'action principal -->
-							{% if notification.actionUrl %}
-								<a href="{{ path('notification_read', {id: notification.id}) }}" class="btn btn-outline-primary btn-sm">
-									<i class="fas fa-eye me-1"></i>
-									<span class="d-none d-sm-inline">Voir</span>
-								</a>
-							{% endif %}
-
-							<!-- Marquer comme lu/non lu -->
-							{% if not notification.isRead %}
-								<form method="post" action="{{ path('notification_mark_read', {id: notification.id}) }}" class="d-inline">
-									<input type="hidden" name="_token" value="{{ csrf_token('mark-read-' ~ notification.id) }}">
-									<button class="btn btn-outline-success btn-sm" title="Marquer comme lu">
-										<i class="fas fa-check"></i>
-									</button>
-								</form>
-							{% endif %}
-
-							<!-- Supprimer -->
-							<form method="post" action="{{ path('notification_delete', {id: notification.id}) }}" onsubmit="return confirm('Supprimer cette notification ?');" class="d-inline">
-								<input type="hidden" name="_token" value="{{ csrf_token('delete-notification-' ~ notification.id) }}">
-								<button class="btn btn-outline-danger btn-sm" title="Supprimer">
-									<i class="fas fa-trash"></i>
+					<div class="mt-3 mt-sm-0">
+						{% if notifications|length > 0 %}
+							<form method="post" action="{{ path('notification_mark_all_read') }}" onsubmit="return confirm('Marquer toutes les notifications comme lues ?');" class="d-inline">
+								<input type="hidden" name="_token" value="{{ csrf_token('mark-all-read') }}">
+								<button class="btn btn-outline-primary btn-sm">
+									<i class="fas fa-check-double me-2"></i>
+									<span class="d-none d-sm-inline">Tout marquer comme lu</span>
+									<span class="d-sm-none">Tout marquer comme lu</span>
 								</button>
 							</form>
-						</div>
-					</div>
+							<form method="post" action="{{ path('notification_delete_read') }}" onsubmit="return confirm('Supprimer toutes les notifications lues ?');" class="d-inline ms-2">
+								<input type="hidden" name="_token" value="{{ csrf_token('delete-read-notifications') }}">
+								<button class="btn btn-outline-danger btn-sm">
+									<i class="fas fa-trash me-2"></i>
+									<span class="d-none d-sm-inline">Nettoyer</span>
+									<span class="d-sm-none">Nettoyer</i>
+								</span>
+							</button>
+						</form>
+					{% endif %}
 				</div>
 			</div>
-		{% endfor %}
+		</div>
 	</div>
-</div>{% endif %}</div><!-- Pagination -->{% if total_pages > 1 %}<nav class="mt-4" aria-label="Navigation des notifications">
-<ul class="pagination justify-content-center">
-	<li class="page-item {{ not has_previous ? 'disabled' }}">
-		<a class="page-link" href="{{ path('notification_index', {page: previous_page}) }}">
-			<i class="fas fa-chevron-left me-1"></i>
-			<span class="d-none d-sm-inline">Précédent</span>
-		</a>
-	</li>
 
-	{% for i in 1..total_pages %}
-		{% if i == current_page %}
-			<li class="page-item active">
-				<span class="page-link">{{ i }}</span>
+	<!-- Contenu principal -->
+	<div class="card border-0 shadow-sm">
+		{% if notifications is empty %}
+			<!-- État vide -->
+			<div class="card-body p-5 text-center">
+				<div class="bg-primary bg-opacity-10 rounded-circle mx-auto mb-4 d-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+					<i class="fas fa-bell-slash fa-3x text-primary"></i>
+				</div>
+				<h4 class="mb-3">Aucune notification</h4>
+				<p class="text-muted mb-4">
+					Vous n'avez aucune notification pour le moment.<br>
+					Les nouvelles activités sur vos projets apparaîtront ici.
+				</p>
+				<div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
+					<a href="{{ path('app_dashboard') }}" class="btn btn-outline-primary">
+						<i class="fas fa-tachometer-alt me-2"></i>Tableau de bord
+					</a>
+					<a href="{{ path('project_index') }}" class="btn btn-outline-secondary">
+						<i class="fas fa-folder me-2"></i>Mes projets
+					</a>
+				</div>
+			</div>
+		{% else %}
+			<!-- Filtres rapides -->
+			<div class="card-header bg-white border-0 pb-0">
+				<div class="d-flex flex-wrap gap-2 align-items-center">
+					<span class="text-muted small me-2">Filtrer :</span>
+					<button class="btn btn-sm btn-outline-secondary active filter-btn" data-filter="all">
+						Toutes ({{ notifications|length }})
+					</button>
+					<button class="btn btn-sm btn-outline-warning filter-btn" data-filter="unread">
+						Non lues ({{ notifications|filter(n => not n.isRead)|length }})
+					</button>
+					<button class="btn btn-sm btn-outline-success filter-btn" data-filter="collaboration_request">
+						Invitations ({{ notifications|filter(n => n.type == 'collaboration_request')|length }})
+					</button>
+					<button class="btn btn-sm btn-outline-info filter-btn" data-filter="task_assigned">
+						Tâches ({{ notifications|filter(n => n.type == 'task_assigned')|length }})
+					</button>
+				</div>
+			</div>
+
+			<!-- Liste des notifications -->
+			<div class="card-body p-0">
+				<div class="list-group list-group-flush" id="notifications-list">
+					{% for notification in notifications %}
+						<div class="notification-item list-group-item list-group-item-action border-0 p-3 p-md-4
+																											        {{ not notification.isRead ? 'bg-light border-start border-secondary border-3' : '' }}" data-type="{{ notification.type }}" data-read="{{ notification.isRead ? 'true' : 'false' }}"></div>
+
+						<div class="row align-items-start">
+							<div class="col-12 col-md-8">
+								<div
+									class="d-flex align-items-start">
+									<!-- Icône de notification -->
+									<div class="flex-shrink-0 me-3">
+										<div class="rounded-circle {{ notification.colorClass|replace({'text-': 'bg-'}) }} bg-opacity-10 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+											<i class="{{ notification.icon }} {{ notification.colorClass }} fa-lg"></i>
+										</div>
+									</div>
+
+									<div
+										class="flex-grow-1">
+										<!-- Titre de la notification -->
+										<h6 class="mb-2 {{ not notification.isRead ? 'fw-bold' : 'fw-medium' }}">
+											{{ notification.title }}
+										</h6>
+
+										<!-- Message -->
+										<p class="mb-2 text-muted">{{ notification.message }}</p>
+
+										<!-- Métadonnées -->
+										<div class="d-flex flex-wrap gap-3 small text-muted">
+											<span>
+												<i class="fas fa-clock me-1"></i>
+												<span class="d-inline d-sm-none">{{ notification.createdAt|date('d/m/Y') }}</span>
+												<span class="d-none d-sm-inline">{{ notification.timeAgo }}</span>
+											</span>
+											{% if notification.sender %}
+												<span>
+													<i class="fas fa-user me-1"></i>
+													{{ notification.sender.fullName }}
+												</span>
+											{% endif %}
+											{% if notification.project %}
+												<span>
+													<i class="fas fa-folder me-1"></i>
+													{{ notification.project.title }}
+												</span>
+											{% endif %}
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- Actions -->
+							<div class="col-12 col-md-4 mt-3 mt-md-0">
+								<div
+									class="d-flex justify-content-end align-items-center gap-2">
+									<!-- Badge de statut -->
+									{% if not notification.isRead %}
+										<span class="badge bg-primary">Nouveau</span>
+									{% endif %}
+
+									<!-- Bouton d'action principal -->
+									{% if notification.actionUrl %}
+										<a href="{{ path('notification_read', {id: notification.id}) }}" class="btn btn-outline-primary btn-sm">
+											<i class="fas fa-eye me-1"></i>
+											<span class="d-none d-sm-inline">Voir</span>
+										</a>
+									{% endif %}
+
+									<!-- Marquer comme lu/non lu -->
+									{% if not notification.isRead %}
+										<form method="post" action="{{ path('notification_mark_read', {id: notification.id}) }}" class="d-inline">
+											<input type="hidden" name="_token" value="{{ csrf_token('mark-read-' ~ notification.id) }}">
+											<button class="btn btn-outline-success btn-sm" title="Marquer comme lu">
+												<i class="fas fa-check"></i>
+											</button>
+										</form>
+									{% endif %}
+
+									<!-- Supprimer -->
+									<form method="post" action="{{ path('notification_delete', {id: notification.id}) }}" onsubmit="return confirm('Supprimer cette notification ?');" class="d-inline">
+										<input type="hidden" name="_token" value="{{ csrf_token('delete-notification-' ~ notification.id) }}">
+										<button class="btn btn-outline-danger btn-sm" title="Supprimer">
+											<i class="fas fa-trash"></i>
+										</button>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+				{% endfor %}
+			</div>
+		</div>
+	{% endif %}
+</div><!-- Pagination -->{% if total_pages > 1 %}
+	<nav class="mt-4" aria-label="Navigation des notifications">
+		<ul class="pagination justify-content-center">
+			<li class="page-item {{ not has_previous ? 'disabled' }}">
+				<a class="page-link" href="{{ path('notification_index', {page: previous_page}) }}">
+					<i class="fas fa-chevron-left me-1"></i>
+					<span class="d-none d-sm-inline">Précédent</span>
+				</a>
 			</li>
-		{% elseif i == 1 or i == total_pages or (i >= current_page - 2 and i <= current_page + 2) %}
-			<li class="page-item">
-				<a class="page-link" href="{{ path('notification_index', {page: i}) }}">{{ i }}</a>
+
+			{% for i in 1..total_pages %}
+				{% if i == current_page %}
+					<li class="page-item active">
+						<span class="page-link">{{ i }}</span>
+					</li>
+				{% elseif i == 1 or i == total_pages or (i >= current_page - 2 and i <= current_page + 2) %}
+					<li class="page-item">
+						<a class="page-link" href="{{ path('notification_index', {page: i}) }}">{{ i }}</a>
+					</li>
+				{% elseif i == current_page - 3 or i == current_page + 3 %}
+					<li class="page-item disabled">
+						<span class="page-link">...</span>
+					</li>
+				{% endif %}
+			{% endfor %}
+
+			<li class="page-item {{ not has_next ? 'disabled' }}">
+				<a class="page-link" href="{{ path('notification_index', {page: next_page}) }}">
+					<span class="d-none d-sm-inline">Suivant</span>
+					<i class="fas fa-chevron-right ms-1"></i>
+				</a>
 			</li>
-		{% elseif i == current_page - 3 or i == current_page + 3 %}
-			<li class="page-item disabled">
-				<span class="page-link">...</span>
-			</li>
-		{% endif %}
-	{% endfor %}
+		</ul>
+	</nav>
+{% endif %}
 
-	<li class="page-item {{ not has_next ? 'disabled' }}">
-		<a class="page-link" href="{{ path('notification_index', {page: next_page}) }}">
-			<span class="d-none d-sm-inline">Suivant</span>
-			<i class="fas fa-chevron-right ms-1"></i>
-		</a>
-	</li>
-</ul></nav>{% endif %}</div><style>.filter-btn.active {
-	background-color: var(--bs-primary);
-	color: white;
-	border-color: var(--bs-primary);
-}
+</div>
 
-.notification-item:hover {
-	background-color: var(--bs-light) !important;
-}</style><script>document.addEventListener('DOMContentLoaded', function () { // Système de filtres
-const filterButtons = document.querySelectorAll('.filter-btn');
-const notificationItems = document.querySelectorAll('.notification-item');
-
-filterButtons.forEach(button => {
-button.addEventListener('click', function () {
-const filter = this.dataset.filter;
-
-// Mettre à jour les boutons actifs
-filterButtons.forEach(btn => btn.classList.remove('active'));
-this.classList.add('active');
-
-// Filtrer les notifications
-notificationItems.forEach(item => {
-const type = item.dataset.type;
-const isRead = item.dataset.read === 'true';
-
-let show = false;
-
-switch (filter) {
-case 'all': show = true;
-break;
-case 'unread': show = ! isRead;
-break;
-default: show = type === filter;
-break;
-}
-
-item.style.display = show ? 'block' : 'none';
-});
-});
-});
-
-// Animation d'apparition des notifications
-const observer = new IntersectionObserver((entries) => {
-entries.forEach(entry => {
-if (entry.isIntersecting) {
-entry.target.style.opacity = '0';
-entry.target.style.transform = 'translateY(20px)';
-entry.target.style.transition = 'opacity 0.5s, transform 0.5s';
-
-setTimeout(() => {
-entry.target.style.opacity = '1';
-entry.target.style.transform = 'translateY(0)';
-}, entry.target.dataset.index * 50);
-}
-});
-});
-
-notificationItems.forEach((item, index) => {
-item.dataset.index = index;
-observer.observe(item);
-});
-});</script>{% endblock %}
+<script>
+	document.addEventListener('DOMContentLoaded', function () { // Système de filtres
+	const filterButtons = document.querySelectorAll('.filter-btn');
+	const notificationItems = document.querySelectorAll('.notification-item');
+	
+	filterButtons.forEach(button => {
+	button.addEventListener('click', function () {
+	const filter = this.dataset.filter;
+	
+	// Mettre à jour les boutons actifs
+	filterButtons.forEach(btn => btn.classList.remove('active'));
+	this.classList.add('active');
+	
+	// Filtrer les notifications
+	notificationItems.forEach(item => {
+	const type = item.dataset.type;
+	const isRead = item.dataset.read === 'true';
+	
+	let show = false;
+	
+	switch (filter) {
+	case 'all': show = true;
+	break;
+	case 'unread': show = ! isRead;
+	break;
+	default: show = type === filter;
+	break;
+	}
+	
+	item.style.display = show ? 'block' : 'none';
+	});
+	});
+	});
+	
+	// Animation d'apparition des notifications
+	const observer = new IntersectionObserver((entries) => {
+	entries.forEach(entry => {
+	if (entry.isIntersecting) {
+	entry.target.style.opacity = '0';
+	entry.target.style.transform = 'translateY(20px)';
+	entry.target.style.transition = 'opacity 0.5s, transform 0.5s';
+	
+	setTimeout(() => {
+	entry.target.style.opacity = '1';
+	entry.target.style.transform = 'translateY(0)';
+	}, entry.target.dataset.index * 50);
+	}
+	});
+	});
+	
+	notificationItems.forEach((item, index) => {
+	item.dataset.index = index;
+	observer.observe(item);
+	});
+	});
+	
+	</script>{% endblock %}

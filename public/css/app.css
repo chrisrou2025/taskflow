@@ -1,10 +1,17 @@
-/* app.css (global de ton projet) */
+/* app.css - Fichier principal de styles */
 
-/* Import des styles spécifiques */
+/* Import des styles de base et layout */
+@import url('./_base.css');
+
+/* Import des composants réutilisables */
+@import url('./components/_auth.css');
+@import url('./components/_forms.css');
+@import url('./components/_tables.css');
+
+/* Import des pages spécifiques */
 @import url('./_home.css');
 @import url('./_dashboard.css');
-
-/* Tu peux ajouter ici tes styles globaux communs à tout le site */
-body {
-    background-color: skyblue;
-}
+@import url('./pages/_tasks.css');
+@import url('./pages/_notifications.css');
+@import url('./pages/_admin.css');
+@import url('./pages/_collaboration.css');

@@ -35,7 +35,7 @@
 						<div class="text-center text-lg-start">
 							<div class="d-lg-flex align-items-center">
 								<div class="flex-grow-1">
-									<h6 class="card-title mb-1 small">Terminées</h6>
+									<h6 class="card-title mb-1 small">Tâches terminées</h6>
 									<h3 class="h4 h2-lg mb-0">{{ tasks_by_status.completed ?? 0 }}</h3>
 								</div>
 								<div class="d-none d-lg-block ms-3">
@@ -53,7 +53,7 @@
 						<div class="text-center text-lg-start">
 							<div class="d-lg-flex align-items-center">
 								<div class="flex-grow-1">
-									<h6 class="card-title mb-1 small">En cours</h6>
+									<h6 class="card-title mb-1 small">Tâches en cours</h6>
 									<h3 class="h4 h2-lg mb-0">{{ tasks_by_status.in_progress ?? 0 }}</h3>
 								</div>
 								<div class="d-none d-lg-block ms-3">
@@ -71,7 +71,7 @@
 						<div class="text-center text-lg-start">
 							<div class="d-lg-flex align-items-center">
 								<div class="flex-grow-1">
-									<h6 class="card-title mb-1 small">En retard</h6>
+									<h6 class="card-title mb-1 small">Tâche en retard</h6>
 									<h3 class="h4 h2-lg mb-0">{{ overdue_tasks|length }}</h3>
 								</div>
 								<div class="d-none d-lg-block ms-3">
@@ -192,10 +192,10 @@
 													<td>
 														<div class="btn-group btn-group-sm">
 															<a href="{{ path('project_show', {id: project.id}) }}" class="btn btn-outline-primary btn-sm">
-																<i class="fas fa-eye"></i>
+																<i class="fas fa-eye"></i><span class="d-none d-lg-inline ms-1">Voir</span>
 															</a>
 															<a href="{{ path('task_index', {project: project.id}) }}" class="btn btn-outline-success btn-sm">
-																<i class="fas fa-tasks"></i>
+																<i class="fas fa-tasks"></i><span class="d-none d-lg-inline ms-1">Tâches</span>
 															</a>
 														</div>
 													</td>

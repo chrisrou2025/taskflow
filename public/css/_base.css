@@ -1,0 +1,254 @@
+/* _base.css - Styles pour le template de base */
+
+/* ===== VARIABLES CSS PERSONNALISÉES ===== */
+:root {
+    --primary-color: #3b82f6;
+    --secondary-color: #64748b;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --light-bg: #f8fafc;
+    --dark-text: #1e293b;
+}
+
+/* ===== LAYOUT GÉNÉRAL ===== */
+/* Solution pour le footer collant */
+html,
+body {
+    height: 100%;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--light-bg);
+    color: var(--dark-text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Le contenu principal doit grandir pour occuper l'espace disponible */
+.main-content {
+    flex: 1;
+}
+
+/* ===== NAVIGATION ===== */
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+/* Dimensions uniformes pour les boutons navbar */
+.navbar-toggler,
+.notification-bell-btn {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.navbar-toggler:hover,
+.notification-bell-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Icône de la cloche avec dimensions cohérentes */
+.notification-bell-btn i {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Badge de notification unifié */
+.notification-badge {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    font-size: 0.7rem;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 2px solid var(--primary-color);
+}
+
+/* Version desktop de la cloche */
+.notification-desktop {
+    position: relative;
+}
+
+.notification-desktop .notification-badge {
+    top: 8px;
+    right: 8px;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+    background: white;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+    min-height: calc(100vh - 76px);
+}
+
+.sidebar .nav-link {
+    color: var(--dark-text);
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin: 0.25rem 0;
+    transition: all 0.2s;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* ===== CARDS ===== */
+.card {
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ===== BOUTONS ===== */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* ===== BADGES DE STATUT ===== */
+.badge-todo {
+    background-color: var(--secondary-color);
+}
+.badge-progress {
+    background-color: var(--warning-color);
+}
+.badge-completed {
+    background-color: var(--success-color);
+}
+
+/* ===== BADGES DE PRIORITÉ ===== */
+.badge-priority-low {
+    background-color: #6b7280;
+}
+.badge-priority-medium {
+    background-color: var(--warning-color);
+}
+.badge-priority-high {
+    background-color: var(--danger-color);
+}
+
+/* ===== BARRES DE PROGRESSION ===== */
+.progress {
+    height: 8px;
+    border-radius: 4px;
+}
+
+/* ===== ALERTES ===== */
+.alert {
+    border: none;
+    border-radius: 8px;
+}
+
+/* ===== FOOTER ===== */
+footer {
+    background: white;
+    border-top: 1px solid #e2e8f0;
+    margin-top: auto;
+}
+
+/* ===== ANIMATIONS ===== */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== NOTIFICATIONS DROPDOWN ===== */
+.dropdown-menu.notification-dropdown {
+    min-width: 350px;
+    max-height: 400px;
+    overflow-y: auto;
+    border: none;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+}
+
+/* Styles pour les éléments de notification */
+.notification-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background-color 0.2s ease;
+}
+
+.notification-item:hover {
+    background-color: #f8fafc;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item.unread {
+    background-color: #f0f9ff;
+    font-weight: 500;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media(max-width: 768px) {
+    .sidebar {
+        margin-bottom: 2rem;
+    }
+}
+
+/* Positionnement en version mobile */
+@media(max-width: 991.98px) {
+    .navbar-header-mobile {
+        display: flex;
+        width: 100%;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .navbar-header-mobile .navbar-brand {
+        order: 2;
+        flex-grow: 1;
+        text-align: center;
+    }
+
+    .navbar-header-mobile .navbar-toggler-notifications {
+        order: 3;
+    }
+
+    .navbar-header-mobile .navbar-toggler {
+        order: 1;
+    }
+}

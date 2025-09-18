@@ -115,14 +115,16 @@
 
 				<!-- Description du projet -->
 				{% if project.description %}
-					<div class="row g-0">
+					<div class="row g-0 mt-3">
 						<div class="col-12 col-md-6">
-							<div class="bg-light rounded p-3 mb-3 border border-dark" style="background-color: #f8f9fa !important;">
-								<h6 class="text-dark mb-2">
-									<i class="fas fa-info-circle me-2 text-primary"></i>
-									Description du projet
-								</h6>
-								<p class="mb-0 text-muted text-break" style="word-wrap: break-word;">{{ project.description|nl2br }}</p>
+							<div class="card border-0 bg-light">
+								<div class="card-body p-3">
+									<h6 class="text-dark mb-2">
+										<i class="fas fa-info-circle me-2 text-primary"></i>
+										Description du projet
+									</h6>
+									<p class="mb-0 text-muted text-break" style="word-wrap: break-word;">{{ project.description|nl2br }}</p>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -276,7 +278,7 @@
 					{% if is_granted('PROJECT_EDIT', project) %}
 						<a href="{{ path('task_new', {'project': project.id}) }}" class="btn btn-primary">
 							<i class="fas fa-plus me-2"></i>Ajouter une tâche
-						</a>Description du projet
+						</a>
 					{% endif %}
 				</div>
 			{% else %}
@@ -441,7 +443,7 @@
 							<div>
 								<strong>Attention :</strong>
 								Cette action supprimera définitivement le projet et toutes ses tâches 
-																																																	                                ({{ project.tasksCount }}
+																({{ project.tasksCount }}
 								tâche{{ project.tasksCount > 1 ? 's' : '' }}).
 							</div>
 						</div>
@@ -490,39 +492,39 @@
 		</div>
 	</div>
 
-	<script>
-		document.addEventListener('DOMContentLoaded', function () {
-const deleteTaskModal = document.getElementById('deleteTaskModal');
-const taskTitleElement = document.getElementById('taskTitle');
-const deleteTaskForm = document.getElementById('deleteTaskForm');
-const deleteTokenInput = document.getElementById('deleteToken');
-
-const csrfTokens = {
-{% for task in project.tasks %}
-'{{ task.id }}' : '{{ csrf_token('delete' ~ task.id) }}'{{ not loop.last ? ',' : '' }}{% endfor %}
-};
-
-deleteTaskModal.addEventListener('show.bs.modal', function (event) {
-const button = event.relatedTarget;
-const taskId = button.getAttribute('data-task-id');
-const taskTitle = button.getAttribute('data-task-title');
-
-taskTitleElement.textContent = '"' + taskTitle + '"';
-
-const deleteUrl = '{{ path('task_delete', {id: '__TASK_ID__'}) }}'.replace('__TASK_ID__', taskId);
-deleteTaskForm.action = deleteUrl;
-
-const token = csrfTokens[taskId];
-if (token) {
-deleteTokenInput.value = token;
-} else {
-console.error('Token CSRF introuvable pour la tâche ID:', taskId);
-const submitButton = deleteTaskForm.querySelector('button[type="submit"]');
-if (submitButton) {
-submitButton.disabled = true;
-}
-}
-});
-});
-	</script>
+	 <script>
+			document.addEventListener('DOMContentLoaded', function () {
+	const deleteTaskModal = document.getElementById('deleteTaskModal');
+	const taskTitleElement = document.getElementById('taskTitle');
+	const deleteTaskForm = document.getElementById('deleteTaskForm');
+	const deleteTokenInput = document.getElementById('deleteToken');
+	
+	const csrfTokens = {
+	{% for task in project.tasks %}
+	'{{ task.id }}' : '{{ csrf_token('delete' ~ task.id) }}'{{ not loop.last ? ',' : '' }}{% endfor %}
+	};
+	
+	deleteTaskModal.addEventListener('show.bs.modal', function (event) {
+	const button = event.relatedTarget;
+	const taskId = button.getAttribute('data-task-id');
+	const taskTitle = button.getAttribute('data-task-title');
+	
+	taskTitleElement.textContent = '"' + taskTitle + '"';
+	
+	const deleteUrl = '{{ path('task_delete', {id: '__TASK_ID__'}) }}'.replace('__TASK_ID__', taskId);
+	deleteTaskForm.action = deleteUrl;
+	
+	const token = csrfTokens[taskId];
+	if (token) {
+	deleteTokenInput.value = token;
+	} else {
+	console.error('Token CSRF introuvable pour la tâche ID:', taskId);
+	const submitButton = deleteTaskForm.querySelector('button[type="submit"]');
+	if (submitButton) {
+	submitButton.disabled = true;
+	}
+	}
+	});
+	});
+		</script>
 {% endif %}{% endblock %}

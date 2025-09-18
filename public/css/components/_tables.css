@@ -1,0 +1,392 @@
+/* components/_tables.css - Styles pour les tableaux */
+
+/* ===== TABLEAUX GÉNÉRAUX ===== */
+.custom-table {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.custom-table .table {
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.custom-table thead th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #e9ecef;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    color: var(--dark-text);
+    padding: 1rem 0.75rem;
+}
+
+.custom-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.custom-table tbody tr:hover {
+    background-color: rgba(59, 130, 246, 0.05);
+}
+
+.custom-table tbody td {
+    padding: 0.875rem 0.75rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.custom-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ===== TABLEAUX RESPONSIVE ADAPTATIFS ===== */
+.responsive-table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 991.98px) {
+    .responsive-table .table thead {
+        display: none;
+    }
+
+    .responsive-table .table,
+    .responsive-table .table tbody,
+    .responsive-table .table tr,
+    .responsive-table .table td {
+        display: block;
+        width: 100%;
+    }
+
+    .responsive-table .table tr {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+        padding: 0.5rem;
+    }
+
+    .responsive-table .table td {
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+        border: none;
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #f8f9fa;
+    }
+
+    .responsive-table .table td:last-child {
+        border-bottom: none;
+    }
+
+    .responsive-table .table td::before {
+        content: attr(data-label) ": ";
+        position: absolute;
+        left: 0.75rem;
+        width: calc(50% - 1.5rem);
+        text-align: left;
+        font-weight: 600;
+        color: var(--dark-text);
+    }
+
+    .responsive-table .table td[data-label="Actions"] {
+        text-align: center;
+        padding-left: 0.75rem;
+    }
+
+    .responsive-table .table td[data-label="Actions"]::before {
+        content: "";
+    }
+}
+
+/* ===== ACTIONS DANS TABLEAUX ===== */
+.table-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.table-action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.table-action-btn:hover {
+    transform: scale(1.1);
+}
+
+.table-action-btn.view {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: var(--primary-color);
+}
+
+.table-action-btn.edit {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--warning-color);
+}
+
+.table-action-btn.delete {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--danger-color);
+}
+
+/* ===== STATUTS DANS TABLEAUX ===== */
+.table-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.table-status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.table-status-indicator.active {
+    background-color: var(--success-color);
+}
+
+.table-status-indicator.inactive {
+    background-color: var(--secondary-color);
+}
+
+.table-status-indicator.pending {
+    background-color: var(--warning-color);
+}
+
+.table-status-indicator.error {
+    background-color: var(--danger-color);
+}
+
+/* ===== BADGES DANS TABLEAUX ===== */
+.table-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table-badge.primary {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: var(--primary-color);
+}
+
+.table-badge.success {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--success-color);
+}
+
+.table-badge.warning {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--warning-color);
+}
+
+.table-badge.danger {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--danger-color);
+}
+
+.table-badge.secondary {
+    background-color: rgba(107, 114, 128, 0.1);
+    color: var(--secondary-color);
+}
+
+/* ===== TABLEAUX DE DONNÉES ===== */
+.data-table {
+    font-size: 0.875rem;
+}
+
+.data-table thead th {
+    padding: 0.75rem;
+    font-size: 0.75rem;
+}
+
+.data-table tbody td {
+    padding: 0.75rem;
+}
+
+.data-table .table-sort {
+    cursor: pointer;
+    user-select: none;
+}
+
+.data-table .table-sort:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+.data-table .table-sort.asc::after {
+    content: " ▲";
+    color: var(--primary-color);
+}
+
+.data-table .table-sort.desc::after {
+    content: " ▼";
+    color: var(--primary-color);
+}
+
+/* ===== TABLEAUX STRIPED PERSONNALISÉS ===== */
+.custom-table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(248, 249, 250, 0.5);
+}
+
+/* ===== TABLEAUX AVEC BORDURES ===== */
+.custom-table-bordered {
+    border: 1px solid #e9ecef;
+}
+
+.custom-table-bordered th,
+.custom-table-bordered td {
+    border-right: 1px solid #e9ecef;
+}
+
+.custom-table-bordered th:last-child,
+.custom-table-bordered td:last-child {
+    border-right: none;
+}
+
+/* ===== ÉTAT VIDE TABLEAUX ===== */
+.table-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--secondary-color);
+}
+
+.table-empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.table-empty-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--dark-text);
+}
+
+.table-empty-description {
+    margin-bottom: 1.5rem;
+}
+
+/* ===== PAGINATION TABLEAUX ===== */
+.table-pagination {
+    background: white;
+    border-radius: 0 0 12px 12px;
+    padding: 1rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.table-pagination .pagination {
+    margin: 0;
+    justify-content: center;
+}
+
+.table-pagination .page-link {
+    border-radius: 6px;
+    margin: 0 0.125rem;
+    color: var(--primary-color);
+    border-color: #e9ecef;
+}
+
+.table-pagination .page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.table-pagination .page-link:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+/* ===== FILTRES DE TABLEAUX ===== */
+.table-filters {
+    background: white;
+    border-radius: 12px 12px 0 0;
+    padding: 1rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.table-search {
+    position: relative;
+}
+
+.table-search input {
+    padding-left: 2.5rem;
+    border-radius: 8px;
+}
+
+.table-search .search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--secondary-color);
+}
+
+/* ===== RESPONSIVE MOBILE ===== */
+@media (max-width: 576px) {
+    .table-actions {
+        flex-direction: column;
+        gap: 0.25rem;
+        align-items: stretch;
+    }
+    
+    .table-action-btn {
+        width: 100%;
+        height: 36px;
+        border-radius: 4px;
+        justify-content: flex-start;
+        padding-left: 0.75rem;
+    }
+    
+    .table-action-btn::before {
+        margin-right: 0.5rem;
+    }
+    
+    .table-action-btn.view::before {
+        content: "Voir";
+    }
+    
+    .table-action-btn.edit::before {
+        content: "Modifier";
+    }
+    
+    .table-action-btn.delete::before {
+        content: "Supprimer";
+    }
+    
+    .table-filters {
+        padding: 0.75rem;
+    }
+    
+    .table-pagination {
+        padding: 0.75rem;
+    }
+    
+    .table-empty {
+        padding: 2rem 0.5rem;
+    }
+    
+    .table-empty-icon {
+        font-size: 2rem;
+    }
+    
+    .table-empty-title {
+        font-size: 1rem;
+    }
+}
