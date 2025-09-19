@@ -4,7 +4,7 @@
 {% endblock %}
 
 {% block body %}
-	<div class="container">
+	<div class="container delete-account-page">
 		<div class="row justify-content-center">
 			<div class="col-md-8 col-lg-6">
 				<div class="card border-0 shadow-sm">
@@ -14,7 +14,8 @@
 						</h4>
 					</div>
 					<div class="card-body p-4">
-						<div class="text-center mb-4">
+						<div
+							class="text-center mb-4">
 							<!-- Icône d'avertissement -->
 							<div class="bg-danger bg-opacity-10 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
 								<i class="fas fa-exclamation-triangle text-danger fa-2x"></i>
@@ -53,47 +54,33 @@
 								</div>
 								<div class="row mt-2">
 									<div class="col-sm-4 text-muted">Projets :</div>
-									<div class="col-sm-8 fw-semibold">{{ user.projects|length }} projet(s)</div>
+									<div class="col-sm-8 fw-semibold">{{ user.projects|length }}
+										projet(s)</div>
 								</div>
 							</div>
 						</div>
 
 						<!-- Formulaire de confirmation -->
-						<form method="post" class="needs-validation" novalidate>
+						<form method="post" class="form-container form-delete needs-validation" novalidate>
 							<div class="mb-4">
-								<label for="confirmation_text" class="form-label fw-semibold">
+								<label for="confirmation_text" class="form-label fw-semibold required-field">
 									<i class="fas fa-keyboard me-1 text-danger"></i>Tapez "SUPPRIMER" pour confirmer
 								</label>
-								<input 
-									type="text" 
-									class="form-control form-control-lg" 
-									id="confirmation_text" 
-									name="confirmation_text" 
-									placeholder="Tapez SUPPRIMER en majuscules" 
-									required
-									autocomplete="off"
-								>
+								<input type="text" class="form-control form-control-lg" id="confirmation_text" name="confirmation_text" placeholder="Tapez SUPPRIMER en majuscules" required autocomplete="off">
 								<div class="form-text">
 									Cette vérification garantit que vous comprenez les conséquences
 								</div>
 							</div>
 
 							<div class="mb-4">
-								<label for="password_confirmation" class="form-label fw-semibold">
+								<label for="password_confirmation" class="form-label fw-semibold required-field">
 									<i class="fas fa-lock me-1 text-danger"></i>Confirmez avec votre mot de passe
 								</label>
-								<div class="input-group">
+								<div class="auth-input-group input-group">
 									<span class="input-group-text bg-light">
 										<i class="fas fa-key text-muted"></i>
 									</span>
-									<input 
-										type="password" 
-										class="form-control" 
-										id="password_confirmation" 
-										name="password_confirmation" 
-										placeholder="Votre mot de passe actuel" 
-										required
-									>
+									<input type="password" class="form-control" id="password_confirmation" name="password_confirmation" placeholder="Votre mot de passe actuel" required>
 									<button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password_confirmation')">
 										<i class="fas fa-eye" id="password_confirmation_icon"></i>
 									</button>
@@ -105,31 +92,22 @@
 
 							<!-- Case à cocher finale -->
 							<div class="form-check mb-4">
-								<input 
-									class="form-check-input" 
-									type="checkbox" 
-									id="final_confirmation" 
-									name="final_confirmation" 
-									required
-								>
+								<input class="form-check-input" type="checkbox" id="final_confirmation" name="final_confirmation" required>
 								<label class="form-check-label fw-semibold" for="final_confirmation">
 									Je comprends que cette action est irréversible et j'accepte la suppression définitive de mon compte et de toutes mes données
 								</label>
 							</div>
 
 							<!-- Boutons d'action -->
-							<div class="d-flex justify-content-between align-items-center">
-								<a href="{{ path('user_profile') }}" class="btn btn-outline-secondary btn-lg">
-									<i class="fas fa-arrow-left me-2"></i>Annuler
-								</a>
-								<button 
-									type="submit" 
-									class="btn btn-danger btn-lg" 
-									id="delete_button" 
-									disabled
-								>
-									<i class="fas fa-trash me-2"></i>Supprimer définitivement mon compte
-								</button>
+							<div class="form-actions">
+								<div class="d-flex justify-content-between align-items-center">
+									<a href="{{ path('user_profile') }}" class="btn btn-outline-secondary btn-lg btn-form">
+										<i class="fas fa-arrow-left me-2"></i>Annuler
+									</a>
+									<button type="submit" class="btn btn-danger btn-lg auth-btn-danger" id="delete_button" disabled>
+										<i class="fas fa-trash me-2"></i>Supprimer définitivement mon compte
+									</button>
+								</div>
 							</div>
 						</form>
 					</div>
@@ -155,76 +133,75 @@
 			</div>
 		</div>
 	</div>
+{% endblock %}
 
+{% block javascripts %}
+	{{ parent() }}
 	<script>
 		// Fonction pour afficher/masquer le mot de passe
-		function togglePassword(fieldId) {
-			const field = document.getElementById(fieldId);
-			const icon = document.getElementById(fieldId + '_icon');
+function togglePassword(fieldId) {
+const field = document.getElementById(fieldId);
+const icon = document.getElementById(fieldId + '_icon');
 
-			if (field.type === 'password') {
-				field.type = 'text';
-				icon.classList.remove('fa-eye');
-				icon.classList.add('fa-eye-slash');
-			} else {
-				field.type = 'password';
-				icon.classList.remove('fa-eye-slash');
-				icon.classList.add('fa-eye');
-			}
-		}
+if (field.type === 'password') {
+field.type = 'text';
+icon.classList.remove('fa-eye');
+icon.classList.add('fa-eye-slash');
+} else {
+field.type = 'password';
+icon.classList.remove('fa-eye-slash');
+icon.classList.add('fa-eye');
+}
+}
 
-		// Vérification en temps réel des conditions
-		document.addEventListener('DOMContentLoaded', function() {
-			const confirmationText = document.getElementById('confirmation_text');
-			const passwordConfirmation = document.getElementById('password_confirmation');
-			const finalConfirmation = document.getElementById('final_confirmation');
-			const deleteButton = document.getElementById('delete_button');
+// Vérification en temps réel des conditions
+document.addEventListener('DOMContentLoaded', function () {
+const confirmationText = document.getElementById('confirmation_text');
+const passwordConfirmation = document.getElementById('password_confirmation');
+const finalConfirmation = document.getElementById('final_confirmation');
+const deleteButton = document.getElementById('delete_button');
 
-			function checkFormValid() {
-				const isTextCorrect = confirmationText.value === 'SUPPRIMER';
-				const isPasswordFilled = passwordConfirmation.value.length > 0;
-				const isCheckboxChecked = finalConfirmation.checked;
+function checkFormValid() {
+const isTextCorrect = confirmationText.value === 'SUPPRIMER';
+const isPasswordFilled = passwordConfirmation.value.length > 0;
+const isCheckboxChecked = finalConfirmation.checked;
 
-				deleteButton.disabled = !(isTextCorrect && isPasswordFilled && isCheckboxChecked);
-			}
+deleteButton.disabled = !(isTextCorrect && isPasswordFilled && isCheckboxChecked);
+}
 
-			// Événements pour vérifier la validité du formulaire
-			confirmationText.addEventListener('input', checkFormValid);
-			passwordConfirmation.addEventListener('input', checkFormValid);
-			finalConfirmation.addEventListener('change', checkFormValid);
+// Événements pour vérifier la validité du formulaire
+confirmationText.addEventListener('input', checkFormValid);
+passwordConfirmation.addEventListener('input', checkFormValid);
+finalConfirmation.addEventListener('change', checkFormValid);
 
-			// Validation finale avant soumission
-			document.querySelector('form').addEventListener('submit', function(e) {
-				if (confirmationText.value !== 'SUPPRIMER') {
-					e.preventDefault();
-					alert('Vous devez taper "SUPPRIMER" exactement pour confirmer.');
-					return false;
-				}
+// Validation finale avant soumission
+document.querySelector('form').addEventListener('submit', function (e) {
+if (confirmationText.value !== 'SUPPRIMER') {
+e.preventDefault();
+alert('Vous devez taper "SUPPRIMER" exactement pour confirmer.');
+return false;
+}
 
-				if (!passwordConfirmation.value) {
-					e.preventDefault();
-					alert('Vous devez saisir votre mot de passe pour confirmer.');
-					return false;
-				}
+if (! passwordConfirmation.value) {
+e.preventDefault();
+alert('Vous devez saisir votre mot de passe pour confirmer.');
+return false;
+}
 
-				if (!finalConfirmation.checked) {
-					e.preventDefault();
-					alert('Vous devez cocher la case de confirmation finale.');
-					return false;
-				}
+if (! finalConfirmation.checked) {
+e.preventDefault();
+alert('Vous devez cocher la case de confirmation finale.');
+return false;
+}
 
-				// Dernière confirmation
-				const confirmed = confirm(
-					'ATTENTION : Vous êtes sur le point de supprimer définitivement votre compte.\n\n' +
-					'Cette action ne peut pas être annulée.\n\n' +
-					'Êtes-vous absolument sûr(e) de vouloir continuer ?'
-				);
+// Dernière confirmation
+const confirmed = confirm('ATTENTION : Vous êtes sur le point de supprimer définitivement votre compte.\n\n' + 'Cette action ne peut pas être annulée.\n\n' + 'Êtes-vous absolument sûr(e) de vouloir continuer ?');
 
-				if (!confirmed) {
-					e.preventDefault();
-					return false;
-				}
-			});
-		});
+if (! confirmed) {
+e.preventDefault();
+return false;
+}
+});
+});
 	</script>
 {% endblock %}
