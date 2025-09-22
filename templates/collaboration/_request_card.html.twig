@@ -1,6 +1,6 @@
 {# templates/collaboration/_request_card.html.twig #}
-<div class="card mb-3 shadow-sm border-0 {{ request.isPending ? 'border-start border-warning border-3' : '' }}">
-    <div class="card-body p-3 p-md-4">
+<div class="request-card request-status-{{ request.status }}">
+    <div class="request-card-body">
         <div class="row align-items-start">
             <div class="col-12 col-md-8 mb-3 mb-md-0">
                 <div class="d-flex align-items-start">
@@ -26,18 +26,16 @@
                             {% if perspective == 'recipient' %}
                                 <span class="text-muted small">Invitation de</span>
                                 <div class="d-flex align-items-center mt-1">
-                                    <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-2" 
-                                         style="width: 24px; height: 24px;">
-                                        <small class="text-primary fw-bold">{{ request.sender.firstName|first }}{{ request.sender.lastName|first }}</small>
+                                    <div class="user-avatar user-avatar-small sender me-2">
+                                        {{ request.sender.firstName|first }}{{ request.sender.lastName|first }}
                                     </div>
                                     <span class="fw-medium">{{ request.sender.fullName }}</span>
                                 </div>
                             {% else %}
-                                <span class="text-muted small">Invitation envoyée à</span>
+                                <span class="text-muted small">Invitation envoyée à </span>
                                 <div class="d-flex align-items-center mt-1">
-                                    <div class="bg-info bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-2" 
-                                         style="width: 24px; height: 24px;">
-                                        <small class="text-info fw-bold">{{ request.invitedUser.firstName|first }}{{ request.invitedUser.lastName|first }}</small>
+                                    <div class="user-avatar user-avatar-small recipient me-2">
+                                        {{ request.invitedUser.firstName|first }}{{ request.invitedUser.lastName|first }}
                                     </div>
                                     <span class="fw-medium">{{ request.invitedUser.fullName }}</span>
                                 </div>
@@ -46,8 +44,8 @@
                         
                         <!-- Message d'aperçu s'il existe -->
                         {% if request.message %}
-                            <div class="bg-light rounded p-2 mb-2">
-                                <small class="text-muted fst-italic">
+                            <div class="invitation-message mb-2">
+                                <small class="invitation-message-content">
                                     "{{ request.message|length > 80 ? request.message|slice(0, 80) ~ '...' : request.message }}"
                                 </small>
                             </div>
@@ -69,30 +67,30 @@
                 <div class="d-flex d-md-block align-items-center justify-content-between">
                     <!-- Badge de statut -->
                     <div class="text-center mb-0 mb-md-3">
-                        <span class="badge {{ request.statusBadgeClass }} fs-6 px-3 py-2">
+                        <span class="status-badge {{ request.status }}">
                             <i class="{{ request.statusIcon }} me-1"></i>
                             {{ request.statusLabel }}
                         </span>
                     </div>
                     
-                    <!-- Actions -->
-                    <div class="d-flex gap-2 justify-content-center">
+                    <!-- Actions principales -->
+                    <div class="d-flex gap-1 justify-content-center align-items-center">
                         {% if perspective == 'recipient' and request.isPending %}
                             <!-- Actions pour le destinataire -->
                             <form method="post" action="{{ path('collaboration_request_refuse', {id: request.id}) }}" class="d-inline">
                                 <input type="hidden" name="_token" value="{{ csrf_token('refuse-request-' ~ request.id) }}">
-                                <button class="btn btn-outline-danger btn-sm" 
+                                <button class="task-action-btn delete btn btn-sm" 
                                         onclick="return confirm('Êtes-vous sûr de vouloir refuser cette invitation ?')"
                                         title="Refuser l'invitation">
-                                    <i class="fas fa-times me-1"></i>
-                                    <span class="d-none d-sm-inline">Refuser</span>
+                                    <i class="fas fa-times"></i>
+                                    <span class="d-none d-sm-inline ms-1">Refuser</span>
                                 </button>
                             </form>
                             <form method="post" action="{{ path('collaboration_request_accept', {id: request.id}) }}" class="d-inline">
                                 <input type="hidden" name="_token" value="{{ csrf_token('accept-request-' ~ request.id) }}">
                                 <button class="btn btn-success btn-sm" title="Accepter l'invitation">
-                                    <i class="fas fa-check me-1"></i>
-                                    <span class="d-none d-sm-inline">Accepter</span>
+                                    <i class="fas fa-check"></i>
+                                    <span class="d-none d-sm-inline ms-1">Accepter</span>
                                 </button>
                             </form>
                         {% endif %}
@@ -101,22 +99,13 @@
                             <!-- Actions pour l'expéditeur -->
                             <form method="post" action="{{ path('collaboration_request_cancel', {id: request.id}) }}" class="d-inline">
                                 <input type="hidden" name="_token" value="{{ csrf_token('cancel-request-' ~ request.id) }}">
-                                <button class="btn btn-outline-warning btn-sm" 
+                                <button class="task-action-btn edit btn btn-sm" 
                                         onclick="return confirm('Êtes-vous sûr de vouloir annuler cette demande ?')"
                                         title="Annuler la demande">
-                                    <i class="fas fa-ban me-1"></i>
-                                    <span class="d-none d-sm-inline">Annuler</span>
+                                    <i class="fas fa-ban"></i>
+                                    <span class="d-none d-sm-inline ms-1">Annuler</span>
                                 </button>
                             </form>
-                        {% endif %}
-                        
-                        {% if not request.isPending %}
-                            <!-- Bouton voir le projet si demande traitée -->
-                            <a href="{{ path('project_show', {id: request.project.id}) }}" 
-                               class="btn btn-outline-primary btn-sm" title="Voir le projet">
-                                <i class="fas fa-folder-open me-1"></i>
-                                <span class="d-none d-sm-inline">Voir le projet</span>
-                            </a>
                         {% endif %}
                     </div>
                 </div>

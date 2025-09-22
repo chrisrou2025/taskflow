@@ -66,8 +66,8 @@ body {
 /* Badge de notification unifié */
 .notification-badge {
     position: absolute;
-    top: 6px;
-    right: 8px;
+    top: -2px;
+    right: -2px;
     font-size: 0.7rem;
     min-width: 18px;
     height: 18px;
@@ -85,8 +85,25 @@ body {
 }
 
 .notification-desktop .notification-badge {
-    top: 8px;
-    right: 8px;
+    top: -2px;
+    right: -2px;
+    background-color: #dc3545;
+    border-color: white;
+}
+
+/* Conteneur icône + badge */
+.notification-icon-wrapper {
+    position: relative;
+    display: inline-block;
+    margin-right: 6px; /* espace avant le mot "Notifications" */
+}
+
+.notification-icon-wrapper .notification-badge {
+    position: absolute;
+    top: -6px;
+    right: -13px;
+    background-color: #dc3545;
+    border: 2px solid white;
 }
 
 /* ===== SIDEBAR ===== */

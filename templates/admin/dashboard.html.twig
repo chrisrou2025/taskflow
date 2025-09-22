@@ -4,238 +4,228 @@
 
 {% block body %}
 <div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1 class="h3 mb-2">🔧 Administration TaskFlow</h1>
-                    <p class="text-muted mb-0">Tableau de bord administrateur</p>
-                </div>
-                {# Les boutons ont été supprimés ici #}
+    <!-- En-tête administrateur -->
+    <div class="admin-header">
+        <div class="admin-header-content">
+            <div class="admin-header-icon">
+                <i class="fas fa-cogs"></i>
             </div>
+            <h1 class="admin-header-title">Administration TaskFlow</h1>
+            <p class="admin-header-subtitle">Tableau de bord administrateur</p>
         </div>
     </div>
 
-    {# AMÉLIORATION RESPONSIVE : Les cartes s'empilent sur les très petits écrans #}
-    <div class="row mb-4">
-        <div class="col-12 col-sm-6 col-lg-3 mb-3">
-            <div class="card border-0 bg-gradient-primary text-white h-100">
-                <div class="card-body d-flex flex-column align-items-center text-center">
-                    <div class="mb-3">
-                        <i class="fas fa-users fa-3x opacity-50"></i>
-                    </div>
-                    <div class="text-white">
-                        <h5 class="card-title text-uppercase fw-bold opacity-75">Utilisateurs</h5>
-                        <h2 class="display-5 fw-bold mb-0">{{ total_users }}</h2>
-                    </div>
+    <!-- Cartes statistiques -->
+    <div class="admin-stats-grid">
+        <div class="admin-stat-card stat-card-primary">
+            <div class="admin-stat-content">
+                <div class="admin-stat-icon">
+                    <i class="fas fa-users"></i>
                 </div>
-                <div class="card-footer bg-white text-primary">
-                    <a href="{{ path('admin_users') }}" class="text-decoration-none">
-                        <small>Voir les utilisateurs <i class="fas fa-arrow-right ms-2"></i></small>
-                    </a>
-                </div>
+                <h5 class="admin-stat-title">Utilisateurs</h5>
+                <h2 class="admin-stat-value">{{ total_users }}</h2>
+            </div>
+            <div class="admin-stat-footer">
+                <a href="{{ path('admin_users') }}">
+                    Voir les utilisateurs <i class="fas fa-arrow-right ms-2"></i>
+                </a>
             </div>
         </div>
-        <div class="col-12 col-sm-6 col-lg-3 mb-3">
-            <div class="card border-0 bg-gradient-success text-white h-100">
-                <div class="card-body d-flex flex-column align-items-center text-center">
-                    <div class="mb-3">
-                        <i class="fas fa-project-diagram fa-3x opacity-50"></i>
-                    </div>
-                    <div class="text-white">
-                        <h5 class="card-title text-uppercase fw-bold opacity-75">Projets</h5>
-                        <h2 class="display-5 fw-bold mb-0">{{ total_projects }}</h2>
-                    </div>
+
+        <div class="admin-stat-card stat-card-success">
+            <div class="admin-stat-content">
+                <div class="admin-stat-icon">
+                    <i class="fas fa-project-diagram"></i>
                 </div>
-                <div class="card-footer bg-white text-success">
-                    <a href="{{ path('admin_projects') }}" class="text-decoration-none">
-                        <small>Voir les projets <i class="fas fa-arrow-right ms-2"></i></small>
-                    </a>
-                </div>
+                <h5 class="admin-stat-title">Projets</h5>
+                <h2 class="admin-stat-value">{{ total_projects }}</h2>
+            </div>
+            <div class="admin-stat-footer">
+                <a href="{{ path('admin_projects') }}">
+                    Voir les projets <i class="fas fa-arrow-right ms-2"></i>
+                </a>
             </div>
         </div>
-        <div class="col-12 col-sm-6 col-lg-3 mb-3">
-            <div class="card border-0 bg-gradient-warning text-white h-100">
-                <div class="card-body d-flex flex-column align-items-center text-center">
-                    <div class="mb-3">
-                        <i class="fas fa-tasks fa-3x opacity-50"></i>
-                    </div>
-                    <div class="text-white">
-                        <h5 class="card-title text-uppercase fw-bold opacity-75">Tâches</h5>
-                        <h2 class="display-5 fw-bold mb-0">{{ total_tasks }}</h2>
-                    </div>
+
+        <div class="admin-stat-card stat-card-warning">
+            <div class="admin-stat-content">
+                <div class="admin-stat-icon">
+                    <i class="fas fa-tasks"></i>
                 </div>
-                <div class="card-footer bg-white text-warning">
-                    <a href="{{ path('admin_tasks') }}" class="text-decoration-none">
-                        <small>Voir les tâches <i class="fas fa-arrow-right ms-2"></i></small>
-                    </a>
-                </div>
+                <h5 class="admin-stat-title">Tâches</h5>
+                <h2 class="admin-stat-value">{{ total_tasks }}</h2>
+            </div>
+            <div class="admin-stat-footer">
+                <a href="{{ path('admin_tasks') }}">
+                    Voir les tâches <i class="fas fa-arrow-right ms-2"></i>
+                </a>
             </div>
         </div>
-        <div class="col-12 col-sm-6 col-lg-3 mb-3">
-            <div class="card border-0 bg-gradient-info text-white h-100">
-                <div class="card-body d-flex flex-column align-items-center text-center">
-                    <div class="mb-3">
-                        <i class="fas fa-check-circle fa-3x opacity-50"></i>
-                    </div>
-                    <div class="text-white">
-                        <h5 class="card-title text-uppercase fw-bold opacity-75">Tâches terminées</h5>
-                        <h2 class="display-5 fw-bold mb-0">{{ completed_tasks_count }}</h2>
-                    </div>
+
+        <div class="admin-stat-card stat-card-info">
+            <div class="admin-stat-content">
+                <div class="admin-stat-icon">
+                    <i class="fas fa-check-circle"></i>
                 </div>
-                <div class="card-footer bg-white text-info">
-                    <a href="{{ path('admin_tasks') }}" class="text-decoration-none">
-                        <small>Voir les tâches terminées <i class="fas fa-arrow-right ms-2"></i></small>
-                    </a>
-                </div>
+                <h5 class="admin-stat-title">Tâches terminées</h5>
+                <h2 class="admin-stat-value">{{ completed_tasks_count }}</h2>
+            </div>
+            <div class="admin-stat-footer">
+                <a href="{{ path('admin_tasks') }}">
+                    Voir les tâches terminées <i class="fas fa-arrow-right ms-2"></i>
+                </a>
             </div>
         </div>
     </div>
 
     <div class="row">
+        <!-- Graphique d'activité -->
         <div class="col-lg-6 mb-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="card-title fw-bold mb-0">Activité des 30 derniers jours</h5>
+            <div class="admin-chart-container">
+                <div class="admin-chart-header">
+                    <h5 class="admin-chart-title">Activité des 30 derniers jours</h5>
                 </div>
-                <div class="card-body">
-                    <canvas id="monthlyActivityChart" style="max-height: 300px;"></canvas>
+                <div class="admin-chart-canvas">
+                    <canvas id="monthlyActivityChart"></canvas>
                 </div>
             </div>
         </div>
+
+        <!-- Utilisateurs actifs -->
         <div class="col-lg-6 mb-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="card-title fw-bold mb-0">Utilisateurs les plus actifs</h5>
+            <div class="admin-active-users">
+                <div class="admin-active-users-header">
+                    <h5 class="admin-chart-title">Utilisateurs les plus actifs</h5>
                 </div>
-                <div class="card-body p-0">
-                    {% if most_active_users is empty %}
-                        <div class="p-4 text-center text-muted">Aucun utilisateur actif à afficher.</div>
-                    {% else %}
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>Nom</th>
-                                        <th class="text-center">Projets</th>
-                                        <th class="text-center">Tâches</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for activeUser in most_active_users %}
-                                    <tr>
-                                        <td>
-                                            <a href="{{ path('admin_user_show', {id: activeUser[0].id}) }}" class="d-flex align-items-center text-decoration-none">
-                                                <div>
-                                                    <strong class="d-block">{{ activeUser[0].fullName }}</strong>
-                                                    <small class="text-muted">{{ activeUser[0].email }}</small>
-                                                </div>
-                                            </a>
-                                        </td>
-                                        <td class="text-center"><span class="badge bg-primary">{{ activeUser.projectCount }}</span></td>
-                                        <td class="text-center"><span class="badge bg-success">{{ activeUser.taskCount }}</span></td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                {% if most_active_users is empty %}
+                    <div class="admin-empty-state">
+                        <i class="fas fa-users"></i>
+                        <p>Aucun utilisateur actif à afficher.</p>
+                    </div>
+                {% else %}
+                    {% for activeUser in most_active_users %}
+                        <div class="admin-active-user-row">
+                            <div class="d-flex align-items-center">
+                                <div class="admin-user-avatar">
+                                    {{ activeUser[0].firstName|first }}{{ activeUser[0].lastName|first }}
+                                </div>
+                                <div class="admin-user-info">
+                                    <div class="admin-user-name">
+                                        <a href="{{ path('admin_user_show', {id: activeUser[0].id}) }}" class="text-decoration-none">
+                                            {{ activeUser[0].fullName }}
+                                        </a>
+                                    </div>
+                                    <div class="admin-user-email">{{ activeUser[0].email }}</div>
+                                </div>
+                                <div class="admin-user-stats">
+                                    <div class="admin-user-stat">
+                                        <span class="admin-user-stat-value">{{ activeUser.projectCount }}</span>
+                                        <small class="admin-user-stat-label">Projets</small>
+                                    </div>
+                                    <div class="admin-user-stat">
+                                        <span class="admin-user-stat-value">{{ activeUser.taskCount }}</span>
+                                        <small class="admin-user-stat-label">Tâches</small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    {% endif %}
-                </div>
+                    {% endfor %}
+                {% endif %}
             </div>
         </div>
     </div>
     
+    <!-- Projets récents -->
     <div class="row">
         <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="card-title fw-bold mb-0">Projets les plus récents</h5>
+            <div class="admin-recent-projects">
+                <div class="admin-chart-header">
+                    <h5 class="admin-chart-title">Projets les plus récents</h5>
                 </div>
-                <div class="card-body">
-                    {% if recent_projects is empty %}
-                        <div class="p-4 text-center text-muted">Aucun projet récent à afficher.</div>
-                    {% else %}
-                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                            {% for project in recent_projects %}
-                                <div class="col">
-                                    <div class="card h-100 shadow-sm border-0">
-                                        <div class="card-body">
-                                            <h5 class="card-title fw-bold">
-                                                <a href="{{ path('project_show', {id: project.id}) }}" class="text-decoration-none text-dark">{{ project.title }}</a>
-                                            </h5>
-                                            <h6 class="card-subtitle mb-2 text-muted">
-                                                <small>Par : <a href="{{ path('admin_user_show', {id: project.owner.id}) }}" class="text-decoration-none">{{ project.owner.fullName }}</a></small>
-                                            </h6>
-                                            <p class="card-text project-description">{{ project.description }}</p>
-                                        </div>
-                                        <div class="card-footer bg-white border-top d-flex justify-content-between align-items-center">
-                                            <small class="text-muted">
-                                                <i class="far fa-calendar me-1"></i>Créé le {{ project.createdAt|date('d/m/Y') }}
-                                            </small>
-                                            <span class="badge bg-primary">{{ project.tasks|length }} tâches</span>
-                                        </div>
-                                    </div>
+                {% if recent_projects is empty %}
+                    <div class="admin-empty-state">
+                        <i class="fas fa-project-diagram"></i>
+                        <p>Aucun projet récent à afficher.</p>
+                    </div>
+                {% else %}
+                    <div class="admin-projects-grid">
+                        {% for project in recent_projects %}
+                            <div class="admin-project-card">
+                                <h5 class="admin-project-title">
+                                    <a href="{{ path('project_show', {id: project.id}) }}">{{ project.title }}</a>
+                                </h5>
+                                <h6 class="admin-project-owner">
+                                    Par : <a href="{{ path('admin_user_show', {id: project.owner.id}) }}">{{ project.owner.fullName }}</a>
+                                </h6>
+                                <p class="admin-project-description">{{ project.description }}</p>
+                                <div class="admin-project-footer">
+                                    <small class="admin-project-date">
+                                        <i class="far fa-calendar me-1"></i>Créé le {{ project.createdAt|date('d/m/Y') }}
+                                    </small>
+                                    <span class="admin-project-tasks">{{ project.tasks|length }} tâches</span>
                                 </div>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const labels = {{ monthly_activity.labels|json_encode()|raw }};
-        const projectsData = {{ monthly_activity.projects|json_encode()|raw }};
-        const usersData = {{ monthly_activity.users|json_encode()|raw }};
-        const tasksData = {{ monthly_activity.tasks|json_encode()|raw }};
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const labels = {{ monthly_activity.labels|json_encode()|raw }};
+            const projectsData = {{ monthly_activity.projects|json_encode()|raw }};
+            const usersData = {{ monthly_activity.users|json_encode()|raw }};
+            const tasksData = {{ monthly_activity.tasks|json_encode()|raw }};
 
-        const ctx = document.getElementById('monthlyActivityChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: 'Projets',
-                        data: projectsData,
-                        borderColor: '#007bff',
-                        backgroundColor: 'rgba(0, 123, 255, 0.2)',
-                        tension: 0.3,
-                        fill: true
-                    },
-                    {
-                        label: 'Utilisateurs',
-                        data: usersData,
-                        borderColor: '#28a745',
-                        backgroundColor: 'rgba(40, 167, 69, 0.2)',
-                        tension: 0.3,
-                        fill: true
-                    },
-                    {
-                        label: 'Tâches',
-                        data: tasksData,
-                        borderColor: '#ffc107',
-                        backgroundColor: 'rgba(255, 193, 7, 0.2)',
-                        tension: 0.3,
-                        fill: true
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true
+            const ctx = document.getElementById('monthlyActivityChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Projets',
+                            data: projectsData,
+                            borderColor: '#007bff',
+                            backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: 'Utilisateurs',
+                            data: usersData,
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: 'Tâches',
+                            data: tasksData,
+                            borderColor: '#ffc107',
+                            backgroundColor: 'rgba(255, 193, 7, 0.2)',
+                            tension: 0.3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
                     }
                 }
-            }
+            });
         });
-    });
-</script>
-
+    </script>
 {% endblock %}

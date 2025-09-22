@@ -7,6 +7,7 @@ use App\Entity\Project;
 use App\Form\TaskType;
 use App\Repository\TaskRepository;
 use App\Repository\ProjectRepository;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,6 +20,11 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 class TaskController extends AbstractController
 {
+    public function __construct(
+        private NotificationService $notificationService
+    ) {
+    }
+
     #[Route('/', name: 'task_index', methods: ['GET'])]
     public function index(
         Request $request,
@@ -30,7 +36,7 @@ class TaskController extends AbstractController
         $status = $request->query->get('status');
         $priority = $request->query->get('priority');
 
-        // 🔥 récupérer les projets dont l’utilisateur est owner OU collaborateur (assignee)
+        // récupérer les projets dont l'utilisateur est owner OU collaborateur (assignee)
         $userProjects = $projectRepository->createQueryBuilder('p')
             ->leftJoin('p.tasks', 't')
             ->where('p.owner = :user OR t.assignee = :user')
@@ -45,12 +51,12 @@ class TaskController extends AbstractController
         if ($projectId) {
             $project = $projectRepository->find($projectId);
 
-            // 🔒 accès si propriétaire ou collaborateur
+            // accès si propriétaire ou collaborateur
             if ($project && ($project->getOwner() === $user || $project->hasCollaborator($user))) {
                 $tasks = $taskRepository->findByProjectWithFilters($project, $status, $priority);
             }
         } else {
-            // 🔥 toutes les tâches visibles (owner ou assignee)
+            // toutes les tâches visibles (owner ou assignee)
             $qb = $taskRepository->createQueryBuilder('t')
                 ->join('t.project', 'p')
                 ->where('p.owner = :user OR t.assignee = :user')
@@ -95,7 +101,7 @@ class TaskController extends AbstractController
         if ($projectId) {
             $project = $projectRepository->find($projectId);
 
-            // 🔒 autorisé si propriétaire ou collaborateur
+            // autorisé si propriétaire ou collaborateur
             if ($project && ($project->getOwner() === $user || $project->hasCollaborator($user))) {
                 $task->setProject($project);
             }
@@ -109,6 +115,16 @@ class TaskController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($task);
             $entityManager->flush();
+
+            // Envoyer une notification si une personne est assignée et ce n'est pas le créateur
+            if ($task->getAssignee() && $task->getAssignee() !== $user) {
+                try {
+                    $this->notificationService->createTaskAssignedNotification($task, $user);
+                } catch (\Exception $e) {
+                    // Log l'erreur mais ne pas faire échouer la création de tâche
+                    // Vous pouvez ajouter un logger ici si nécessaire
+                }
+            }
 
             $this->addFlash('success', 'La tâche "' . $task->getTitle() . '" a été créée avec succès !');
 
@@ -129,7 +145,7 @@ class TaskController extends AbstractController
     {
         $user = $this->getUser();
 
-        // 🔒 accès si propriétaire du projet ou assignee de la tâche
+        // accès si propriétaire du projet ou assignee de la tâche
         if ($task->getProject()->getOwner() !== $user && $task->getAssignee() !== $user) {
             $this->addFlash('error', 'Vous n\'avez pas l\'autorisation de consulter cette tâche.');
             return $this->redirectToRoute('project_index');
@@ -148,11 +164,14 @@ class TaskController extends AbstractController
     {
         $user = $this->getUser();
 
-        // 🔒 propriétaire du projet ou assignee
+        // propriétaire du projet ou assignee
         if ($task->getAssignee() !== $user && $task->getProject()->getOwner() !== $user) {
             $this->addFlash('error', 'Vous ne pouvez modifier que vos propres tâches.');
             return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
         }
+
+        // Stocker l'assignee original pour détecter les changements
+        $originalAssignee = $task->getAssignee();
 
         $formOptions = ['user' => $user];
 
@@ -166,6 +185,24 @@ class TaskController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $task->setUpdatedAt(new \DateTimeImmutable());
             $entityManager->flush();
+
+            // Vérifier si l'assignation a changé
+            $newAssignee = $task->getAssignee();
+            
+            // Envoyer notification si :
+            // - Une nouvelle personne est assignée
+            // - L'assignation a changé vers quelqu'un d'autre que l'utilisateur actuel
+            // - Ce n'est pas un auto-assignement
+            if ($newAssignee && 
+                $newAssignee !== $user && 
+                $originalAssignee !== $newAssignee) {
+                
+                try {
+                    $this->notificationService->createTaskAssignedNotification($task, $user);
+                } catch (\Exception $e) {
+                    // Log l'erreur mais ne pas faire échouer la modification
+                }
+            }
 
             $this->addFlash('success', 'La tâche "' . $task->getTitle() . '" a été modifiée avec succès !');
 
@@ -183,7 +220,7 @@ class TaskController extends AbstractController
     {
         $user = $this->getUser();
 
-        // 🔒 seul le propriétaire du projet peut supprimer
+        // seul le propriétaire du projet peut supprimer
         if ($task->getProject()->getOwner() !== $user) {
             $this->addFlash('error', 'Seul le propriétaire du projet peut supprimer une tâche.');
             return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
@@ -213,7 +250,7 @@ class TaskController extends AbstractController
     {
         $user = $this->getUser();
 
-        // 🔒 propriétaire du projet ou assignee
+        // propriétaire du projet ou assignee
         if ($task->getAssignee() !== $user && $task->getProject()->getOwner() !== $user) {
             $this->addFlash('error', 'Vous ne pouvez modifier que les tâches qui vous sont assignées.');
             return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
@@ -257,7 +294,7 @@ class TaskController extends AbstractController
     {
         $user = $this->getUser();
 
-        // 🔒 seul le propriétaire peut ajouter rapidement
+        // seul le propriétaire peut ajouter rapidement
         if ($project->getOwner() !== $user) {
             return new JsonResponse([
                 'success' => false,

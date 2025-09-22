@@ -20,24 +20,22 @@
 	<body>
 		<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
 			<div class="container-fluid">
-				<div
-					class="d-flex d-lg-none navbar-header-mobile">
-					<!-- Le menu burger à gauche -->
+				<div class="d-flex d-lg-none navbar-header-mobile">
 					<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
 						<span class="navbar-toggler-icon"></span>
 					</button>
 
-					<!-- Le logo centré -->
 					<a class="navbar-brand" href="{{ path('app_home') }}">
 						📋 TaskFlow
 					</a>
 
-					<!-- La cloche à droite avec dimensions uniformes -->
 					{% if app.user %}
 						<div class="navbar-toggler-notifications">
 							<button class="notification-bell-btn" type="button" data-bs-toggle="modal" data-bs-target="#notificationModal">
-								<i class="fas fa-bell"></i>
-								<span class="badge bg-danger notification-badge" id="notification-count"></span>
+								<span class="notification-icon-wrapper">
+									<i class="fas fa-bell"></i>
+									<span class="badge bg-danger notification-badge" id="notification-count"></span>
+								</span>
 							</button>
 						</div>
 					{% endif %}
@@ -51,6 +49,7 @@
 							</a>
 						</li>
 						{% if app.user %}
+							<li class="nav-item d-lg-none"><hr class="dropdown-divider"></li>
 							<li class="nav-item">
 								<a class="nav-link" href="{{ path('app_dashboard') }}">
 									<i class="fas fa-tachometer-alt"></i>
@@ -69,68 +68,90 @@
 									Mes Tâches
 								</a>
 							</li>
-						{% endif %}
-					</ul>
 
-					<ul class="navbar-nav">
-						{% if app.user %}
-							<li
-								class="nav-item dropdown d-none d-lg-block notification-desktop">
-								<!-- Version desktop de la cloche avec dimensions cohérentes -->
-								<a class="nav-link notification-bell-btn" href="#" id="notificationDropdownDesktop" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-									<i class="fas fa-bell"></i>
-									<span class="badge bg-danger notification-badge" id="notification-count-desktop"></span>
+							<li class="nav-item d-lg-none"><hr class="dropdown-divider"></li>
+							<li class="nav-item d-lg-none">
+								<a class="nav-link" href="{{ path('user_profile') }}">
+									<i class="fas fa-user-edit"></i>
+									Mon Profil
 								</a>
-								<ul class="dropdown-menu dropdown-menu-end notification-dropdown" id="notification-list-desktop" aria-labelledby="notificationDropdownDesktop">
-									<li>
-										<p class="text-center my-2">Chargement...</p>
-									</li>
-									<li><hr class="dropdown-divider"></li>
-									<li>
-										<a href="{{ path('notification_index') }}" class="dropdown-item text-center">
-											Voir toutes les notifications
-										</a>
-									</li>
-								</ul>
 							</li>
-
-							<li class="nav-item dropdown">
-								<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-									<i class="fas fa-user"></i>
-									{{ app.user.fullName }}
+							{% if is_granted('ROLE_ADMIN') %}
+								<li class="nav-item d-lg-none">
+									<a class="nav-link" href="{{ path('admin_dashboard') }}">
+										<i class="fas fa-cogs"></i>
+										Administration
+									</a>
+								</li>
+							{% endif %}
+							<li class="nav-item d-lg-none">
+								<a class="nav-link" href="{{ path('app_logout') }}">
+									<i class="fas fa-sign-out-alt"></i>
+									Déconnexion
 								</a>
-								<ul class="dropdown-menu">
-									<li>
-										<a class="dropdown-item" href="{{ path('user_profile') }}">
-											<i class="fas fa-user-edit"></i>
-											Mon Profil
-										</a>
-									</li>
-									{% if is_granted('ROLE_ADMIN') %}
-										<li>
-											<a class="dropdown-item" href="{{ path('admin_dashboard') }}">
-												<i class="fas fa-cogs"></i>
-												Administration
-											</a>
-										</li>
-									{% endif %}
-									<li><hr class="dropdown-divider"></li>
-									<li>
-										<a class="dropdown-item" href="{{ path('app_logout') }}">
-											<i class="fas fa-sign-out-alt"></i>
-											Déconnexion
-										</a>
-									</li>
-								</ul>
 							</li>
 						{% else %}
-							<li class="nav-item">
+							{# Déplacé ici pour les mobiles #}
+							<li class="nav-item d-lg-none"><hr class="dropdown-divider"></li>
+							<li class="nav-item d-lg-none">
 								<a class="nav-link" href="{{ path('app_login') }}">
 									<i class="fas fa-sign-in-alt"></i>
 									Connexion
 								</a>
 							</li>
-							<li class="nav-item">
+							<li class="nav-item d-lg-none">
+								<a class="nav-link" href="{{ path('app_register') }}">
+									<i class="fas fa-user-plus"></i>
+									Inscription
+								</a>
+							</li>
+						{% endif %}
+					</ul>
+
+					<ul class="navbar-nav align-items-center">
+						{% if app.user %}
+							<li class="nav-item d-none d-lg-block">
+								<a class="nav-link" href="{{ path('user_profile') }}">
+									<i class="fas fa-user-edit"></i>
+									Mon Profil
+								</a>
+							</li>
+							{% if is_granted('ROLE_ADMIN') %}
+								<li class="nav-item d-none d-lg-block">
+									<a class="nav-link" href="{{ path('admin_dashboard') }}">
+										<i class="fas fa-cogs"></i>
+										Administration
+									</a>
+								</li>
+							{% endif %}
+
+							<li class="nav-item dropdown d-none d-lg-block notification-desktop">
+								<a class="nav-link" href="#" id="notificationDropdownDesktop" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+									<span class="notification-icon-wrapper">
+										<i class="fas fa-bell"></i>
+										<span class="badge bg-danger notification-badge" id="notification-count-desktop"></span>
+									</span>
+									Notifications
+								</a>
+
+								<ul class="dropdown-menu dropdown-menu-end notification-dropdown" id="notification-list-desktop" aria-labelledby="notificationDropdownDesktop"></ul>
+							</li>
+
+							<li class="nav-item d-none d-lg-block">
+								<a class="nav-link" href="{{ path('app_logout') }}">
+									<i class="fas fa-sign-out-alt"></i>
+									Déconnexion
+								</a>
+							</li>
+						{% else %}
+							{# Reste ici pour les desktops #}
+							<li class="nav-item d-none d-lg-block">
+								<a class="nav-link" href="{{ path('app_login') }}">
+									<i class="fas fa-sign-in-alt"></i>
+									Connexion
+								</a>
+							</li>
+							<li class="nav-item d-none d-lg-block">
 								<a class="nav-link" href="{{ path('app_register') }}">
 									<i class="fas fa-user-plus"></i>
 									Inscription
@@ -179,7 +200,6 @@
 			</div>
 		</footer>
 
-		<!-- Structure de la modale de notification pour la version mobile -->
 		<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
 			<div class="modal-dialog modal-dialog-centered">
 				<div class="modal-content">
@@ -187,9 +207,7 @@
 						<h5 class="modal-title" id="notificationModalLabel">Mes Notifications</h5>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 					</div>
-					<div
-						class="modal-body"><!-- Le contenu sera inséré par le JavaScript -->
-					</div>
+					<div class="modal-body"></div>
 					<div class="modal-footer">
 						<a href="{{ path('notification_index') }}" class="btn btn-outline-primary w-100">Voir toutes les notifications</a>
 					</div>
@@ -197,130 +215,127 @@
 			</div>
 		</div>
 
-		 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 		{% block javascripts %}
-			 <script>
-											// Auto-hide alerts after 5 seconds
-								document.addEventListener('DOMContentLoaded', function () {
-								const alerts = document.querySelectorAll('.alert:not(.alert-danger)');
-								alerts.forEach(function (alert) {
-								setTimeout(function () {
-								const bsAlert = new bootstrap.Alert(alert);
-								bsAlert.close();
-								}, 5000);
-								});
-								
-								// --- SCRIPT POUR LES NOTIFICATIONS ---
-								const notificationCountEl = document.getElementById('notification-count');
-								const notificationCountElDesktop = document.getElementById('notification-count-desktop');
-								const notificationListElDesktop = document.getElementById('notification-list-desktop');
-								const notificationModal = document.getElementById('notificationModal');
-								const notificationModalBody = document.querySelector('#notificationModal .modal-body');
-								
-								const unreadCountUrl = "{{ path('api_notification_unread_count') }}";
-								const recentNotificationsUrl = "{{ path('api_notification_recent') }}?limit=5";
-								
-								// Met à jour le compteur de notifications
-								const updateUnreadCount = () => {
-								fetch(unreadCountUrl).then(response => response.json()).then(data => {
-								if (data.count > 0) {
-								if (notificationCountEl) {
-								notificationCountEl.innerText = data.count;
-								notificationCountEl.style.display = 'flex';
-								}
-								if (notificationCountElDesktop) {
-								notificationCountElDesktop.innerText = data.count;
-								notificationCountElDesktop.style.display = 'flex';
-								}
-								} else {
-								if (notificationCountEl) {
-								notificationCountEl.style.display = 'none';
-								}
-								if (notificationCountElDesktop) {
-								notificationCountElDesktop.style.display = 'none';
-								}
-								}
-								});
-								};
-								
-								// Charge les notifications récentes dans un conteneur donné
-								const loadRecentNotifications = (containerElement, isModal = false) => {
-								containerElement.innerHTML = '<p class="text-center text-muted my-4">Chargement...</p>';
-								fetch(recentNotificationsUrl).then(response => response.json()).then(data => {
-								containerElement.innerHTML = '';
-								
-								if (data.length === 0) {
-								containerElement.innerHTML = '<p class="text-center text-muted my-4">Aucune nouvelle notification</p>';
-								} else {
-								const listGroup = document.createElement('div');
-								listGroup.className = isModal ? 'list-group list-group-flush' : 'list-group';
-								
-								data.forEach(notif => {
-								const item = document.createElement('a');
-								item.href = notif.read_url;
-								item.className = 'list-group-item list-group-item-action d-flex align-items-start notification-item';
-								if (!notif.is_read) {
-								item.classList.add('unread');
-								}
-								
-								item.innerHTML = `
-																			<i class="${
-								notif.icon
-								} ${
-								notif.color_class
-								} mt-1 me-3"></i>
-																			<div>
-																				<div class="small">${
-								notif.message
-								}</div>
-																				<small class="text-muted">${
-								notif.time_ago
-								}</small>
-																			</div>
-																		`;
-								listGroup.appendChild(item);
-								});
-								containerElement.appendChild(listGroup);
-								}
-								
-								// Réinjecter le bouton "Voir toutes les notifications" uniquement pour desktop
-								if (!isModal) {
-								const divider = document.createElement('li');
-								divider.innerHTML = '<hr class="dropdown-divider">';
-								const link = document.createElement('a');
-								link.href = "{{ path('notification_index') }}";
-								link.className = "dropdown-item text-center";
-								link.textContent = "Voir toutes les notifications";
-								
-								containerElement.appendChild(divider);
-								containerElement.appendChild(link);
-								}
-								});
-								};
-								
-								// Mettre à jour le compteur au chargement de la page
-								updateUnreadCount();
-								
-								// Charger les notifications quand on ouvre la modale (version mobile)
-								if (notificationModal) {
-								notificationModal.addEventListener('show.bs.modal', function () {
-								loadRecentNotifications(notificationModalBody, true);
-								});
-								}
-								
-								// Charger les notifications quand on clique sur la cloche desktop
-								const notificationDropdownDesktop = document.getElementById('notificationDropdownDesktop');
-								if (notificationDropdownDesktop) {
-								notificationDropdownDesktop.addEventListener('show.bs.dropdown', function () {
-								loadRecentNotifications(notificationListElDesktop);
-								});
-								}
-								
-								// Optionnel : Mettre à jour le compteur toutes les minutes
-								setInterval(updateUnreadCount, 60000);
-								});
-										</script>
+			<script>
+				// Auto-hide alerts
+document.addEventListener('DOMContentLoaded', function () {
+const alerts = document.querySelectorAll('.alert:not(.alert-danger)');
+alerts.forEach(function (alert) {
+setTimeout(function () {
+const bsAlert = new bootstrap.Alert(alert);
+bsAlert.close();
+}, 5000);
+});
+// --- SCRIPT POUR LES NOTIFICATIONS ---
+const notificationCountEl = document.getElementById('notification-count');
+const notificationCountElDesktop = document.getElementById('notification-count-desktop');
+const notificationListElDesktop = document.getElementById('notification-list-desktop');
+const notificationModal = document.getElementById('notificationModal');
+const notificationModalBody = document.querySelector('#notificationModal .modal-body');
+const unreadCountUrl = "{{ path('api_notification_unread_count') }}";
+const recentNotificationsUrl = "{{ path('api_notification_recent') }}?limit=5";
+// Met à jour le compteur de notifications
+const updateUnreadCount = () => {
+fetch(unreadCountUrl).then(response => response.json()).then(data => {
+if (data.count > 0) {
+if (notificationCountEl) {
+notificationCountEl.innerText = data.count;
+notificationCountEl.style.display = 'flex';
+}
+if (notificationCountElDesktop) {
+notificationCountElDesktop.innerText = data.count;
+notificationCountElDesktop.style.display = 'flex';
+}
+} else {
+if (notificationCountEl) {
+notificationCountEl.style.display = 'none';
+}
+if (notificationCountElDesktop) {
+notificationCountElDesktop.style.display = 'none';
+}
+}
+});
+};
+
+// Charge les notifications récentes
+const loadRecentNotifications = (containerElement, isModal = false) => {
+containerElement.innerHTML = '<p class="text-center text-muted my-4">Chargement...</p>';
+fetch(recentNotificationsUrl).then(response => response.json()).then(data => {
+containerElement.innerHTML = '';
+
+if (data.length === 0) {
+containerElement.innerHTML = '<p class="text-center text-muted my-4">Aucune nouvelle notification</p>';
+} else {
+const listGroup = document.createElement('div');
+listGroup.className = isModal ? 'list-group list-group-flush' : 'list-group';
+
+data.forEach(notif => {
+const item = document.createElement('a');
+item.href = notif.read_url;
+item.className = 'list-group-item list-group-item-action d-flex align-items-start notification-item';
+if (!notif.is_read) {
+item.classList.add('unread');
+}
+
+item.innerHTML = `
+																		<i class="${
+notif.icon
+} ${
+notif.color_class
+} mt-1 me-3"></i>
+																		<div>
+																			<div class="small">${
+notif.message
+}</div>
+																			<small class="text-muted">${
+notif.time_ago
+}</small>
+																		</div>
+																	`;
+listGroup.appendChild(item);
+});
+containerElement.appendChild(listGroup);
+}
+
+// Réinjecter le bouton "Voir toutes" pour desktop
+if (!isModal) {
+const divider = document.createElement('li');
+divider.innerHTML = '<hr class="dropdown-divider">';
+const linkContainer = document.createElement('li');
+const link = document.createElement('a');
+link.href = "{{ path('notification_index') }}";
+link.className = "dropdown-item text-center";
+link.textContent = "Voir toutes les notifications";
+linkContainer.appendChild(link);
+
+containerElement.appendChild(divider);
+containerElement.appendChild(linkContainer);
+}
+});
+};
+// Mettre à jour au chargement
+updateUnreadCount();
+// Charger les notifications dans la modale mobile
+if (notificationModal) {
+notificationModal.addEventListener('show.bs.modal', function () {
+loadRecentNotifications(notificationModalBody, true);
+});
+}
+
+// Charger les notifications dans le dropdown desktop
+const notificationDropdownDesktop = document.getElementById('notificationDropdownDesktop');
+if (notificationDropdownDesktop) {
+notificationDropdownDesktop.addEventListener('show.bs.dropdown', function () {
+loadRecentNotifications(notificationListElDesktop);
+});
+}
+
+// Mettre à jour le compteur toutes les minutes
+setInterval(updateUnreadCount, 60000);
+});
+			</script>
 		{% endblock %}
 	</body>
 </html>

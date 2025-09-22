@@ -97,11 +97,11 @@
 													</td>
 													<td data-label="Priorité">
 														{% if task.priority == 'high' %}
-															<span class="table-badge danger">Haute</span>
+															<span class="badge bg-danger">Haute</span>
 														{% elseif task.priority == 'medium' %}
-															<span class="table-badge warning">Moyenne</span>
+															<span class="badge bg-warning text-dark">Moyenne</span>
 														{% else %}
-															<span class="table-badge secondary">Basse</span>
+															<span class="badge bg-info text-dark">Basse</span>
 														{% endif %}
 													</td>
 													<td data-label="Date limite">
@@ -112,17 +112,19 @@
 														{% endif %}
 													</td>
 													<td data-label="Statut">
-														<span class="task-status-badge task-status-{{ task.status }}">{{ task.statusLabel }}</span>
+														<span class="badge bg-{{ task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">{{ task.statusLabel }}</span>
 													</td>
 													<td data-label="Actions" class="text-end">
-														<div class="table-actions">
-															<a href="{{ path('task_show', {id: task.id}) }}" class="table-action-btn view" title="Voir les détails">
+														<div class="d-flex justify-content-end align-items-center gap-2">
+															<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-sm btn-outline-info" title="Voir les détails">
 																<i class="fas fa-eye"></i>
+																<span class="d-none d-lg-inline ms-1">Voir</span>
 															</a>
 
 															{% if task.project.owner == app.user %}
-																<button type="button" class="table-action-btn delete delete-task-btn" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" title="Supprimer la tâche">
+																<button type="button" class="btn btn-sm btn-outline-danger delete-task-btn" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" title="Supprimer la tâche">
 																	<i class="fas fa-trash"></i>
+																	<span class="d-none d-lg-inline ms-1">Supprimer</span>
 																</button>
 															{% endif %}
 														</div>
@@ -162,41 +164,41 @@
 					{# Vue Cartes pour les petits écrans #}
 					<div class="d-md-none">
 						{% for task in tasks %}
-							<div class="task-card">
-								<div class="task-card-body">
-									<h5 class="task-card-title">
+							<div class="card mb-3 shadow-sm border-0">
+								<div class="card-body">
+									<h5 class="card-title fw-bold">
 										{{ task.title }}
 									</h5>
-									<ul class="task-card-meta">
+									<ul class="list-unstyled mb-0 small text-muted">
 										{% if not project %}
-											<li>
-												<strong>Projet :</strong>
+											<li class="mb-1">
+												<strong class="text-dark">Projet :</strong>
 												<span class="text-muted">
 													<i class="fas fa-folder me-1"></i>
 													{{ task.project.title }}
 												</span>
 											</li>
 										{% endif %}
-										<li>
-											<strong>Responsable :</strong>
+										<li class="mb-1">
+											<strong class="text-dark">Responsable :</strong>
 											{% if task.assignee %}
 												{{ task.assignee.fullName }}
 											{% else %}
 												<span class="fst-italic">Non assigné</span>
 											{% endif %}
 										</li>
-										<li>
-											<strong>Priorité :</strong>
+										<li class="mb-1">
+											<strong class="text-dark">Priorité :</strong>
 											{% if task.priority == 'high' %}
-												<span class="table-badge danger">Haute</span>
+												<span class="badge bg-danger">Haute</span>
 											{% elseif task.priority == 'medium' %}
-												<span class="table-badge warning">Moyenne</span>
+												<span class="badge bg-warning text-dark">Moyenne</span>
 											{% else %}
-												<span class="table-badge secondary">Basse</span>
+												<span class="badge bg-info text-dark">Basse</span>
 											{% endif %}
 										</li>
-										<li>
-											<strong>Date limite :</strong>
+										<li class="mb-1">
+											<strong class="text-dark">Date limite :</strong>
 											{% if task.dueDate %}
 												{{ task.dueDate|date('d/m/Y') }}
 											{% else %}
@@ -204,17 +206,17 @@
 											{% endif %}
 										</li>
 										<li>
-											<strong>Statut :</strong>
-											<span class="task-status-badge task-status-{{ task.status }}">{{ task.statusLabel }}</span>
+											<strong class="text-dark">Statut :</strong>
+											<span class="badge bg-{{ task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">{{ task.statusLabel }}</span>
 										</li>
 									</ul>
-									<div class="table-actions mt-3">
-										<a href="{{ path('task_show', {id: task.id}) }}" class="table-action-btn view" title="Voir les détails">
+									<div class="d-flex justify-content-end align-items-center gap-2 mt-3">
+										<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-sm btn-outline-info" title="Voir les détails">
 											<i class="fas fa-eye"></i>
 										</a>
 
 										{% if task.project.owner == app.user %}
-											<button type="button" class="table-action-btn delete" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" title="Supprimer la tâche">
+											<button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" title="Supprimer la tâche">
 												<i class="fas fa-trash"></i>
 											</button>
 										{% endif %}

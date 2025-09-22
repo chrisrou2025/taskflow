@@ -57,27 +57,6 @@ class CollaborationController extends AbstractController
     }
 
     /**
-     * Affiche une demande de collaboration spécifique
-     */
-    #[Route('/request/{id}', name: 'collaboration_request_show', methods: ['GET'])]
-    public function showRequest(CollaborationRequest $collaborationRequest): Response
-    {
-        $currentUser = $this->getUser();
-
-        // Vérifier que l'utilisateur est concerné par cette demande
-        if ($collaborationRequest->getSender() !== $currentUser && 
-            $collaborationRequest->getInvitedUser() !== $currentUser) {
-            $this->addFlash('danger', 'Accès non autorisé à cette demande.');
-            return $this->redirectToRoute('collaboration_requests');
-        }
-
-        return $this->render('collaboration/show_request.html.twig', [
-            'request' => $collaborationRequest,
-            'perspective' => $collaborationRequest->getInvitedUser() === $currentUser ? 'recipient' : 'sender'
-        ]);
-    }
-
-    /**
      * Affiche la liste des utilisateurs pour inviter à collaborer sur un projet
      */
     #[Route('/invite/{id}', name: 'collaboration_invite', methods: ['GET', 'POST'])]
@@ -228,6 +207,135 @@ class CollaborationController extends AbstractController
 
         $this->addFlash('success', 'La demande de collaboration a bien été annulée.');
         return $this->redirectToRoute('collaboration_requests');
+    }
+
+    /**
+     * NOUVELLE ROUTE - Supprime définitivement une demande de collaboration
+     */
+    #[Route('/request/{id}/delete', name: 'collaboration_request_delete', methods: ['POST'])]
+    public function delete(Request $request, CollaborationRequest $collaborationRequest): Response
+    {
+        $currentUser = $this->getUser();
+
+        // Vérifier que l'utilisateur est concerné par cette demande
+        if ($collaborationRequest->getSender() !== $currentUser && 
+            $collaborationRequest->getInvitedUser() !== $currentUser) {
+            $this->addFlash('danger', 'Vous ne pouvez pas supprimer cette demande.');
+            return $this->redirectToRoute('collaboration_requests');
+        }
+
+        // Vérifier le token CSRF
+        if ($this->isCsrfTokenValid('delete-request-' . $collaborationRequest->getId(), 
+            $request->request->get('_token'))) {
+            
+            $projectTitle = $collaborationRequest->getProject()->getTitle();
+            
+            // Supprimer la demande
+            $this->entityManager->remove($collaborationRequest);
+            $this->entityManager->flush();
+
+            $this->addFlash('success', sprintf(
+                'La demande de collaboration pour le projet "%s" a été supprimée définitivement.',
+                $projectTitle
+            ));
+        } else {
+            $this->addFlash('error', 'Token CSRF invalide.');
+        }
+
+        return $this->redirectToRoute('collaboration_requests');
+    }
+
+    /**
+     * NOUVELLE ROUTE - Supprime toutes les demandes reçues traitées (acceptées/refusées)
+     */
+    #[Route('/bulk-clear-processed-received', name: 'collaboration_bulk_clear_processed_received', methods: ['POST'])]
+    public function bulkClearProcessedReceived(
+        Request $request,
+        CollaborationRequestRepository $collaborationRequestRepository
+    ): JsonResponse {
+        $currentUser = $this->getUser();
+
+        if (!$this->isCsrfTokenValid('bulk-clear-processed-received', $request->request->get('_token'))) {
+            return new JsonResponse(['success' => false, 'message' => 'Token CSRF invalide'], 400);
+        }
+
+        $processedRequests = $collaborationRequestRepository->createQueryBuilder('cr')
+            ->where('cr.invitedUser = :user')
+            ->andWhere('cr.status IN (:statuses)')
+            ->setParameter('user', $currentUser)
+            ->setParameter('statuses', [
+                CollaborationRequest::STATUS_ACCEPTED,
+                CollaborationRequest::STATUS_REFUSED
+            ])
+            ->getQuery()
+            ->getResult();
+
+        $clearedCount = 0;
+        foreach ($processedRequests as $request) {
+            $this->entityManager->remove($request);
+            $clearedCount++;
+        }
+
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => sprintf(
+                '%d demande%s traitée%s supprimée%s avec succès.',
+                $clearedCount,
+                $clearedCount > 1 ? 's' : '',
+                $clearedCount > 1 ? 's' : '',
+                $clearedCount > 1 ? 's' : ''
+            ),
+            'count' => $clearedCount
+        ]);
+    }
+
+    /**
+     * NOUVELLE ROUTE - Supprime toutes les demandes envoyées traitées
+     */
+    #[Route('/bulk-clear-processed-sent', name: 'collaboration_bulk_clear_processed_sent', methods: ['POST'])]
+    public function bulkClearProcessedSent(
+        Request $request,
+        CollaborationRequestRepository $collaborationRequestRepository
+    ): JsonResponse {
+        $currentUser = $this->getUser();
+
+        if (!$this->isCsrfTokenValid('bulk-clear-processed-sent', $request->request->get('_token'))) {
+            return new JsonResponse(['success' => false, 'message' => 'Token CSRF invalide'], 400);
+        }
+
+        $processedRequests = $collaborationRequestRepository->createQueryBuilder('cr')
+            ->where('cr.sender = :user')
+            ->andWhere('cr.status IN (:statuses)')
+            ->setParameter('user', $currentUser)
+            ->setParameter('statuses', [
+                CollaborationRequest::STATUS_ACCEPTED,
+                CollaborationRequest::STATUS_REFUSED,
+                CollaborationRequest::STATUS_CANCELLED
+            ])
+            ->getQuery()
+            ->getResult();
+
+        $clearedCount = 0;
+        foreach ($processedRequests as $request) {
+            $this->entityManager->remove($request);
+            $clearedCount++;
+        }
+
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => sprintf(
+                '%d demande%s traitée%s supprimée%s avec succès.',
+                $clearedCount,
+                $clearedCount > 1 ? 's' : '',
+                $clearedCount > 1 ? 's' : '',
+                $clearedCount > 1 ? 's' : ''
+            ),
+            'count' => $clearedCount
+        ]);
     }
     
     /**
