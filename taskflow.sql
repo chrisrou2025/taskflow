@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : localhost
--- Généré le : mar. 16 sep. 2025 à 19:31
+-- Généré le : lun. 22 sep. 2025 à 14:10
 -- Version du serveur : 9.1.0
 -- Version de PHP : 8.3.14
 
@@ -39,18 +39,6 @@ CREATE TABLE `collaboration_request` (
   `updated_at` datetime DEFAULT NULL COMMENT '(DC2Type:datetime_immutable)',
   `responded_at` datetime DEFAULT NULL COMMENT '(DC2Type:datetime_immutable)'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Déchargement des données de la table `collaboration_request`
---
-
-INSERT INTO `collaboration_request` (`id`, `project_id`, `sender_id`, `invited_user_id`, `status`, `message`, `response`, `created_at`, `updated_at`, `responded_at`) VALUES
-(3, 1, 1, 6, 'accepted', NULL, 'Demande acceptée.', '2025-09-15 19:03:19', '2025-09-15 19:06:40', '2025-09-15 19:06:40'),
-(4, 1, 1, 7, 'accepted', NULL, 'Demande acceptée.', '2025-09-15 19:03:27', '2025-09-15 19:07:48', '2025-09-15 19:07:48'),
-(5, 1, 1, 5, 'accepted', NULL, 'Demande acceptée.', '2025-09-15 19:03:34', '2025-09-15 19:06:04', '2025-09-15 19:06:04'),
-(6, 2, 1, 3, 'accepted', NULL, 'Demande acceptée.', '2025-09-16 14:02:24', '2025-09-16 14:04:28', '2025-09-16 14:04:28'),
-(7, 6, 3, 1, 'accepted', NULL, 'Demande acceptée.', '2025-09-16 14:05:05', '2025-09-16 14:06:39', '2025-09-16 14:06:39'),
-(8, 2, 1, 6, 'accepted', NULL, 'Demande acceptée.', '2025-09-16 19:17:55', '2025-09-16 19:21:45', '2025-09-16 19:21:45');
 
 -- --------------------------------------------------------
 
@@ -128,11 +116,11 @@ CREATE TABLE `notification` (
 --
 
 INSERT INTO `notification` (`id`, `recipient_id`, `sender_id`, `project_id`, `task_id`, `type`, `title`, `message`, `status`, `created_at`, `read_at`, `action_url`, `data`) VALUES
-(5, 7, 1, 1, NULL, 'collaboration_request', 'Nouvelle demande de collaboration', 'christian ROUPIOZ vous invite à collaborer sur le projet \"TaskFlow\"', 'read', '2025-09-15 19:03:27', '2025-09-15 19:07:46', '/collaboration/requests', '{\"project_id\": 1, \"collaboration_request_id\": 4}'),
 (6, 5, 1, 1, NULL, 'collaboration_request', 'Nouvelle demande de collaboration', 'christian ROUPIOZ vous invite à collaborer sur le projet \"TaskFlow\"', 'read', '2025-09-15 19:03:34', '2025-09-15 19:06:00', '/collaboration/requests', '{\"project_id\": 1, \"collaboration_request_id\": 5}'),
-(11, 3, 1, 2, NULL, 'collaboration_request', 'Nouvelle demande de collaboration', 'christian ROUPIOZ vous invite à collaborer sur le projet \"Dev junior\"', 'read', '2025-09-16 14:02:24', '2025-09-16 14:04:24', '/collaboration/requests', '{\"project_id\": 2, \"collaboration_request_id\": 6}'),
-(14, 3, 1, 6, NULL, 'collaboration_accepted', 'Collaboration acceptée', 'christian ROUPIOZ a accepté votre invitation à collaborer sur le projet \"kjhgfdfgjkjhgfghsf fghjklkjhgfd fhjklmlkjhgfd\"', 'unread', '2025-09-16 14:06:39', NULL, '/projects/6', '{\"response\": \"Demande acceptée.\", \"collaboration_request_id\": 7}'),
-(16, 1, 6, 2, NULL, 'collaboration_accepted', 'Collaboration acceptée', 'claude IA a accepté votre invitation à collaborer sur le projet \"Dev junior\"', 'read', '2025-09-16 19:21:45', '2025-09-16 19:23:04', '/projects/2', '{\"response\": \"Demande acceptée.\", \"collaboration_request_id\": 8}');
+(19, 5, 1, 2, NULL, 'collaboration_request', 'Nouvelle demande de collaboration', 'christian ROUPIOZ vous invite à collaborer sur le projet \"Dev junior\"', 'read', '2025-09-21 08:58:52', '2025-09-21 18:27:51', '/collaboration/requests', '{\"project_id\": 2, \"collaboration_request_id\": 10}'),
+(22, 4, 1, 1, NULL, 'collaboration_request', 'Nouvelle demande de collaboration', 'christian ROUPIOZ vous invite à collaborer sur le projet \"TaskFlow\"', 'read', '2025-09-21 14:25:25', '2025-09-21 14:27:30', '/collaboration/requests', '{\"project_id\": 1, \"collaboration_request_id\": 13}'),
+(26, 5, 1, 2, NULL, 'collaboration_request', 'Nouvelle demande de collaboration', 'christian ROUPIOZ vous invite à collaborer sur le projet \"Dev junior\"', 'unread', '2025-09-21 18:39:39', NULL, '/collaboration/requests', '{\"project_id\": 2, \"collaboration_request_id\": 14}'),
+(27, 3, 1, 1, 1, 'task_assigned', 'Nouvelle tâche assignée', 'christian ROUPIOZ vous a assigné la tâche \"Faire le Figma\" dans le projet \"TaskFlow\"', 'read', '2025-09-22 09:05:30', '2025-09-22 09:06:25', '/tasks/1', '{\"task_id\": 1, \"due_date\": \"2025-09-30\", \"priority\": \"high\"}');
 
 -- --------------------------------------------------------
 
@@ -154,9 +142,8 @@ CREATE TABLE `project` (
 --
 
 INSERT INTO `project` (`id`, `owner_id`, `title`, `description`, `created_at`, `updated_at`) VALUES
-(1, 1, 'TaskFlow', 'Objectifs pédagogiques\r\n• Développer une application Symfony multi-utilisateurs\r\n• Gérer des relations entre entités (projets ↔ tâches ↔ utilisateurs)\r\n• Mettre en place un CRUD complet et une interface intuitive\r\n• Découvrir des notions d’organisation et de suivi (statuts, priorités', '2025-09-02 12:39:25', '2025-09-15 19:07:48'),
-(2, 1, 'Dev junior', 'Trouver une entreprise pour un poste de Dev Junior', '2025-09-02 13:03:12', '2025-09-16 19:21:45'),
-(6, 3, 'kjhgfdfgjkjhgfghsf fghjklkjhgfd fhjklmlkjhgfd', 'fdghjklmùmlkjtrtyuiuoipo^$ùmlkdsfgdhfjgkjlkmlmpkojiuryetzrdxcsvdbfng,khljpokijuhgefcdfvgbhnj,kolpkiojhuhygyftcdfxvcgbnhj,k;liojuhygtfreczevgrbhtnju', '2025-09-16 07:56:26', '2025-09-16 14:06:39');
+(1, 1, 'TaskFlow', 'Objectifs pédagogiques\r\n• Développer une application Symfony multi-utilisateurs\r\n• Gérer des relations entre entités (projets ↔ tâches ↔ utilisateurs)\r\n• Mettre en place un CRUD complet et une interface intuitive\r\n• Découvrir des notions d’organisation et de suivi (statuts, priorités', '2025-09-02 12:39:25', '2025-09-21 14:42:03'),
+(2, 1, 'Dev junior', 'Trouver une entreprise pour un poste de Dev Junior', '2025-09-02 13:03:12', '2025-09-20 16:05:49');
 
 -- --------------------------------------------------------
 
@@ -174,12 +161,14 @@ CREATE TABLE `project_user` (
 --
 
 INSERT INTO `project_user` (`project_id`, `user_id`) VALUES
+(1, 3),
+(1, 4),
 (1, 5),
 (1, 6),
 (1, 7),
 (2, 3),
-(2, 6),
-(6, 1);
+(2, 4),
+(2, 6);
 
 -- --------------------------------------------------------
 
@@ -206,12 +195,12 @@ CREATE TABLE `task` (
 --
 
 INSERT INTO `task` (`id`, `project_id`, `title`, `description`, `status`, `priority`, `due_date`, `created_at`, `assignee_id`, `updated_at`, `completed_at`) VALUES
-(1, 1, 'Faire le Figma', 'Réaliser les versions Desktop et Mobile', 'in_progress', 'high', '2025-09-30 10:24:00', '2025-09-02 12:41:55', 1, '2025-09-13 08:19:57', NULL),
-(2, 1, 'Faire le Readme', 'Présentation du projet pour Github', 'todo', 'medium', '2025-09-30 10:25:00', '2025-09-02 12:43:38', 1, '2025-09-16 19:13:50', NULL),
-(3, 2, 'Mettre à jour le CV', NULL, 'todo', 'medium', '2025-10-31 12:44:00', '2025-09-02 13:04:56', 1, '2025-09-12 14:55:20', NULL),
-(4, 2, 'Postuler', NULL, 'todo', 'medium', '2025-11-03 12:42:00', '2025-09-02 13:05:21', 1, '2025-09-12 17:14:25', NULL),
-(5, 1, 'Coder avec Symfony', NULL, 'in_progress', 'high', '2025-09-30 10:26:00', '2025-09-02 13:07:15', 1, '2025-09-16 13:53:27', NULL),
-(18, 1, 'Faire le MCD et le MLD', NULL, 'in_progress', 'medium', '2025-09-30 17:02:00', '2025-09-09 15:02:50', 1, '2025-09-16 13:53:47', NULL);
+(1, 1, 'Faire le Figma', 'Réaliser les versions Desktop et Mobile', 'in_progress', 'high', '2025-09-30 10:24:00', '2025-09-02 12:41:55', 1, '2025-09-22 09:14:30', NULL),
+(2, 1, 'Faire le Readme', 'Présentation du projet pour Github', 'todo', 'medium', '2025-09-30 10:25:00', '2025-09-02 12:43:38', 5, '2025-09-17 17:01:01', NULL),
+(3, 2, 'Mettre à jour le CV', NULL, 'todo', 'medium', '2025-10-31 12:44:00', '2025-09-02 13:04:56', 3, '2025-09-21 14:53:11', NULL),
+(4, 2, 'Postuler', NULL, 'todo', 'medium', '2025-11-03 12:42:00', '2025-09-02 13:05:21', 1, '2025-09-21 15:05:08', NULL),
+(5, 1, 'Coder avec Symfony', NULL, 'in_progress', 'high', '2025-09-30 10:26:00', '2025-09-02 13:07:15', 6, '2025-09-17 17:01:17', NULL),
+(18, 1, 'Faire le MCD et le MLD', NULL, 'todo', 'medium', '2025-09-30 17:02:00', '2025-09-09 15:02:50', 7, '2025-09-17 17:02:06', NULL);
 
 -- --------------------------------------------------------
 
@@ -321,7 +310,7 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT pour la table `collaboration_request`
 --
 ALTER TABLE `collaboration_request`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT pour la table `messenger_messages`
@@ -333,7 +322,7 @@ ALTER TABLE `messenger_messages`
 -- AUTO_INCREMENT pour la table `notification`
 --
 ALTER TABLE `notification`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT pour la table `project`
