@@ -33,235 +33,366 @@
 			</div>
 		</div>
 
-		<div class="row">
+		<div class="row mb-4">
 			<div class="col-12">
-				{% if tasks is empty %}
-					<div class="tasks-empty-state">
-						<div class="tasks-empty-icon">
-							<i class="fas fa-check-double"></i>
-						</div>
-						{% if project %}
-							<h4 class="tasks-empty-title mb-3">Toutes les tâches du projet ont été terminées ! 🎉</h4>
-							<p class="tasks-empty-description mb-4">Bravo ! Ce projet est terminé. Vous pouvez en ajouter d'autres depuis votre tableau de bord.</p>
-							<a href="{{ path('task_new', {project: project.id}) }}" class="btn btn-primary">
-								<i class="fas fa-plus me-2"></i>Ajouter une nouvelle tâche
-							</a>
-						{% else %}
-							<h4 class="tasks-empty-title mb-3">Aucune tâche pour le moment</h4>
-							<p class="tasks-empty-description mb-4">Créez votre première tâche pour commencer à organiser votre travail.</p>
-							<a href="{{ path('task_new') }}" class="btn btn-primary">
-								<i class="fas fa-plus me-2"></i>Créer une nouvelle tâche
-							</a>
-						{% endif %}
+				<div class="card task-filters-container border-0 shadow-sm">
+					<div class="card-header filter-header bg-transparent border-0 p-0">
+						<button class="task-filter-toggle btn w-100 text-start d-flex justify-content-between align-items-center p-3" type="button" data-bs-toggle="collapse" data-bs-target="#filtersContent" aria-expanded="false" aria-controls="filtersContent">
+							<span class="fw-medium text-dark">
+								<i class="fas fa-filter me-2"></i>
+								Filtrage des tâches
+							</span>
+							<i class="fas
+																								fa-chevron-down text-muted"></i>
+						</button>
 					</div>
-				{% else %}
-					{# Vue Tableau pour les grands écrans #}
-					<div class="d-none d-md-block">
-						<div class="custom-table responsive-table">
-							<div class="card-body">
-								<div class="table-responsive">
-									<table class="table table-hover align-middle mb-0">
-										<thead>
-											<tr>
-												<th>Titre</th>
-												{% if not project %}
-													<th>Projet</th>
-												{% endif %}
-												<th>Responsable</th>
-												<th>Priorité</th>
-												<th>Date limite</th>
-												<th>Statut</th>
-												<th class="d-none d-sm-table-cell text-end">Actions</th>
-											</tr>
-										</thead>
-										<tbody>
-											{% for task in tasks %}
-												<tr class="task-row">
-													<td data-label="Titre">
-														{{ task.title }}
-													</td>
-													{% if not project %}
-														<td data-label="Projet">
-															<span class="text-muted">
-																<i class="fas fa-folder me-1"></i>
-																{{ task.project.title }}
-															</span>
-														</td>
-													{% endif %}
-													<td data-label="Responsable">
-														{% if task.assignee %}
-															{{ task.assignee.fullName }}
-														{% else %}
-															<span class="text-muted fst-italic">Non assigné</span>
-														{% endif %}
-													</td>
-													<td data-label="Priorité">
-														{% if task.priority == 'high' %}
-															<span class="badge bg-danger">Haute</span>
-														{% elseif task.priority == 'medium' %}
-															<span class="badge bg-warning text-dark">Moyenne</span>
-														{% else %}
-															<span class="badge bg-info text-dark">Basse</span>
-														{% endif %}
-													</td>
-													<td data-label="Date limite">
-														{% if task.dueDate %}
-															<span class="text-muted">{{ task.dueDate|date('d/m/Y') }}</span>
-														{% else %}
-															<span class="text-muted fst-italic">Non définie</span>
-														{% endif %}
-													</td>
-													<td data-label="Statut">
-														<span class="badge bg-{{ task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">{{ task.statusLabel }}</span>
-													</td>
-													<td data-label="Actions" class="text-end">
-														<div class="d-flex justify-content-end align-items-center gap-2">
-															<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-sm btn-outline-info" title="Voir les détails">
-																<i class="fas fa-eye"></i>
-																<span class="d-none d-lg-inline ms-1">Voir</span>
-															</a>
 
-															{% if task.project.owner == app.user %}
-																<button type="button" class="btn btn-sm btn-outline-danger delete-task-btn" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" title="Supprimer la tâche">
-																	<i class="fas fa-trash"></i>
-																	<span class="d-none d-lg-inline ms-1">Supprimer</span>
-																</button>
-															{% endif %}
-														</div>
-													</td>
-												</tr>
+					<div class="collapse task-filter-content" id="filtersContent">
+						<div class="card-body pt-0">
+							<form method="GET" id="filtersForm">
+								<div class="row">
+									<div class="col-lg-4 col-md-6 mb-3">
+										<label class="task-filter-label form-label fw-semibold mt-3">
+											<i class="fas fa-check-circle status-completed me-1"></i>
+											Statut
+										</label>
+										<div class="task-filter-buttons d-flex flex-wrap gap-2">
+											<a href="{{ path('task_index', {project: project ? project.id : null}) }}" class="btn btn-sm filter-btn {{ not current_status ? 'active' : '' }}">
+												Tous
+											</a>
+											{% for status_label, status_key in status_choices %}
+												<a href="{{ path('task_index', {project: project ? project.id : null, status: status_key, priority: current_priority}) }}" class="btn btn-sm filter-btn {{ current_status == status_key ? 'active' : '' }}">
+													{{ status_label }}
+												</a>
 											{% endfor %}
-										</tbody>
-									</table>
+										</div>
+									</div>
+
+									<div class="col-lg-4 col-md-6 mb-3">
+										<label class="task-filter-label form-label fw-semibold mt-3">
+											<i class="fas fa-exclamation-triangle priority-high me-1"></i>
+											Priorité
+										</label>
+										<div class="task-filter-buttons d-flex flex-wrap gap-2">
+											<a href="{{ path('task_index', {project: project ? project.id : null, status: current_status}) }}" class="btn btn-sm filter-btn {{ not current_priority ? 'active' : '' }}">
+												Toutes
+											</a>
+											{% for priority_label, priority_key in priority_choices %}
+												<a href="{{ path('task_index', {project: project ? project.id : null, status: current_status, priority: priority_key}) }}" class="btn btn-sm filter-btn {{ current_priority == priority_key ? 'active' : '' }}">
+													{{ priority_label }}
+												</a>
+											{% endfor %}
+										</div>
+									</div>
+
+									{% if not project %}
+										<div class="col-lg-4 col-md-12 mb-3">
+											<label class="task-filter-label form-label fw-semibold mt-3">
+												<i class="fas fa-folder text-primary me-1"></i>
+												Projet
+											</label>
+											<div class="task-filter-buttons d-flex flex-wrap gap-2">
+												<a href="{{ path('task_index') }}" class="btn btn-sm btn-outline-info">
+													Tous les projets
+												</a>
+												{% for user_project in projects %}
+													<a href="{{ path('task_index', {project: user_project.id}) }}" class="btn btn-sm btn-outline-info">
+														{{ user_project.title|slice(0, 15) }}
+														{% if user_project.title|length > 15 %}...
+														{% endif %}
+													</a>
+												{% endfor %}
+											</div>
+										</div>
+									{% endif %}
 								</div>
 
-								{# Pagination #}
-								{% if pages is defined and pages > 1 %}
-									<nav aria-label="Page navigation" class="tasks-pagination">
-										<ul class="pagination justify-content-center">
-											<li class="page-item {{ currentPage == 1 ? 'disabled' : '' }}">
-												<a class="page-link" href="{{ path('task_index', {project: project ? project.id : null, page: currentPage - 1}) }}" aria-label="Previous">
-													<span aria-hidden="true">&laquo;</span>
-												</a>
-											</li>
-											{% for page in 1..pages %}
-												<li class="page-item {{ currentPage == page ? 'active' : '' }}">
-													<a class="page-link" href="{{ path('task_index', {project: project ? project.id : null, page: page}) }}">{{ page }}</a>
-												</li>
-											{% endfor %}
-											<li class="page-item {{ currentPage == pages ? 'disabled' : '' }}">
-												<a class="page-link" href="{{ path('task_index', {project: project ? project.id : null, page: currentPage + 1}) }}" aria-label="Next">
-													<span aria-hidden="true">&raquo;</span>
-												</a>
-											</li>
-										</ul>
-									</nav>
-								{% endif %}
-							</div>
+								<div class="task-filter-actions row mt-3 pt-3 border-top">
+									<div class="col-12">
+										<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+											<div class="d-flex align-items-center gap-3">
+												{% if current_status or current_priority %}
+													<a href="{{ path('task_index', {project: project ? project.id : null}) }}" class="btn btn-outline-secondary btn-sm">
+														<i class="fas fa-times me-1"></i>
+														Effacer les filtres
+													</a>
+												{% endif %}
+											</div>
+										</div>
+									</div>
+								</div>
+							</form>
 						</div>
 					</div>
+				</div>
+			</div>
+		</div>
 
-					{# Vue Cartes pour les petits écrans #}
-					<div class="d-md-none">
+		<div class="row mb-4 d-none d-lg-block">
+			<div class="col-12">
+				<div class="card border-0 shadow-sm">
+					<div class="card-body p-0">
+						{% if tasks|length > 0 %}
+							<div class="table-responsive responsive-table">
+								<table class="table custom-table data-table custom-table-striped">
+									<thead>
+										<tr>
+											<th>Titre</th>
+											{% if not project %}
+												<th>Projet</th>
+											{% endif %}
+											<th>Responsable</th>
+											<th>Priorité</th>
+											<th>Date limite</th>
+											<th>Statut</th>
+											<th>Actions</th>
+										</tr>
+									</thead>
+									<tbody>
+										{% for task in tasks %}
+											<tr class="task-row">
+												<td data-label="Titre">{{ task.title }}</td>
+												{% if not project %}
+													<td data-label="Projet">{{ task.project.title }}</td>
+												{% endif %}
+												<td data-label="Responsable">
+													{% if task.assignee %}
+														{{ task.assignee.fullName }}
+													{% else %}
+														<span class="fst-italic">Non assigné</span>
+													{% endif %}
+												</td>
+												<td data-label="Priorité">
+													{% set priority = task.priority %}
+													{% set bootstrap_class = '' %}
+													{% set priority_text = '' %}
+													{% if priority == 'high' %}
+														{% set bootstrap_class = 'danger' %}
+														{% set priority_text = 'Haute' %}
+													{% elseif priority == 'medium' %}
+														{% set bootstrap_class = 'warning text-dark' %}
+														{% set priority_text = 'Moyenne' %}
+													{% else %}
+														{% set bootstrap_class = 'info' %}
+														{% set priority_text = 'Basse' %}
+													{% endif %}
+													<span class="badge bg-{{ bootstrap_class }}">
+														{{ priority_text }}
+													</span>
+												</td>
+												<td data-label="Date limite">
+													{% if task.dueDate %}
+														{{ task.dueDate|date('d/m/Y') }}
+													{% else %}
+														<span class="fst-italic">Non définie</span>
+													{% endif %}
+												</td>
+												<td data-label="Statut">
+													{% set status = task.status %}
+													{% set bootstrap_class = '' %}
+													{% if status == 'completed' %}
+														{% set bootstrap_class = 'success' %}
+													{% elseif status == 'in_progress' %}
+														{% set bootstrap_class = 'info' %}
+													{% else %}
+														{% set bootstrap_class = 'secondary' %}
+													{% endif %}
+													<span class="badge bg-{{ bootstrap_class }}">
+														{{ task.statusLabel }}
+													</span>
+												</td>
+												<td data-label="Actions" class="table-actions">
+													<div class="d-flex gap-2">
+														<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-sm btn-outline-info" title="Voir les détails">
+															<i class="fas fa-eye me-1"></i>Voir
+														</a>
+														{% if task.project.owner == app.user %}
+															<button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" data-task-token="{{ csrf_token('delete' ~ task.id) }}" title="Supprimer la tâche">
+																<i class="fas fa-trash me-1"></i>Supprimer
+															</button>
+														{% endif %}
+													</div>
+												</td>
+											</tr>
+										{% endfor %}
+									</tbody>
+								</table>
+							</div>
+						{% else %}
+							<div class="tasks-empty-state">
+								<i class="fas fa-tasks tasks-empty-icon"></i>
+								<h3 class="tasks-empty-title">
+									{% if project %}
+										{% if current_status %}
+											Aucune tâche avec le statut "{{ status_choices|filter((label, key) => key == current_status)|first }}" trouvée pour ce projet
+										{% elseif current_priority %}
+											Aucune tâche avec la priorité "{{ priority_choices|filter((label, key) => key == current_priority)|first }}" trouvée pour ce projet
+										{% else %}
+											Aucune tâche trouvée pour ce projet
+										{% endif %}
+									{% else %}
+										Aucune tâche trouvée
+									{% endif %}
+								</h3>
+								<p class="tasks-empty-description">
+									{% if current_status or current_priority %}
+										Essayez de modifier les filtres ou créez une nouvelle tâche.
+									{% else %}
+										Commencez par créer une nouvelle tâche !
+									{% endif %}
+								</p>
+							</div>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row d-lg-none">
+			<div class="col-12">
+				{% if tasks|length > 0 %}
+					<div class="row g-3">
 						{% for task in tasks %}
-							<div class="card mb-3 shadow-sm border-0">
-								<div class="card-body">
-									<h5 class="card-title fw-bold">
-										{{ task.title }}
-									</h5>
-									<ul class="list-unstyled mb-0 small text-muted">
-										{% if not project %}
+							<div class="col-12 col-md-6 col-lg-4">
+								<div class="card task-card border-0 shadow-sm">
+									<div class="card-body">
+										<h5 class="card-title fw-bold">
+											{{ task.title }}
+										</h5>
+										<ul class="list-unstyled mb-0 small text-muted">
+											{% if not project %}
+												<li class="mb-1">
+													<strong class="text-dark">Projet :</strong>
+													<span class="text-muted">
+														<i class="fas fa-folder me-1"></i>
+														{{ task.project.title }}
+													</span>
+												</li>
+											{% endif %}
 											<li class="mb-1">
-												<strong class="text-dark">Projet :</strong>
-												<span class="text-muted">
-													<i class="fas fa-folder me-1"></i>
-													{{ task.project.title }}
+												<strong class="text-dark">Responsable :</strong>
+												{% if task.assignee %}
+													{{ task.assignee.fullName }}
+												{% else %}
+													<span class="fst-italic">Non assigné</span>
+												{% endif %}
+											</li>
+											<li class="mb-1">
+												<strong class="text-dark">Priorité :</strong>
+												{% set priority = task.priority %}
+												{% set bootstrap_class = '' %}
+												{% set priority_text = '' %}
+												{% if priority == 'high' %}
+													{% set bootstrap_class = 'danger' %}
+													{% set priority_text = 'Haute' %}
+												{% elseif priority == 'medium' %}
+													{% set bootstrap_class = 'warning text-dark' %}
+													{% set priority_text = 'Moyenne' %}
+												{% else %}
+													{% set bootstrap_class = 'info' %}
+													{% set priority_text = 'Basse' %}
+												{% endif %}
+												<span class="badge bg-{{ bootstrap_class }}">
+													{{ priority_text }}
 												</span>
 											</li>
-										{% endif %}
-										<li class="mb-1">
-											<strong class="text-dark">Responsable :</strong>
-											{% if task.assignee %}
-												{{ task.assignee.fullName }}
-											{% else %}
-												<span class="fst-italic">Non assigné</span>
+											<li class="mb-1">
+												<strong class="text-dark">Date limite :</strong>
+												{% if task.dueDate %}
+													{{ task.dueDate|date('d/m/Y') }}
+												{% else %}
+													<span class="fst-italic">Non définie</span>
+												{% endif %}
+											</li>
+											<li class="mb-1">
+												<strong class="text-dark">Statut :</strong>
+												{% set status = task.status %}
+												{% set bootstrap_class = '' %}
+												{% if status == 'completed' %}
+													{% set bootstrap_class = 'success' %}
+												{% elseif status == 'in_progress' %}
+													{% set bootstrap_class = 'info' %}
+												{% else %}
+													{% set bootstrap_class = 'secondary' %}
+												{% endif %}
+												<span class="badge bg-{{ bootstrap_class }}">
+													{{ task.statusLabel }}
+												</span>
+											</li>
+										</ul>
+										<div class="d-flex gap-2 mt-3">
+											<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-sm btn-outline-info w-100">
+												<i class="fas fa-eye me-1"></i>
+												Voir
+											</a>
+											{% if task.project.owner == app.user %}
+												<button type="button" class="btn btn-sm btn-outline-danger w-100" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" data-task-token="{{ csrf_token('delete' ~ task.id) }}" title="Supprimer la tâche">
+													<i class="fas fa-trash me-1"></i>
+													Supprimer
+												</button>
 											{% endif %}
-										</li>
-										<li class="mb-1">
-											<strong class="text-dark">Priorité :</strong>
-											{% if task.priority == 'high' %}
-												<span class="badge bg-danger">Haute</span>
-											{% elseif task.priority == 'medium' %}
-												<span class="badge bg-warning text-dark">Moyenne</span>
-											{% else %}
-												<span class="badge bg-info text-dark">Basse</span>
-											{% endif %}
-										</li>
-										<li class="mb-1">
-											<strong class="text-dark">Date limite :</strong>
-											{% if task.dueDate %}
-												{{ task.dueDate|date('d/m/Y') }}
-											{% else %}
-												<span class="fst-italic">Non définie</span>
-											{% endif %}
-										</li>
-										<li>
-											<strong class="text-dark">Statut :</strong>
-											<span class="badge bg-{{ task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">{{ task.statusLabel }}</span>
-										</li>
-									</ul>
-									<div class="d-flex justify-content-end align-items-center gap-2 mt-3">
-										<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-sm btn-outline-info" title="Voir les détails">
-											<i class="fas fa-eye"></i>
-										</a>
-
-										{% if task.project.owner == app.user %}
-											<button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" title="Supprimer la tâche">
-												<i class="fas fa-trash"></i>
-											</button>
-										{% endif %}
+										</div>
 									</div>
 								</div>
 							</div>
 						{% endfor %}
+					</div>
+				{% else %}
+					<div class="tasks-empty-state">
+						<i class="fas fa-tasks tasks-empty-icon"></i>
+						<h3 class="tasks-empty-title">
+							{% if project %}
+								{% if current_status %}
+									Aucune tâche avec le statut "{{ status_choices|filter((label, key) => key == current_status)|first }}" trouvée pour ce projet
+								{% elseif current_priority %}
+									Aucune tâche avec la priorité "{{ priority_choices|filter((label, key) => key == current_priority)|first }}" trouvée pour ce projet
+								{% else %}
+									Aucune tâche trouvée pour ce projet
+								{% endif %}
+							{% else %}
+								Aucune tâche trouvée
+							{% endif %}
+						</h3>
+						<p class="tasks-empty-description">
+							{% if current_status or current_priority %}
+								Essayez de modifier les filtres ou créez une nouvelle tâche.
+							{% else %}
+								Commencez par créer une nouvelle tâche !
+							{% endif %}
+						</p>
 					</div>
 				{% endif %}
 			</div>
 		</div>
 	</div>
 
-	<div class="modal fade delete-task-modal" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true">
-		<div class="modal-dialog">
+	<div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true" data-delete-url="{{ path('task_delete', {'id': 'TASK_ID'}) }}">
+		<div class="modal-dialog modal-dialog-centered">
 			<div class="modal-content">
 				<div class="modal-header">
 					<h5 class="modal-title" id="deleteTaskModalLabel">
-						<i class="fas fa-exclamation-triangle text-danger me-2"></i>
-						Confirmer la suppression
+						<i class="fas fa-trash me-2 text-danger"></i>Supprimer la tâche
 					</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
-					<p>Êtes-vous sûr de vouloir supprimer la tâche
+					<p class="mb-0">
+						Êtes-vous sûr de vouloir supprimer la tâche
 						<strong id="taskTitlePlaceholder"></strong>
-						?</p>
-					<div class="alert alert-warning">
-						<i class="fas fa-exclamation-triangle me-2"></i>
-						<strong>Attention :</strong>
-						Cette action est irréversible.
-					</div>
+						?
+					</p>
+					<p class="text-danger small">Cette action est irréversible.</p>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-					<form method="post" id="deleteTaskForm" class="d-inline">
+					<form id="deleteTaskForm" method="post" class="d-inline">
 						<input type="hidden" name="_token" id="deleteTaskToken">
-						<button type="submit" class="btn btn-danger">
-							<i class="fas fa-trash me-2"></i>Supprimer définitivement
-						</button>
+						<button type="submit" class="btn btn-danger">Supprimer</button>
 					</form>
 				</div>
 			</div>
 		</div>
 	</div>
+
 {% endblock %}
 
 {% block javascripts %}

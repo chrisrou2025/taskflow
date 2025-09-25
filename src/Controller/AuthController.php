@@ -23,7 +23,6 @@ use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 
 class AuthController extends AbstractController
 {
-    // Injection du service EmailVerifier
     private EmailVerifier $emailVerifier;
 
     public function __construct(EmailVerifier $emailVerifier)
@@ -34,21 +33,17 @@ class AuthController extends AbstractController
     #[Route('/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
-        // Si l'utilisateur est déjà connecté, redirection vers le dashboard
         if ($this->getUser()) {
             return $this->redirectToRoute('app_dashboard');
         }
 
-        // Récupération des erreurs de connexion éventuelles
         $error = $authenticationUtils->getLastAuthenticationError();
 
-        // Créer une réponse avec des en-têtes pour empêcher la mise en cache
         $response = $this->render('auth/login.html.twig', [
-            'last_username' => '', // Toujours vide
+            'last_username' => '',
             'error' => $error,
         ]);
 
-        // Ajouter des en-têtes pour empêcher la mise en cache
         $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
         $response->headers->set('Pragma', 'no-cache');
         $response->headers->set('Expires', '0');
@@ -62,7 +57,6 @@ class AuthController extends AbstractController
         UserPasswordHasherInterface $userPasswordHasher,
         EntityManagerInterface $entityManager
     ): Response {
-        // Si l'utilisateur est déjà connecté, redirection vers le dashboard
         if ($this->getUser()) {
             return $this->redirectToRoute('app_dashboard');
         }
@@ -72,7 +66,6 @@ class AuthController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Hashage du mot de passe
             $user->setPassword(
                 $userPasswordHasher->hashPassword(
                     $user,
@@ -80,48 +73,38 @@ class AuthController extends AbstractController
                 )
             );
 
-            // Attribution du rôle utilisateur par défaut
             $user->setRoles(['ROLE_USER']);
-
-            // IMPORTANT : L'utilisateur n'est PAS vérifié à la création
             $user->setIsVerified(false);
 
-            // Sauvegarde en base de données
             $entityManager->persist($user);
             $entityManager->flush();
 
-            // Génération et envoi de l'email de vérification
-            $this->emailVerifier->sendEmailConfirmation('app_verify_email', $user,
-                (new TemplatedEmail())
-                    ->from(new Address('noreply@taskflow.app', 'TaskFlow'))
-                    ->to($user->getEmail())
-                    ->subject('Veuillez confirmer votre adresse email')
-                    ->htmlTemplate('auth/confirmation_email.html.twig')
-            );
+            try {
+                $this->emailVerifier->sendEmailConfirmation('app_verify_email', $user,
+                    (new TemplatedEmail())
+                        ->from(new Address('noreply@taskflow.app', 'TaskFlow'))
+                        ->to($user->getEmail())
+                        ->subject('Vérification de votre adresse email TaskFlow')
+                        ->htmlTemplate('auth/confirmation_email.html.twig')
+                );
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Erreur lors de l\'envoi de l\'email de vérification.');
+            }
 
-            // Message de succès modifié
-            $this->addFlash('success', 'Votre compte a été créé ! Veuillez vérifier votre boîte email pour confirmer votre adresse.');
+            $this->addFlash('success', 'Votre compte a été créé ! Vérifiez votre email pour confirmer.');
 
             return $this->redirectToRoute('app_login');
         }
 
-        // Créer une réponse avec des en-têtes pour empêcher la mise en cache
-        $response = $this->render('auth/register.html.twig', [
-            'registrationForm' => $form->createView(),
+        return $this->render('auth/register.html.twig', [
+            'registrationForm' => $form, // Correction ici : utiliser 'registrationForm' au lieu de 'form'
         ]);
-
-        // Ajouter des en-têtes pour empêcher la mise en cache
-        $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
-        $response->headers->set('Pragma', 'no-cache');
-        $response->headers->set('Expires', '0');
-
-        return $response;
     }
 
     #[Route('/verify/email', name: 'app_verify_email')]
     public function verifyUserEmail(Request $request, UserRepository $userRepository): Response
     {
-        $id = $request->get('id');
+        $id = $request->query->get('id');
 
         if (null === $id) {
             return $this->redirectToRoute('app_register');
@@ -133,20 +116,19 @@ class AuthController extends AbstractController
             return $this->redirectToRoute('app_register');
         }
 
-        // Validation de l'email avec le token
         try {
             $this->emailVerifier->handleEmailConfirmation($request, $user);
         } catch (VerifyEmailExceptionInterface $exception) {
-            $this->addFlash('verify_email_error', $exception->getReason());
+            $this->addFlash('error', $exception->getReason());
             return $this->redirectToRoute('app_register');
         }
 
-        $this->addFlash('success', 'Votre adresse email a été vérifiée avec succès ! Vous pouvez maintenant vous connecter.');
+        $this->addFlash('success', 'Votre adresse email a été vérifiée.');
 
         return $this->redirectToRoute('app_login');
     }
 
-    #[Route('/forgot-password', name: 'app_forgot_password')]
+    #[Route('/forgot-password', name: 'app_forgot_password', methods: ['GET', 'POST'])]
     public function forgotPassword(
         Request $request,
         UserRepository $userRepository,
@@ -155,28 +137,23 @@ class AuthController extends AbstractController
     ): Response {
         if ($request->isMethod('POST')) {
             $email = $request->request->get('email');
-            
-            if (empty($email)) {
-                $this->addFlash('error', 'Veuillez saisir votre adresse email.');
+
+            if (!$email) {
+                $this->addFlash('error', 'Veuillez entrer votre adresse email.');
                 return $this->redirectToRoute('app_forgot_password');
             }
 
             $user = $userRepository->findOneBy(['email' => $email]);
-            
-            // Pour des raisons de sécurité, on affiche toujours le même message
-            $this->addFlash('success', 'Si cette adresse email existe dans notre système, vous recevrez un lien de réinitialisation.');
-            
+
             if ($user) {
-                // Générer un token unique
-                $resetToken = Uuid::v4()->toString();
-                $user->setResetToken($resetToken);
+                $token = Uuid::v4()->toRfc4122();
+                $user->setResetToken($token);
                 $user->setResetTokenExpiresAt(new \DateTimeImmutable('+1 hour'));
-                
+
                 $entityManager->flush();
-                
-                // Envoyer l'email de réinitialisation
-                $resetUrl = $this->generateUrl('app_reset_password', ['token' => $resetToken], UrlGeneratorInterface::ABSOLUTE_URL);
-                
+
+                $resetUrl = $this->generateUrl('app_reset_password', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
+
                 $emailMessage = (new Email())
                     ->from('noreply@taskflow.app')
                     ->to($user->getEmail())
@@ -185,14 +162,17 @@ class AuthController extends AbstractController
                         'user' => $user,
                         'resetUrl' => $resetUrl
                     ]));
-                    
+
                 try {
                     $mailer->send($emailMessage);
+                    $this->addFlash('success', 'Un email de réinitialisation a été envoyé.');
                 } catch (\Exception $e) {
-                    $this->addFlash('error', 'Erreur lors de l\'envoi de l\'email. Veuillez réessayer plus tard.');
+                    $this->addFlash('error', 'Erreur lors de l\'envoi de l\'email.');
                 }
+            } else {
+                $this->addFlash('info', 'Un email de réinitialisation a été envoyé si l\'adresse existe.');
             }
-            
+
             return $this->redirectToRoute('app_login');
         }
 
@@ -207,11 +187,8 @@ class AuthController extends AbstractController
         UserPasswordHasherInterface $userPasswordHasher,
         EntityManagerInterface $entityManager
     ): Response {
-        $user = $userRepository->findOneBy([
-            'resetToken' => $token
-        ]);
+        $user = $userRepository->findOneBy(['resetToken' => $token]);
 
-        // Vérifier si le token existe et n'a pas expiré
         if (!$user || !$user->getResetTokenExpiresAt() || $user->getResetTokenExpiresAt() < new \DateTimeImmutable()) {
             $this->addFlash('error', 'Ce lien de réinitialisation est invalide ou a expiré.');
             return $this->redirectToRoute('app_forgot_password');
@@ -231,17 +208,14 @@ class AuthController extends AbstractController
                 return $this->redirectToRoute('app_reset_password', ['token' => $token]);
             }
 
-            // Mettre à jour le mot de passe
             $hashedPassword = $userPasswordHasher->hashPassword($user, $newPassword);
             $user->setPassword($hashedPassword);
-            
-            // Supprimer le token de réinitialisation
             $user->setResetToken(null);
             $user->setResetTokenExpiresAt(null);
-            
+
             $entityManager->flush();
 
-            $this->addFlash('success', 'Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter.');
+            $this->addFlash('success', 'Votre mot de passe a été réinitialisé avec succès.');
             return $this->redirectToRoute('app_login');
         }
 
