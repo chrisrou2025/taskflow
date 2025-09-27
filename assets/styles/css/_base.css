@@ -269,3 +269,16 @@ footer {
         order: 1;
     }
 }
+
+/* ===== AJUSTEMENTS RESPONSIVES POUR LE PADDING DES CARTES ===== */
+@media (max-width: 768px) {
+    /*
+     * On réduit le padding horizontal sur les .card-body pour donner plus
+     * de place au texte sur les petits écrans. On utilise !important
+     * pour surcharger la classe utilitaire p-5 de Bootstrap.
+    */
+    .card-body.p-5 {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+}

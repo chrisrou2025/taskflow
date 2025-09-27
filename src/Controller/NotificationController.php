@@ -18,8 +18,7 @@ class NotificationController extends AbstractController
 {
     public function __construct(
         private NotificationService $notificationService
-    ) {
-    }
+    ) {}
 
     /**
      * Affiche la liste des notifications
@@ -34,7 +33,7 @@ class NotificationController extends AbstractController
         $limit = 20;
 
         $notifications = $this->notificationService->getNotificationsForUser($currentUser, $page, $limit);
-        
+
         // Compter le total pour la pagination
         $total = $notificationRepository->createQueryBuilder('n')
             ->select('COUNT(n.id)')
@@ -112,7 +111,7 @@ class NotificationController extends AbstractController
 
         if ($this->isCsrfTokenValid('mark-all-read', $request->request->get('_token'))) {
             $count = $this->notificationService->markAllAsReadForUser($currentUser);
-            
+
             if ($count > 0) {
                 $this->addFlash('success', sprintf(
                     '%d notification%s marquée%s comme lue%s.',
@@ -144,9 +143,11 @@ class NotificationController extends AbstractController
             return $this->redirectToRoute('notification_index');
         }
 
-        if ($this->isCsrfTokenValid('delete-notification-' . $notification->getId(), 
-            $request->request->get('_token'))) {
-            
+        if ($this->isCsrfTokenValid(
+            'delete-notification-' . $notification->getId(),
+            $request->request->get('_token')
+        )) {
+
             $this->notificationService->deleteNotification($notification);
             $this->addFlash('success', 'Notification supprimée.');
         } else {
@@ -166,7 +167,7 @@ class NotificationController extends AbstractController
 
         if ($this->isCsrfTokenValid('delete-read-notifications', $request->request->get('_token'))) {
             $count = $this->notificationService->deleteReadNotificationsForUser($currentUser);
-            
+
             if ($count > 0) {
                 $this->addFlash('success', sprintf(
                     '%d notification%s supprimée%s.',
@@ -191,9 +192,14 @@ class NotificationController extends AbstractController
     public function unreadCount(): JsonResponse
     {
         $currentUser = $this->getUser();
+        if (!$currentUser) {
+            // utilisateur non connecté → retourne un JSON valide
+            return $this->json(['count' => 0]);
+        }
+
         $count = $this->notificationService->countUnreadForUser($currentUser);
 
-        return new JsonResponse(['count' => $count]);
+        return $this->json(['count' => $count]);
     }
 
     /**
@@ -203,8 +209,12 @@ class NotificationController extends AbstractController
     public function recent(Request $request): JsonResponse
     {
         $currentUser = $this->getUser();
+        if (!$currentUser) {
+            // utilisateur non connecté → retourne une liste vide
+            return $this->json([]);
+        }
+
         $limit = $request->query->getInt('limit', 5);
-        
         $notifications = $this->notificationService->getRecentNotificationsForUser($currentUser, $limit);
 
         $data = array_map(function (Notification $notification) {
@@ -222,7 +232,7 @@ class NotificationController extends AbstractController
             ];
         }, $notifications);
 
-        return new JsonResponse($data);
+        return $this->json($data);
     }
 
     /**

@@ -48,6 +48,7 @@
 								📋 TaskFlow
 							</a>
 						</li>
+
 						{% if app.user %}
 							<li class="nav-item d-lg-none"><hr class="dropdown-divider"></li>
 							<li class="nav-item">
@@ -91,7 +92,6 @@
 								</a>
 							</li>
 						{% else %}
-							{# Déplacé ici pour les mobiles #}
 							<li class="nav-item d-lg-none"><hr class="dropdown-divider"></li>
 							<li class="nav-item d-lg-none">
 								<a class="nav-link" href="{{ path('app_login') }}">
@@ -125,6 +125,7 @@
 								</li>
 							{% endif %}
 
+							{# 🔔 Notifications desktop visibles uniquement connecté #}
 							<li class="nav-item dropdown d-none d-lg-block notification-desktop">
 								<a class="nav-link" href="#" id="notificationDropdownDesktop" role="button" data-bs-toggle="dropdown" aria-expanded="false">
 									<span class="notification-icon-wrapper">
@@ -133,7 +134,6 @@
 									</span>
 									Notifications
 								</a>
-
 								<ul class="dropdown-menu dropdown-menu-end notification-dropdown" id="notification-list-desktop" aria-labelledby="notificationDropdownDesktop"></ul>
 							</li>
 
@@ -144,7 +144,6 @@
 								</a>
 							</li>
 						{% else %}
-							{# Reste ici pour les desktops #}
 							<li class="nav-item d-none d-lg-block">
 								<a class="nav-link" href="{{ path('app_login') }}">
 									<i class="fas fa-sign-in-alt"></i>
@@ -200,142 +199,250 @@
 			</div>
 		</footer>
 
-		<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
-			<div class="modal-dialog modal-dialog-centered">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h5 class="modal-title" id="notificationModalLabel">Mes Notifications</h5>
-						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-					</div>
-					<div class="modal-body"></div>
-					<div class="modal-footer">
-						<a href="{{ path('notification_index') }}" class="btn btn-outline-primary w-100">Voir toutes les notifications</a>
+		{% if app.user %}
+			<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+				<div class="modal-dialog modal-dialog-centered">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="notificationModalLabel">Mes Notifications</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+						</div>
+						<div class="modal-body"></div>
+						<div class="modal-footer">
+							<a href="{{ path('notification_index') }}" class="btn btn-outline-primary w-100">
+								Voir toutes les notifications
+							</a>
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
+		{% endif %}
 
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 		{% block javascripts %}
-			<script>
-				// Auto-hide alerts
-document.addEventListener('DOMContentLoaded', function () {
-const alerts = document.querySelectorAll('.alert:not(.alert-danger)');
-alerts.forEach(function (alert) {
-setTimeout(function () {
-const bsAlert = new bootstrap.Alert(alert);
-bsAlert.close();
-}, 5000);
-});
-// --- SCRIPT POUR LES NOTIFICATIONS ---
-const notificationCountEl = document.getElementById('notification-count');
-const notificationCountElDesktop = document.getElementById('notification-count-desktop');
-const notificationListElDesktop = document.getElementById('notification-list-desktop');
-const notificationModal = document.getElementById('notificationModal');
-const notificationModalBody = document.querySelector('#notificationModal .modal-body');
-const unreadCountUrl = "{{ path('api_notification_unread_count') }}";
-const recentNotificationsUrl = "{{ path('api_notification_recent') }}?limit=5";
-// Met à jour le compteur de notifications
-const updateUnreadCount = () => {
-fetch(unreadCountUrl).then(response => response.json()).then(data => {
-if (data.count > 0) {
-if (notificationCountEl) {
-notificationCountEl.innerText = data.count;
-notificationCountEl.style.display = 'flex';
-}
-if (notificationCountElDesktop) {
-notificationCountElDesktop.innerText = data.count;
-notificationCountElDesktop.style.display = 'flex';
-}
-} else {
-if (notificationCountEl) {
-notificationCountEl.style.display = 'none';
-}
-if (notificationCountElDesktop) {
-notificationCountElDesktop.style.display = 'none';
-}
-}
-});
-};
+			{% if app.user %}
+				<script>
+					document.addEventListener('DOMContentLoaded', function () {
+						// Éléments DOM
+						const notificationCountEl = document.getElementById('notification-count');
+						const notificationCountElDesktop = document.getElementById('notification-count-desktop');
+						const notificationListElDesktop = document.getElementById('notification-list-desktop');
+						const notificationModal = document.getElementById('notificationModal');
+						const notificationModalBody = document.querySelector('#notificationModal .modal-body');
 
-// Charge les notifications récentes
-const loadRecentNotifications = (containerElement, isModal = false) => {
-containerElement.innerHTML = '<p class="text-center text-muted my-4">Chargement...</p>';
-fetch(recentNotificationsUrl).then(response => response.json()).then(data => {
-containerElement.innerHTML = '';
+						// URLs des API
+						const unreadCountUrl = "{{ path('api_notification_unread_count') }}";
+						const recentNotificationsUrl = "{{ path('api_notification_recent') }}?limit=5";
 
-if (data.length === 0) {
-containerElement.innerHTML = '<p class="text-center text-muted my-4">Aucune nouvelle notification</p>';
-} else {
-const listGroup = document.createElement('div');
-listGroup.className = isModal ? 'list-group list-group-flush' : 'list-group';
+						// Variables pour gérer les intervalles et la visibilité
+						let updateInterval = null;
+						let isDocumentVisible = !document.hidden;
 
-data.forEach(notif => {
-const item = document.createElement('a');
-item.href = notif.read_url;
-item.className = 'list-group-item list-group-item-action d-flex align-items-start notification-item';
-if (!notif.is_read) {
-item.classList.add('unread');
-}
+						// Fonction utilitaire : parse JSON avec gestion d'erreurs
+						async function safeJson(response) {
+							try {
+								return await response.json();
+							} catch (error) {
+								console.warn("Réponse non JSON reçue :", error.message);
+								return null;
+							}
+						}
 
-item.innerHTML = `
-																		<i class="${
-notif.icon
-} ${
-notif.color_class
-} mt-1 me-3"></i>
-																		<div>
-																			<div class="small">${
-notif.message
-}</div>
-																			<small class="text-muted">${
-notif.time_ago
-}</small>
-																		</div>
-																	`;
-listGroup.appendChild(item);
-});
-containerElement.appendChild(listGroup);
-}
+						// Fonction utilitaire : gestion des erreurs réseau
+						function handleNetworkError(error) {
+							// Éviter le spam d'erreurs dans la console pour les erreurs courantes
+							if (error.name !== 'AbortError' && !error.message.includes('NetworkError')) {
+								console.warn('Erreur réseau notifications:', error.message);
+							}
+						}
 
-// Réinjecter le bouton "Voir toutes" pour desktop
-if (!isModal) {
-const divider = document.createElement('li');
-divider.innerHTML = '<hr class="dropdown-divider">';
-const linkContainer = document.createElement('li');
-const link = document.createElement('a');
-link.href = "{{ path('notification_index') }}";
-link.className = "dropdown-item text-center";
-link.textContent = "Voir toutes les notifications";
-linkContainer.appendChild(link);
+						// Masquer les badges de notifications
+						function hideNotificationBadges() {
+							if (notificationCountEl) {
+								notificationCountEl.style.display = 'none';
+							}
+							if (notificationCountElDesktop) {
+								notificationCountElDesktop.style.display = 'none';
+							}
+						}
 
-containerElement.appendChild(divider);
-containerElement.appendChild(linkContainer);
-}
-});
-};
-// Mettre à jour au chargement
-updateUnreadCount();
-// Charger les notifications dans la modale mobile
-if (notificationModal) {
-notificationModal.addEventListener('show.bs.modal', function () {
-loadRecentNotifications(notificationModalBody, true);
-});
-}
+						// Mettre à jour les badges de notifications
+						function updateNotificationBadges(count) {
+							if (count > 0) {
+								if (notificationCountEl) {
+									notificationCountEl.innerText = count;
+									notificationCountEl.style.display = 'flex';
+								}
+								if (notificationCountElDesktop) {
+									notificationCountElDesktop.innerText = count;
+									notificationCountElDesktop.style.display = 'flex';
+								}
+							} else {
+								hideNotificationBadges();
+							}
+						}
 
-// Charger les notifications dans le dropdown desktop
-const notificationDropdownDesktop = document.getElementById('notificationDropdownDesktop');
-if (notificationDropdownDesktop) {
-notificationDropdownDesktop.addEventListener('show.bs.dropdown', function () {
-loadRecentNotifications(notificationListElDesktop);
-});
-}
+						// Met à jour le compteur de notifications avec timeout et contrôle d'abandon
+						const updateUnreadCount = () => {
+							const controller = new AbortController();
+							const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 secondes
 
-// Mettre à jour le compteur toutes les minutes
-setInterval(updateUnreadCount, 60000);
-});
-			</script>
+							fetch(unreadCountUrl, {
+								headers: {
+									'Accept': 'application/json'
+								},
+								signal: controller.signal
+							})
+							.then(response => {
+								clearTimeout(timeoutId);
+								if (!response.ok) {
+									throw new Error(`HTTP ${response.status}`);
+								}
+								return safeJson(response);
+							})
+							.then(data => {
+								if (!data || typeof data.count === 'undefined') {
+									hideNotificationBadges();
+									return;
+								}
+								updateNotificationBadges(data.count);
+							})
+							.catch(handleNetworkError);
+						};
+
+						// Charge les notifications récentes avec timeout
+						const loadRecentNotifications = (containerElement, isModal = false) => {
+							containerElement.innerHTML = '<p class="text-center text-muted my-4">Chargement...</p>';
+							
+							const controller = new AbortController();
+							const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 secondes
+
+							fetch(recentNotificationsUrl, {
+								headers: {
+									'Accept': 'application/json'
+								},
+								signal: controller.signal
+							})
+							.then(response => {
+								clearTimeout(timeoutId);
+								if (!response.ok) {
+									throw new Error(`HTTP ${response.status}`);
+								}
+								return safeJson(response);
+							})
+							.then(data => {
+								containerElement.innerHTML = '';
+
+								if (!data) {
+									containerElement.innerHTML = '<p class="text-center text-warning my-4">Données temporairement indisponibles</p>';
+									return;
+								}
+
+								if (data.length === 0) {
+									containerElement.innerHTML = '<p class="text-center text-muted my-4">Aucune nouvelle notification</p>';
+								} else {
+									const listGroup = document.createElement('div');
+									listGroup.className = isModal ? 'list-group list-group-flush' : 'list-group';
+
+									data.forEach(notif => {
+										const item = document.createElement('a');
+										item.href = notif.read_url || "#";
+										item.className = 'list-group-item list-group-item-action d-flex align-items-start notification-item';
+										if (!notif.is_read) {
+											item.classList.add('unread');
+										}
+
+										// Sécurisation des données avec valeurs par défaut
+										item.innerHTML = `
+											<i class="${notif.icon || 'fas fa-bell'} ${notif.color_class || 'text-primary'} mt-1 me-3"></i>
+											<div>
+												<div class="small">${notif.message || 'Notification'}</div>
+												<small class="text-muted">${notif.time_ago || 'À l\'instant'}</small>
+											</div>
+										`;
+										listGroup.appendChild(item);
+									});
+									containerElement.appendChild(listGroup);
+								}
+
+								// Ajout du lien "Voir toutes" pour le dropdown desktop
+								if (!isModal) {
+									const divider = document.createElement('li');
+									divider.innerHTML = '<hr class="dropdown-divider">';
+									const linkContainer = document.createElement('li');
+									const link = document.createElement('a');
+									link.href = "{{ path('notification_index') }}";
+									link.className = "dropdown-item text-center";
+									link.textContent = "Voir toutes les notifications";
+									linkContainer.appendChild(link);
+
+									containerElement.appendChild(divider);
+									containerElement.appendChild(linkContainer);
+								}
+							})
+							.catch(error => {
+								handleNetworkError(error);
+								containerElement.innerHTML = '<p class="text-center text-warning my-4">Connexion temporairement indisponible</p>';
+							});
+						};
+
+						// Gestion de la visibilité du document pour optimiser les performances
+						function handleVisibilityChange() {
+							isDocumentVisible = !document.hidden;
+							
+							if (isDocumentVisible) {
+								// Reprendre les mises à jour quand l'onglet redevient visible
+								if (!updateInterval) {
+									updateUnreadCount(); // Mise à jour immédiate
+									updateInterval = setInterval(updateUnreadCount, 120000); // 2 minutes
+								}
+							} else {
+								// Arrêter les mises à jour quand l'onglet n'est plus visible
+								if (updateInterval) {
+									clearInterval(updateInterval);
+									updateInterval = null;
+								}
+							}
+						}
+
+						// Écouteurs d'événements
+						document.addEventListener('visibilitychange', handleVisibilityChange);
+
+						// Événement pour le modal mobile
+						if (notificationModal) {
+							notificationModal.addEventListener('show.bs.modal', function () {
+								loadRecentNotifications(notificationModalBody, true);
+							});
+						}
+
+						// Événement pour le dropdown desktop
+						const notificationDropdownDesktop = document.getElementById('notificationDropdownDesktop');
+						if (notificationDropdownDesktop) {
+							notificationDropdownDesktop.addEventListener('show.bs.dropdown', function () {
+								loadRecentNotifications(notificationListElDesktop, false);
+							});
+						}
+
+						// Chargement initial des notifications
+						updateUnreadCount();
+
+						// Démarrer l'intervalle de mise à jour si le document est visible
+						if (isDocumentVisible) {
+							updateInterval = setInterval(updateUnreadCount, 120000); // 2 minutes
+						}
+
+						// Nettoyage des ressources à la fermeture de la page
+						window.addEventListener('beforeunload', function() {
+							if (updateInterval) {
+								clearInterval(updateInterval);
+								updateInterval = null;
+							}
+						});
+					});
+				</script>
+			{% endif %}
 		{% endblock %}
+
 	</body>
 </html>
