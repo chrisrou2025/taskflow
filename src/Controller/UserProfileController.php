@@ -11,7 +11,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-// Ajouté : pour gérer la déconnexion de l'utilisateur après la suppression
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 #[Route('/profile')]
@@ -150,26 +149,85 @@ class UserProfileController extends AbstractController
             }
 
             try {
-                // Invalider la session (déconnexion) AVANT la redirection
+                // Invalider la session (déconnexion) AVANT la suppression
                 $tokenStorage->setToken(null);
                 
-                // Supprimer l'utilisateur
+                // Commencer une transaction
+                $entityManager->beginTransaction();
+                
+                // 1. Supprimer toutes les notifications où l'utilisateur est destinataire ou expéditeur
+                $notificationRepository = $entityManager->getRepository('App\Entity\Notification');
+                $notifications = $notificationRepository->createQueryBuilder('n')
+                    ->where('n.recipient = :user OR n.sender = :user')
+                    ->setParameter('user', $user)
+                    ->getQuery()
+                    ->getResult();
+                
+                foreach ($notifications as $notification) {
+                    $entityManager->remove($notification);
+                }
+
+                // 2. Supprimer toutes les demandes de collaboration où l'utilisateur est concerné
+                $collaborationRepository = $entityManager->getRepository('App\Entity\CollaborationRequest');
+                $collaborations = $collaborationRepository->createQueryBuilder('cr')
+                    ->where('cr.sender = :user OR cr.invitedUser = :user')
+                    ->setParameter('user', $user)
+                    ->getQuery()
+                    ->getResult();
+                
+                foreach ($collaborations as $collaboration) {
+                    $entityManager->remove($collaboration);
+                }
+
+                // 3. Retirer l'utilisateur de tous les projets en tant que collaborateur
+                $projects = $user->getCollaborations();
+                foreach ($projects as $project) {
+                    $project->removeCollaborator($user);
+                }
+
+                // 4. Pour les projets possédés, soit les supprimer soit les transférer
+                $ownedProjects = $user->getProjects();
+                foreach ($ownedProjects as $project) {
+                    // Option 1: Supprimer complètement les projets
+                    $entityManager->remove($project);
+                    
+                    // Option 2: Transférer à un autre utilisateur (décommentez si préféré)
+                    // $firstCollaborator = $project->getCollaborators()->first();
+                    // if ($firstCollaborator) {
+                    //     $project->setOwner($firstCollaborator);
+                    // } else {
+                    //     $entityManager->remove($project);
+                    // }
+                }
+
+                // 5. Les tâches assignées seront automatiquement mises à NULL grâce à ON DELETE SET NULL
+                
+                // 6. Enfin, supprimer l'utilisateur
                 $entityManager->remove($user);
+                
+                // Valider la transaction
                 $entityManager->flush();
+                $entityManager->commit();
 
                 $this->addFlash('success', 'Votre compte a été supprimé avec succès.');
 
                 // Rediriger vers la page d'accueil
-                return $this->redirectToRoute('app_home'); // Assurez-vous que 'app_home' est le nom de votre route d'accueil
+                return $this->redirectToRoute('app_home');
 
             } catch (\Exception $e) {
+                // Annuler la transaction en cas d'erreur
+                $entityManager->rollback();
+                
+                // Log l'erreur pour le débogage
+                error_log('Erreur suppression compte: ' . $e->getMessage());
+                
                 $this->addFlash('error', 'Une erreur est survenue lors de la suppression de votre compte.');
                 return $this->redirectToRoute('user_delete_account');
             }
         }
 
         return $this->render('user/delete_account.html.twig', [
-        'user' => $user,
-    ]);
+            'user' => $user,
+        ]);
     }
 }

@@ -136,72 +136,7 @@
 {% endblock %}
 
 {% block javascripts %}
-	{{ parent() }}
-	<script>
-		// Fonction pour afficher/masquer le mot de passe
-function togglePassword(fieldId) {
-const field = document.getElementById(fieldId);
-const icon = document.getElementById(fieldId + '_icon');
-
-if (field.type === 'password') {
-field.type = 'text';
-icon.classList.remove('fa-eye');
-icon.classList.add('fa-eye-slash');
-} else {
-field.type = 'password';
-icon.classList.remove('fa-eye-slash');
-icon.classList.add('fa-eye');
-}
-}
-
-// Vérification en temps réel des conditions
-document.addEventListener('DOMContentLoaded', function () {
-const confirmationText = document.getElementById('confirmation_text');
-const passwordConfirmation = document.getElementById('password_confirmation');
-const finalConfirmation = document.getElementById('final_confirmation');
-const deleteButton = document.getElementById('delete_button');
-
-function checkFormValid() {
-const isTextCorrect = confirmationText.value === 'SUPPRIMER';
-const isPasswordFilled = passwordConfirmation.value.length > 0;
-const isCheckboxChecked = finalConfirmation.checked;
-
-deleteButton.disabled = !(isTextCorrect && isPasswordFilled && isCheckboxChecked);
-}
-
-// Événements pour vérifier la validité du formulaire
-confirmationText.addEventListener('input', checkFormValid);
-passwordConfirmation.addEventListener('input', checkFormValid);
-finalConfirmation.addEventListener('change', checkFormValid);
-
-// Validation finale avant soumission
-document.querySelector('form').addEventListener('submit', function (e) {
-if (confirmationText.value !== 'SUPPRIMER') {
-e.preventDefault();
-alert('Vous devez taper "SUPPRIMER" exactement pour confirmer.');
-return false;
-}
-
-if (! passwordConfirmation.value) {
-e.preventDefault();
-alert('Vous devez saisir votre mot de passe pour confirmer.');
-return false;
-}
-
-if (! finalConfirmation.checked) {
-e.preventDefault();
-alert('Vous devez cocher la case de confirmation finale.');
-return false;
-}
-
-// Dernière confirmation
-const confirmed = confirm('ATTENTION : Vous êtes sur le point de supprimer définitivement votre compte.\n\n' + 'Cette action ne peut pas être annulée.\n\n' + 'Êtes-vous absolument sûr(e) de vouloir continuer ?');
-
-if (! confirmed) {
-e.preventDefault();
-return false;
-}
-});
-});
-	</script>
+    {{ parent() }}
+    <script src="{{ asset('js/auth.js') }}"></script>
+    <script src="{{ asset('js/user.js') }}"></script>
 {% endblock %}
