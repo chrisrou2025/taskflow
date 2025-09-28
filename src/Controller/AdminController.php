@@ -13,11 +13,20 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Psr\Log\LoggerInterface;
 
 #[Route('/admin')]
 #[IsGranted('ROLE_ADMIN')]
 class AdminController extends AbstractController
 {
+    // CORRECTION: Injection du logger dans le constructeur
+    private LoggerInterface $logger;
+
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
+
     #[Route('/', name: 'admin_dashboard')]
     public function dashboard(
         UserRepository $userRepository,
@@ -94,8 +103,6 @@ class AdminController extends AbstractController
         ProjectRepository $projectRepository,
         TaskRepository $taskRepository
     ): Response {
-        // --- MÉTHODE MODIFIÉE ---
-
         // Projets où l'utilisateur est le propriétaire
         $ownedProjects = $projectRepository->findBy(['owner' => $user], ['createdAt' => 'DESC']);
 
@@ -105,7 +112,7 @@ class AdminController extends AbstractController
         // Statistiques des tâches où l'utilisateur est assigné
         $userTasksStats = $taskRepository->getTasksStatisticsForUser($user);
 
-        // Tâches récentes assignées à l'utilisateur (plus pertinent que par propriétaire)
+        // Tâches récentes assignées à l'utilisateur
         $recentTasks = $taskRepository->findBy(['assignee' => $user], ['createdAt' => 'DESC'], 10);
         
         // Tâches en retard assignées à l'utilisateur
@@ -127,7 +134,7 @@ class AdminController extends AbstractController
         User $user,
         EntityManagerInterface $entityManager
     ): JsonResponse {
-        // Validation du token CSRF (CORRECTION: ajout du tiret séparateur)
+        // Validation du token CSRF
         if (!$this->isCsrfTokenValid('toggle-role-' . $user->getId(), $request->request->get('_token'))) {
             return new JsonResponse([
                 'success' => false, 
@@ -135,8 +142,17 @@ class AdminController extends AbstractController
             ], 400);
         }
 
+        // CORRECTION: Vérification que getUser() n'est pas null
+        $currentUser = $this->getUser();
+        if (!$currentUser instanceof User) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Utilisateur non authentifié'
+            ], 401);
+        }
+
         // Ne pas permettre de modifier son propre rôle
-        if ($user === $this->getUser()) {
+        if ($user === $currentUser) {
             return new JsonResponse([
                 'success' => false,
                 'message' => 'Vous ne pouvez pas modifier votre propre rôle'
@@ -181,14 +197,21 @@ class AdminController extends AbstractController
         User $user,
         EntityManagerInterface $entityManager
     ): Response {
-        // Validation du token CSRF (CORRECTION: ajout du tiret séparateur)
+        // Validation du token CSRF
         if (!$this->isCsrfTokenValid('delete-user-' . $user->getId(), $request->request->get('_token'))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('admin_users');
         }
 
+        // CORRECTION: Vérification que getUser() n'est pas null
+        $currentUser = $this->getUser();
+        if (!$currentUser instanceof User) {
+            $this->addFlash('error', 'Utilisateur non authentifié.');
+            return $this->redirectToRoute('admin_users');
+        }
+
         // Ne pas permettre de supprimer son propre compte
-        if ($user === $this->getUser()) {
+        if ($user === $currentUser) {
             $this->addFlash('error', 'Vous ne pouvez pas supprimer votre propre compte.');
             return $this->redirectToRoute('admin_users');
         }
@@ -240,21 +263,57 @@ class AdminController extends AbstractController
         \App\Entity\Project $project,
         EntityManagerInterface $entityManager
     ): Response {
-        // Validation du token CSRF (CORRECTION: ajout du tiret séparateur)
-        if (!$this->isCsrfTokenValid('delete-project-' . $project->getId(), $request->request->get('_token'))) {
-            $this->addFlash('error', 'Token CSRF invalide.');
+        // Vérification des droits d'administration avec le ProjectVoter
+        $this->denyAccessUnlessGranted('PROJECT_DELETE', $project);
+        
+        // Validation du token CSRF
+        $expectedTokenId = 'delete-project-' . $project->getId();
+        $submittedToken = $request->request->get('_token');
+        
+        if (!$this->isCsrfTokenValid($expectedTokenId, $submittedToken)) {
+            $this->addFlash('error', 'Token CSRF invalide. Veuillez réessayer.');
             return $this->redirectToRoute('admin_projects');
         }
 
         try {
             $projectTitle = $project->getTitle();
+            $projectOwner = $project->getOwner()->getFullName();
+            
+            // CORRECTION: Vérification que getUser() n'est pas null avant d'appeler getEmail()
+            $currentUser = $this->getUser();
+            $currentAdminEmail = $currentUser instanceof User ? $currentUser->getEmail() : 'Unknown';
+            
+            // CORRECTION: Utilisation sécurisée du logger
+            $this->logger->info('Admin project deletion', [
+                'admin_user' => $currentAdminEmail,
+                'project_id' => $project->getId(),
+                'project_title' => $projectTitle,
+                'project_owner' => $projectOwner,
+                'tasks_count' => $project->getTasks()->count()
+            ]);
+            
             $entityManager->remove($project);
             $entityManager->flush();
 
-            $this->addFlash('success', "Le projet \"{$projectTitle}\" a été supprimé avec succès.");
+            $this->addFlash('success', sprintf(
+                'Le projet "%s" de %s a été supprimé avec succès.',
+                $projectTitle,
+                $projectOwner
+            ));
             
         } catch (\Exception $e) {
-            $this->addFlash('error', 'Erreur lors de la suppression : ' . $e->getMessage());
+            // CORRECTION: Vérification que getUser() n'est pas null
+            $currentUser = $this->getUser();
+            $currentAdminEmail = $currentUser instanceof User ? $currentUser->getEmail() : 'Unknown';
+            
+            $this->logger->error('Project deletion failed', [
+                'error' => $e->getMessage(),
+                'project_id' => $project->getId(),
+                'admin_user' => $currentAdminEmail,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            $this->addFlash('error', 'Erreur lors de la suppression du projet : ' . $e->getMessage());
         }
 
         return $this->redirectToRoute('admin_projects');

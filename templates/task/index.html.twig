@@ -43,7 +43,7 @@
 								Filtrage des tâches
 							</span>
 							<i class="fas
-																								fa-chevron-down text-muted"></i>
+																																								fa-chevron-down text-muted"></i>
 						</button>
 					</div>
 
@@ -219,22 +219,52 @@
 								</table>
 							</div>
 						{% else %}
-							<div class="tasks-empty-state">
-								<i class="fas fa-tasks tasks-empty-icon"></i>
-								<h3 class="tasks-empty-title">
+							<div class="p-4 text-center text-muted">
+								<i class="fas fa-tasks fa-3x mb-3 text-muted" style="opacity: 0.4;"></i>
+								<h5 class="mb-3 fw-semibold text-dark">
 									{% if project %}
 										{% if current_status %}
-											Aucune tâche avec le statut "{{ status_choices|filter((label, key) => key == current_status)|first }}" trouvée pour ce projet
+											{% set status_label = '' %}
+											{% for label, key in status_choices %}
+												{% if key == current_status %}
+													{% set status_label = label %}
+												{% endif %}
+											{% endfor %}
+											Aucune tâche avec le statut "{{ status_label }}" trouvée pour ce projet
 										{% elseif current_priority %}
-											Aucune tâche avec la priorité "{{ priority_choices|filter((label, key) => key == current_priority)|first }}" trouvée pour ce projet
+											{% set priority_label = '' %}
+											{% for label, key in priority_choices %}
+												{% if key == current_priority %}
+													{% set priority_label = label %}
+												{% endif %}
+											{% endfor %}
+											Aucune tâche avec la priorité "{{ priority_label }}" trouvée pour ce projet
 										{% else %}
 											Aucune tâche trouvée pour ce projet
 										{% endif %}
 									{% else %}
-										Aucune tâche trouvée
+										{% if current_status %}
+											{% set status_label = '' %}
+											{% for label, key in status_choices %}
+												{% if key == current_status %}
+													{% set status_label = label %}
+												{% endif %}
+											{% endfor %}
+											Aucune tâche avec le statut "{{ status_label }}" trouvée
+										{% elseif current_priority %}
+											{% set priority_label = '' %}
+											{% for label, key in priority_choices %}
+												{% if key == current_priority %}
+													{% set priority_label = label %}
+												{% endif %}
+											{% endfor %}
+											Aucune tâche avec la priorité "{{ priority_label }}" trouvée
+										{% else %}
+											Aucune tâche trouvée
+										{% endif %}
 									{% endif %}
-								</h3>
-								<p class="tasks-empty-description">
+								</h5>
+								<p class="mb-0 text-muted">
 									{% if current_status or current_priority %}
 										Essayez de modifier les filtres ou créez une nouvelle tâche.
 									{% else %}
@@ -337,22 +367,52 @@
 						{% endfor %}
 					</div>
 				{% else %}
-					<div class="tasks-empty-state">
-						<i class="fas fa-tasks tasks-empty-icon"></i>
-						<h3 class="tasks-empty-title">
+					<div class="p-4 text-center text-muted">
+						<i class="fas fa-tasks fa-3x mb-3 text-muted" style="opacity: 0.4;"></i>
+						<h5 class="mb-3 fw-semibold text-dark">
 							{% if project %}
 								{% if current_status %}
-									Aucune tâche avec le statut "{{ status_choices|filter((label, key) => key == current_status)|first }}" trouvée pour ce projet
+									{% set status_label = '' %}
+									{% for label, key in status_choices %}
+										{% if key == current_status %}
+											{% set status_label = label %}
+										{% endif %}
+									{% endfor %}
+									Aucune tâche avec le statut "{{ status_label }}" trouvée pour ce projet
 								{% elseif current_priority %}
-									Aucune tâche avec la priorité "{{ priority_choices|filter((label, key) => key == current_priority)|first }}" trouvée pour ce projet
+									{% set priority_label = '' %}
+									{% for label, key in priority_choices %}
+										{% if key == current_priority %}
+											{% set priority_label = label %}
+										{% endif %}
+									{% endfor %}
+									Aucune tâche avec la priorité "{{ priority_label }}" trouvée pour ce projet
 								{% else %}
 									Aucune tâche trouvée pour ce projet
 								{% endif %}
 							{% else %}
-								Aucune tâche trouvée
+								{% if current_status %}
+									{% set status_label = '' %}
+									{% for label, key in status_choices %}
+										{% if key == current_status %}
+											{% set status_label = label %}
+										{% endif %}
+									{% endfor %}
+									Aucune tâche avec le statut "{{ status_label }}" trouvée
+								{% elseif current_priority %}
+									{% set priority_label = '' %}
+									{% for label, key in priority_choices %}
+										{% if key == current_priority %}
+											{% set priority_label = label %}
+										{% endif %}
+									{% endfor %}
+									Aucune tâche avec la priorité "{{ priority_label }}" trouvée
+								{% else %}
+									Aucune tâche trouvée
+								{% endif %}
 							{% endif %}
-						</h3>
-						<p class="tasks-empty-description">
+						</h5>
+						<p class="mb-0 text-muted">
 							{% if current_status or current_priority %}
 								Essayez de modifier les filtres ou créez une nouvelle tâche.
 							{% else %}
@@ -399,42 +459,41 @@
 	{{ parent() }}
 	<script>
 		document.addEventListener('DOMContentLoaded', function () {
-			const deleteTaskModal = new bootstrap.Modal(document.getElementById('deleteTaskModal'));
-			const taskTitleElement = document.getElementById('taskTitlePlaceholder');
-			const deleteTaskForm = document.getElementById('deleteTaskForm');
-			const deleteTaskTokenInput = document.getElementById('deleteTaskToken');
-			const deleteButtons = document.querySelectorAll('.delete-task-btn');
+const deleteTaskModal = new bootstrap.Modal(document.getElementById('deleteTaskModal'));
+const taskTitleElement = document.getElementById('taskTitlePlaceholder');
+const deleteTaskForm = document.getElementById('deleteTaskForm');
+const deleteTaskTokenInput = document.getElementById('deleteTaskToken');
+const deleteButtons = document.querySelectorAll('.delete-task-btn');
 
-			const csrfTokens = {
-			{% for task in tasks %}
-				'{{ task.id }}': '{{ csrf_token('delete' ~ task.id) }}'{{ not loop.last ? ',' : '' }}
-			{% endfor %}
-			};
+const csrfTokens = {
+{% for task in tasks %}
+'{{ task.id }}' : '{{ csrf_token('delete' ~ task.id) }}'{{ not loop.last ? ',' : '' }}{% endfor %}
+};
 
-			deleteButtons.forEach(button => {
-				button.addEventListener('click', function (event) {
-					const taskId = this.getAttribute('data-task-id');
-					const taskTitle = this.getAttribute('data-task-title');
+deleteButtons.forEach(button => {
+button.addEventListener('click', function (event) {
+const taskId = this.getAttribute('data-task-id');
+const taskTitle = this.getAttribute('data-task-title');
 
-					if (taskTitleElement) {
-						taskTitleElement.textContent = '"' + taskTitle + '"';
-					}
+if (taskTitleElement) {
+taskTitleElement.textContent = '"' + taskTitle + '"';
+}
 
-					if (deleteTaskForm) {
-						const deletePath = "{{ path('task_delete', {id: 'TASK_ID'}) }}";
-						deleteTaskForm.action = deletePath.replace('TASK_ID', taskId);
-					}
+if (deleteTaskForm) {
+const deletePath = "{{ path('task_delete', {id: 'TASK_ID'}) }}";
+deleteTaskForm.action = deletePath.replace('TASK_ID', taskId);
+}
 
-					if (deleteTaskTokenInput) {
-						const token = csrfTokens[taskId];
-						if (token) {
-							deleteTaskTokenInput.value = token;
-						} else {
-							console.error('Token CSRF introuvable pour la tâche ID:', taskId);
-						}
-					}
-				});
-			});
-		});
+if (deleteTaskTokenInput) {
+const token = csrfTokens[taskId];
+if (token) {
+deleteTaskTokenInput.value = token;
+} else {
+console.error('Token CSRF introuvable pour la tâche ID:', taskId);
+}
+}
+});
+});
+});
 	</script>
 {% endblock %}

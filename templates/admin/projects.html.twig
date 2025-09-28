@@ -112,7 +112,19 @@
 												<a href="{{ path('project_show', {id: project.id}) }}" class="btn btn-outline-primary btn-sm" title="Voir le projet">
 													<i class="fas fa-eye"></i>
 												</a>
-												<button type="button" class="btn btn-outline-danger btn-sm delete-project-btn" data-bs-toggle="modal" data-bs-target="#deleteProjectModal" data-project-id="{{ project.id }}" data-project-title="{{ project.title }}" data-project-tasks="{{ project.tasksCount }}" data-project-owner="{{ project.owner.fullName }}" data-project-owner-email="{{ project.owner.email }}" title="Supprimer le projet">
+												{# CORRECTION: Ajout du token CSRF dans les attributs data #}
+												<button 
+													type="button" 
+													class="btn btn-outline-danger btn-sm delete-project-btn" 
+													data-bs-toggle="modal" 
+													data-bs-target="#deleteProjectModal" 
+													data-project-id="{{ project.id }}" 
+													data-project-title="{{ project.title|e('html_attr') }}" 
+													data-project-tasks="{{ project.tasksCount }}" 
+													data-project-owner="{{ project.owner.fullName|e('html_attr') }}" 
+													data-project-owner-email="{{ project.owner.email|e('html_attr') }}"
+													data-csrf-token="{{ csrf_token('delete-project-' ~ project.id) }}"
+													title="Supprimer le projet">
 													<i class="fas fa-trash"></i>
 												</button>
 											</div>
@@ -169,50 +181,58 @@
 	</div>
 
 	<script>
-		// Gestion de la modal de suppression
-const deleteModal = new bootstrap.Modal(document.getElementById('deleteProjectModal'));
-const deleteForm = document.getElementById('delete-project-form');
-const projectTitleElement = document.getElementById('modal-project-title');
-const projectNameElement = document.getElementById('project-name');
-const projectTasksElement = document.getElementById('project-tasks');
-const projectOwnerElement = document.getElementById('project-owner');
-const projectOwnerEmailElement = document.getElementById('project-owner-email');
-const tokenInput = document.getElementById('deleteProjectToken');
+		// CORRECTION COMPLÈTE : Gestion de la modal de suppression
+		document.addEventListener('DOMContentLoaded', function() {
+			const deleteModal = new bootstrap.Modal(document.getElementById('deleteProjectModal'));
+			const deleteForm = document.getElementById('delete-project-form');
+			const projectTitleElement = document.getElementById('modal-project-title');
+			const projectNameElement = document.getElementById('project-name');
+			const projectTasksElement = document.getElementById('project-tasks');
+			const projectOwnerElement = document.getElementById('project-owner');
+			const projectOwnerEmailElement = document.getElementById('project-owner-email');
+			const tokenInput = document.getElementById('deleteProjectToken');
 
-document.querySelectorAll('.delete-project-btn').forEach(button => {
-button.addEventListener('click', function (e) {
-e.preventDefault();
-e.stopPropagation();
+			document.querySelectorAll('.delete-project-btn').forEach(button => {
+				button.addEventListener('click', function (e) {
+					e.preventDefault();
+					e.stopPropagation();
 
-const projectId = this.getAttribute('data-project-id');
-const projectTitle = this.getAttribute('data-project-title');
-const projectTasks = this.getAttribute('data-project-tasks');
-const projectOwner = this.getAttribute('data-project-owner');
-const projectOwnerEmail = this.getAttribute('data-project-owner-email');
+					const projectId = this.getAttribute('data-project-id');
+					const projectTitle = this.getAttribute('data-project-title');
+					const projectTasks = this.getAttribute('data-project-tasks');
+					const projectOwner = this.getAttribute('data-project-owner');
+					const projectOwnerEmail = this.getAttribute('data-project-owner-email');
+					const csrfToken = this.getAttribute('data-csrf-token');
 
-// Configurer la modal
-projectTitleElement.textContent = `"${projectTitle}"`;
-projectNameElement.textContent = projectTitle;
-projectTasksElement.textContent = projectTasks;
-projectOwnerElement.textContent = projectOwner;
-projectOwnerEmailElement.textContent = projectOwnerEmail;
+					// Vérification que toutes les données sont présentes
+					if (!projectId || !csrfToken) {
+						alert('Erreur : données manquantes pour la suppression');
+						return;
+					}
 
-deleteForm.action = `{{ path('admin_project_delete', {id: '__PROJECT_ID__'}) }}`.replace('__PROJECT_ID__', projectId);
-tokenInput.value = `{{ csrf_token('delete-project__PROJECT_ID__') }}`.replace('__PROJECT_ID__', projectId);
+					// Configurer la modal
+					projectTitleElement.textContent = `"${projectTitle}"`;
+					projectNameElement.textContent = projectTitle;
+					projectTasksElement.textContent = projectTasks;
+					projectOwnerElement.textContent = projectOwner;
+					projectOwnerEmailElement.textContent = projectOwnerEmail;
 
-// Petit délai pour éviter les conflits
-setTimeout(() => {
-deleteModal.show();
-}, 100);
-});
-});
+					// CORRECTION: Configuration correcte de l'action et du token
+					deleteForm.action = `{{ path('admin_project_delete', {id: 'PLACEHOLDER_ID'}) }}`.replace('PLACEHOLDER_ID', projectId);
+					tokenInput.value = csrfToken;
 
-// Double confirmation avant suppression
-deleteForm.addEventListener('submit', function (e) {
-const projectName = projectNameElement.textContent;
-if (!confirm (`Êtes-vous absolument sûr de vouloir supprimer le projet "${projectName}" ? Cette action est irréversible et supprimera également toutes les tâches associées.`)) {
-e.preventDefault();
-}
-});
+					// Afficher la modal
+					deleteModal.show();
+				});
+			});
+
+			// Double confirmation avant suppression
+			deleteForm.addEventListener('submit', function (e) {
+				const projectName = projectNameElement.textContent;
+				if (!confirm(`Êtes-vous absolument sûr de vouloir supprimer le projet "${projectName}" ? Cette action est irréversible et supprimera également toutes les tâches associées.`)) {
+					e.preventDefault();
+				}
+			});
+		});
 	</script>
 {% endblock %}
