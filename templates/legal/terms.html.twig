@@ -19,10 +19,10 @@
                         <strong>Dernière mise à jour :</strong> {{ 'now'|date('d/m/Y') }}
                     </div>
 
-                    <h2>1. Acceptation des conditions</h2>
+                    <h3>1. Acceptation des conditions</h3>
                     <p>En utilisant TaskFlow, vous acceptez d'être lié par ces conditions d'utilisation. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser notre service.</p>
 
-                    <h2>2. Description du service</h2>
+                    <h3>2. Description du service</h3>
                     <p>TaskFlow est une application web de gestion de projets et de tâches qui permet aux utilisateurs de :</p>
                     <ul>
                         <li>Créer et gérer des projets personnels ou professionnels</li>
@@ -31,8 +31,8 @@
                         <li>Collaborer sur des projets (fonctionnalités futures)</li>
                     </ul>
 
-                    <h2>3. Compte utilisateur</h2>
-                    <h3>3.1 Création de compte</h3>
+                    <h3>3. Compte utilisateur</h3>
+                    <h4>3.1 Création de compte</h4>
                     <p>Vous devez créer un compte pour utiliser TaskFlow. Vous êtes responsable de :</p>
                     <ul>
                         <li>Fournir des informations exactes et à jour</li>
@@ -40,7 +40,7 @@
                         <li>Toutes les activités qui se produisent sous votre compte</li>
                     </ul>
 
-                    <h3>3.2 Sécurité du compte</h3>
+                    <h4>3.2 Sécurité du compte</h4>
                     <p>Vous vous engagez à :</p>
                     <ul>
                         <li>Utiliser un mot de passe sécurisé</li>
@@ -48,11 +48,11 @@
                         <li>Nous informer immédiatement de toute utilisation non autorisée</li>
                     </ul>
 
-                    <h2>4. Utilisation acceptable</h2>
-                    <h3>4.1 Usages autorisés</h3>
+                    <h3>4. Utilisation acceptable</h3>
+                    <h4>4.1 Usages autorisés</h4>
                     <p>TaskFlow est destiné à un usage personnel et professionnel légitime pour la gestion de projets et tâches.</p>
 
-                    <h3>4.2 Usages interdits</h3>
+                    <h4>4.2 Usages interdits</h4>
                     <p>Il est interdit d'utiliser TaskFlow pour :</p>
                     <ul>
                         <li>Des activités illégales ou non conformes</li>
@@ -62,17 +62,17 @@
                         <li>Utiliser le service à des fins de spam ou de harcèlement</li>
                     </ul>
 
-                    <h2>5. Contenu utilisateur</h2>
-                    <h3>5.1 Propriété du contenu</h3>
+                    <h3>5. Contenu utilisateur</h3>
+                    <h4>5.1 Propriété du contenu</h4>
                     <p>Vous conservez tous les droits sur le contenu que vous créez dans TaskFlow (projets, tâches, descriptions).</p>
 
-                    <h3>5.2 Licence d'utilisation</h3>
+                    <h4>5.2 Licence d'utilisation</h4>
                     <p>En utilisant TaskFlow, vous nous accordez une licence limitée pour stocker, traiter et afficher votre contenu dans le cadre de la fourniture du service.</p>
 
-                    <h2>6. Protection des données</h2>
+                    <h3>6. Protection des données</h3>
                     <p>La collecte et le traitement de vos données personnelles sont régis par notre <a href="{{ path('legal_privacy') }}">Politique de confidentialité</a> et notre <a href="{{ path('legal_gdpr') }}">Politique RGPD</a>.</p>
 
-                    <h2>7. Limitation de responsabilité</h2>
+                    <h3>7. Limitation de responsabilité</h3>
                     <p>TaskFlow est fourni "en l'état". Nous nous efforçons d'assurer la disponibilité du service mais ne garantissons pas :</p>
                     <ul>
                         <li>Un accès ininterrompu au service</li>
@@ -80,7 +80,7 @@
                         <li>La sauvegarde automatique de vos données</li>
                     </ul>
 
-                    <h2>8. Modifications du service</h2>
+                    <h3>8. Modifications du service</h3>
                     <p>Nous nous réservons le droit de :</p>
                     <ul>
                         <li>Modifier ou interrompre le service temporairement ou définitivement</li>
@@ -88,17 +88,17 @@
                         <li>Suspendre ou résilier des comptes en cas de violation</li>
                     </ul>
 
-                    <h2>9. Résiliation</h2>
-                    <h3>9.1 Par l'utilisateur</h3>
+                    <h3>9. Résiliation</h3>
+                    <h4>9.1 Par l'utilisateur</h4>
                     <p>Vous pouvez supprimer votre compte à tout moment depuis les paramètres de votre profil.</p>
 
-                    <h3>9.2 Par TaskFlow</h3>
+                    <h4>9.2 Par TaskFlow</h4>
                     <p>Nous pouvons suspendre ou résilier votre compte en cas de violation de ces conditions.</p>
 
-                    <h2>10. Droit applicable</h2>
+                    <h3>10. Droit applicable</h3>
                     <p>Ces conditions sont régies par le droit français. Tout litige sera soumis aux tribunaux compétents.</p>
 
-                    <h2>11. Contact</h2>
+                    <h3>11. Contact</h3>
                     <p>Pour toute question concernant ces conditions d'utilisation, contactez-nous à :</p>
                     <ul>
                         <li><strong>Email :</strong> legal@taskflow.app</li>
@@ -108,14 +108,12 @@
                     <div class="alert alert-secondary mt-4">
                         <p class="mb-0"><small>
                             <i class="fas fa-calendar-alt me-2"></i>
-                            Ces conditions d'utilisation sont effectives à partir du {{ 'now'|date('d/m/Y') }}. 
-                            Nous vous notifierons de toute modification importante par email.
+                            Ces conditions d'utilisation sont effectives à partir du {{ 'now'|date('d/m/Y') }}. Nous vous notifierons de toute modification importante par email.
                         </small></p>
                     </div>
                 </div>
             </div>
 
-            <!-- Liens utiles -->
             <div class="text-center mt-4">
                 <div class="btn-group">
                     <a href="{{ path('legal_privacy') }}" class="btn btn-outline-primary">

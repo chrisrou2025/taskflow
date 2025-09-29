@@ -19,10 +19,10 @@
                         <strong>Dernière mise à jour :</strong> {{ 'now'|date('d/m/Y') }}
                     </div>
 
-                    <h2>Qu'est-ce qu'un cookie ?</h2>
+                    <h3>Qu'est-ce qu'un cookie ?</h3>
                     <p>Un cookie est un petit fichier texte déposé sur votre appareil lors de votre navigation sur TaskFlow. Les cookies nous permettent de vous reconnaître, de mémoriser vos préférences et d'améliorer votre expérience utilisateur.</p>
 
-                    <h2>Types de cookies utilisés</h2>
+                    <h3>Types de cookies utilisés</h3>
                     
                     <div class="row mb-4">
                         <div class="col-md-6 mb-3">
@@ -98,7 +98,7 @@
                         </div>
                     </div>
 
-                    <h2>Durée de conservation</h2>
+                    <h3>Durée de conservation</h3>
                     <div class="table-responsive">
                         <table class="table table-bordered">
                             <thead class="table-light">
@@ -138,7 +138,7 @@
                         </table>
                     </div>
 
-                    <h2>Gestion de vos préférences</h2>
+                    <h3>Gestion de vos préférences</h3>
                     <div class="card border-primary">
                         <div class="card-header bg-primary text-white">
                             <h5 class="mb-0"><i class="fas fa-sliders-h me-2"></i>Centre de préférences cookies</h5>
@@ -197,7 +197,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+  
                             <div class="text-center mt-3">
                                 <button class="btn btn-primary me-2" onclick="savePreferences()">
                                     <i class="fas fa-save me-2"></i>Sauvegarder mes préférences
@@ -209,14 +209,14 @@
                         </div>
                     </div>
 
-                    <h2>Comment supprimer les cookies ?</h2>
+                    <h3>Comment supprimer les cookies ?</h3>
                     <div class="accordion" id="browserAccordion">
                         <div class="accordion-item">
-                            <h3 class="accordion-header" id="chromeHeading">
+                            <h4 class="accordion-header" id="chromeHeading">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#chromeCollapse">
                                     <i class="fab fa-chrome me-2"></i>Google Chrome
                                 </button>
-                            </h3>
+                            </h4>
                             <div id="chromeCollapse" class="accordion-collapse collapse" data-bs-parent="#browserAccordion">
                                 <div class="accordion-body">
                                     <ol class="small">
@@ -231,11 +231,11 @@
                         </div>
                         
                         <div class="accordion-item">
-                            <h3 class="accordion-header" id="firefoxHeading">
+                            <h4 class="accordion-header" id="firefoxHeading">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#firefoxCollapse">
                                     <i class="fab fa-firefox me-2"></i>Mozilla Firefox
                                 </button>
-                            </h3>
+                            </h4>
                             <div id="firefoxCollapse" class="accordion-collapse collapse" data-bs-parent="#browserAccordion">
                                 <div class="accordion-body">
                                     <ol class="small">
@@ -250,11 +250,11 @@
                         </div>
                         
                         <div class="accordion-item">
-                            <h3 class="accordion-header" id="safariHeading">
+                            <h4 class="accordion-header" id="safariHeading">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#safariCollapse">
                                     <i class="fab fa-safari me-2"></i>Safari
                                 </button>
-                            </h3>
+                            </h4>
                             <div id="safariCollapse" class="accordion-collapse collapse" data-bs-parent="#browserAccordion">
                                 <div class="accordion-body">
                                     <ol class="small">
@@ -291,7 +291,6 @@
                 </div>
             </div>
 
-            <!-- Actions utilisateur -->
             <div class="text-center mt-4">
                 <div class="btn-group">
                     <a href="{{ path('legal_privacy') }}" class="btn btn-outline-primary">
@@ -318,7 +317,6 @@ function savePreferences() {
     // Sauvegarder dans localStorage (remplacer par votre système)
     localStorage.setItem('cookie_functional', functional);
     localStorage.setItem('cookie_analytics', analytics);
-    
     alert('Vos préférences ont été sauvegardées !');
     
     // Recharger la page pour appliquer les changements

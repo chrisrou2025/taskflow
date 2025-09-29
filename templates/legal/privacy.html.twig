@@ -14,9 +14,11 @@
                     </h1>
                 </div>
                 <div class="card-body p-5">
+   
                     <div class="alert alert-success">
                         <i class="fas fa-info-circle me-2"></i>
-                        <strong>Dernière mise à jour :</strong> {{ 'now'|date('d/m/Y') }} | <strong>Conforme RGPD</strong>
+                        <strong>Dernière mise à jour :</strong> {{ 'now'|date('d/m/Y') }} |
+                        <strong>Conforme RGPD</strong>
                     </div>
 
                     <div class="alert alert-primary">
@@ -24,7 +26,7 @@
                         <p class="mb-0">Chez TaskFlow, nous respectons votre vie privée et nous engageons à protéger vos données personnelles conformément au Règlement Général sur la Protection des Données (RGPD).</p>
                     </div>
 
-                    <h2>1. Responsable du traitement</h2>
+                    <h3>1. Responsable du traitement</h3>
                     <div class="bg-light p-3 rounded">
                         <strong>TaskFlow SAS</strong><br>
                         123 Avenue de la République<br>
@@ -33,8 +35,8 @@
                         Délégué à la Protection des Données: dpo@taskflow.app
                     </div>
 
-                    <h2>2. Données collectées</h2>
-                    <h3>2.1 Données d'inscription</h3>
+                    <h3>2. Données collectées</h3>
+                    <h4>2.1 Données d'inscription</h4>
                     <ul>
                         <li><strong>Prénom et nom</strong> - Pour personnaliser votre expérience</li>
                         <li><strong>Adresse email</strong> - Pour l'authentification et les communications</li>
@@ -42,21 +44,21 @@
                         <li><strong>Date d'inscription</strong> - Pour la gestion du compte</li>
                     </ul>
 
-                    <h3>2.2 Données d'utilisation</h3>
+                    <h4>2.2 Données d'utilisation</h4>
                     <ul>
                         <li><strong>Projets et tâches</strong> - Le contenu que vous créez</li>
                         <li><strong>Dates de création/modification</strong> - Pour l'historique</li>
                         <li><strong>Paramètres de priorité et statut</strong> - Pour l'organisation</li>
                     </ul>
 
-                    <h3>2.3 Données techniques</h3>
+                    <h4>2.3 Données techniques</h4>
                     <ul>
                         <li><strong>Adresse IP</strong> - Pour la sécurité et l'analyse</li>
                         <li><strong>Données de session</strong> - Pour maintenir la connexion</li>
                         <li><strong>Logs d'activité</strong> - Pour le support et la sécurité</li>
                     </ul>
 
-                    <h2>3. Base légale du traitement</h2>
+                    <h3>3. Base légale du traitement</h3>
                     <div class="table-responsive">
                         <table class="table table-bordered">
                             <thead class="table-light">
@@ -91,7 +93,7 @@
                         </table>
                     </div>
 
-                    <h2>4. Vos droits RGPD</h2>
+                    <h3>4. Vos droits RGPD</h3>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <div class="card h-100">
@@ -135,13 +137,13 @@
                         </div>
                     </div>
 
-                    <h2>5. Partage des données</h2>
+                    <h3>5. Partage des données</h3>
                     <div class="alert alert-success">
                         <h5><i class="fas fa-lock me-2"></i>Principe de base</h5>
                         <p class="mb-0"><strong>Nous ne vendons jamais vos données personnelles.</strong> Vos projets et tâches restent privés et ne sont accessibles qu'à vous.</p>
                     </div>
 
-                    <h3>5.1 Partage autorisé</h3>
+                    <h4>5.1 Partage autorisé</h4>
                     <p>Nous pouvons partager vos données uniquement dans les cas suivants :</p>
                     <ul>
                         <li><strong>Prestataires de services</strong> - Hébergement sécurisé (avec accords de confidentialité)</li>
@@ -149,7 +151,7 @@
                         <li><strong>Protection des droits</strong> - Pour protéger nos droits ou ceux des autres utilisateurs</li>
                     </ul>
 
-                    <h2>6. Sécurité des données</h2>
+                    <h3>6. Sécurité des données</h3>
                     <div class="row text-center mb-4">
                         <div class="col-md-4">
                             <i class="fas fa-shield-alt text-success fa-3x mb-2"></i>
@@ -168,7 +170,7 @@
                         </div>
                     </div>
 
-                    <h2>7. Cookies et technologies similaires</h2>
+                    <h3>7. Cookies et technologies similaires</h3>
                     <p>Nous utilisons des cookies pour :</p>
                     <ul>
                         <li><strong>Cookies essentiels</strong> - Maintenir votre session de connexion</li>
@@ -177,10 +179,10 @@
                     </ul>
                     <p><a href="{{ path('legal_cookies') }}" class="btn btn-outline-info btn-sm">Voir notre politique de cookies</a></p>
 
-                    <h2>8. Transferts internationaux</h2>
+                    <h3>8. Transferts internationaux</h3>
                     <p>Vos données sont traitées et stockées dans l'Union Européenne. En cas de transfert hors UE, nous nous assurons d'un niveau de protection adéquat.</p>
 
-                    <h2>9. Contact et exercice de vos droits</h2>
+                    <h3>9. Contact et exercice de vos droits</h3>
                     <div class="bg-light p-4 rounded">
                         <h5><i class="fas fa-envelope me-2"></i>Pour exercer vos droits :</h5>
                         <ul class="mb-0">
@@ -191,7 +193,7 @@
                         <p class="mt-3 mb-0"><small>Nous répondons dans un délai maximum de 30 jours.</small></p>
                     </div>
 
-                    <h2>10. Réclamation</h2>
+                    <h3>10. Réclamation</h3>
                     <p>Si vous estimez que vos droits ne sont pas respectés, vous pouvez déposer une réclamation auprès de la <strong>CNIL</strong> (Commission Nationale de l'Informatique et des Libertés).</p>
 
                     <div class="alert alert-info mt-4">

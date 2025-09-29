@@ -42,8 +42,7 @@
 								<i class="fas fa-filter me-2"></i>
 								Filtrage des tâches
 							</span>
-							<i class="fas
-																																								fa-chevron-down text-muted"></i>
+							<i class="fas fa-chevron-down text-muted"></i>
 						</button>
 					</div>
 
@@ -52,10 +51,10 @@
 							<form method="GET" id="filtersForm">
 								<div class="row">
 									<div class="col-lg-4 col-md-6 mb-3">
-										<label class="task-filter-label form-label fw-semibold mt-3">
+										<div class="task-filter-label form-label fw-semibold mt-3">
 											<i class="fas fa-check-circle status-completed me-1"></i>
 											Statut
-										</label>
+										</div>
 										<div class="task-filter-buttons d-flex flex-wrap gap-2">
 											<a href="{{ path('task_index', {project: project ? project.id : null}) }}" class="btn btn-sm filter-btn {{ not current_status ? 'active' : '' }}">
 												Tous
@@ -69,10 +68,10 @@
 									</div>
 
 									<div class="col-lg-4 col-md-6 mb-3">
-										<label class="task-filter-label form-label fw-semibold mt-3">
+										<div class="task-filter-label form-label fw-semibold mt-3">
 											<i class="fas fa-exclamation-triangle priority-high me-1"></i>
 											Priorité
-										</label>
+										</div>
 										<div class="task-filter-buttons d-flex flex-wrap gap-2">
 											<a href="{{ path('task_index', {project: project ? project.id : null, status: current_status}) }}" class="btn btn-sm filter-btn {{ not current_priority ? 'active' : '' }}">
 												Toutes
@@ -87,10 +86,10 @@
 
 									{% if not project %}
 										<div class="col-lg-4 col-md-12 mb-3">
-											<label class="task-filter-label form-label fw-semibold mt-3">
+											<div class="task-filter-label form-label fw-semibold mt-3">
 												<i class="fas fa-folder text-primary me-1"></i>
 												Projet
-											</label>
+											</div>
 											<div class="task-filter-buttons d-flex flex-wrap gap-2">
 												<a href="{{ path('task_index') }}" class="btn btn-sm btn-outline-info">
 													Tous les projets
@@ -98,8 +97,7 @@
 												{% for user_project in projects %}
 													<a href="{{ path('task_index', {project: user_project.id}) }}" class="btn btn-sm btn-outline-info">
 														{{ user_project.title|slice(0, 15) }}
-														{% if user_project.title|length > 15 %}...
-														{% endif %}
+														{% if user_project.title|length > 15 %}...{% endif %}
 													</a>
 												{% endfor %}
 											</div>
@@ -206,8 +204,8 @@
 														<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-sm btn-outline-info" title="Voir les détails">
 															<i class="fas fa-eye me-1"></i>Voir
 														</a>
-														{% if task.project.owner == app.user %}
-															<button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" data-task-token="{{ csrf_token('delete' ~ task.id) }}" title="Supprimer la tâche">
+														{% if is_granted('delete', task) %}
+															<button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}">
 																<i class="fas fa-trash me-1"></i>Supprimer
 															</button>
 														{% endif %}
@@ -354,8 +352,8 @@
 												<i class="fas fa-eye me-1"></i>
 												Voir
 											</a>
-											{% if task.project.owner == app.user %}
-												<button type="button" class="btn btn-sm btn-outline-danger w-100" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" data-task-token="{{ csrf_token('delete' ~ task.id) }}" title="Supprimer la tâche">
+											{% if is_granted('delete', task) %}
+												<button type="button" class="btn btn-sm btn-outline-danger w-100" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}">
 													<i class="fas fa-trash me-1"></i>
 													Supprimer
 												</button>
@@ -425,7 +423,7 @@
 		</div>
 	</div>
 
-	<div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true" data-delete-url="{{ path('task_delete', {'id': 'TASK_ID'}) }}">
+	<div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true">
 		<div class="modal-dialog modal-dialog-centered">
 			<div class="modal-content">
 				<div class="modal-header">
@@ -459,41 +457,36 @@
 	{{ parent() }}
 	<script>
 		document.addEventListener('DOMContentLoaded', function () {
-const deleteTaskModal = new bootstrap.Modal(document.getElementById('deleteTaskModal'));
-const taskTitleElement = document.getElementById('taskTitlePlaceholder');
-const deleteTaskForm = document.getElementById('deleteTaskForm');
-const deleteTaskTokenInput = document.getElementById('deleteTaskToken');
-const deleteButtons = document.querySelectorAll('.delete-task-btn');
-
+const deleteTaskModalEl = document.getElementById('deleteTaskModal');
+if (deleteTaskModalEl) {
 const csrfTokens = {
-{% for task in tasks %}
-'{{ task.id }}' : '{{ csrf_token('delete' ~ task.id) }}'{{ not loop.last ? ',' : '' }}{% endfor %}
+{% for task in tasks %}'{{ task.id }}': '{{ csrf_token('delete' ~ task.id) }}'{{ not loop.last ? ',' : '' }}
+{% endfor %}
 };
 
-deleteButtons.forEach(button => {
-button.addEventListener('click', function (event) {
-const taskId = this.getAttribute('data-task-id');
-const taskTitle = this.getAttribute('data-task-title');
+deleteTaskModalEl.addEventListener('show.bs.modal', function (event) {
+const button = event.relatedTarget;
+const taskId = button.getAttribute('data-task-id');
+const taskTitle = button.getAttribute('data-task-title');
 
-if (taskTitleElement) {
-taskTitleElement.textContent = '"' + taskTitle + '"';
+const modalTitle = deleteTaskModalEl.querySelector('#taskTitlePlaceholder');
+const deleteForm = deleteTaskModalEl.querySelector('#deleteTaskForm');
+const tokenInput = deleteTaskModalEl.querySelector('#deleteTaskToken');
+
+if (modalTitle) {
+modalTitle.textContent = '"' + taskTitle + '"';
 }
 
-if (deleteTaskForm) {
+if (deleteForm) {
 const deletePath = "{{ path('task_delete', {id: 'TASK_ID'}) }}";
-deleteTaskForm.action = deletePath.replace('TASK_ID', taskId);
+deleteForm.action = deletePath.replace('TASK_ID', taskId);
 }
 
-if (deleteTaskTokenInput) {
-const token = csrfTokens[taskId];
-if (token) {
-deleteTaskTokenInput.value = token;
-} else {
-console.error('Token CSRF introuvable pour la tâche ID:', taskId);
-}
+if (tokenInput) {
+tokenInput.value = csrfTokens[taskId] || '';
 }
 });
-});
+}
 });
 	</script>
 {% endblock %}
