@@ -25,22 +25,79 @@ document.addEventListener('DOMContentLoaded', function () {
     // Variables pour gérer les intervalles et la visibilité
     let updateInterval = null;
     let isDocumentVisible = !document.hidden;
+    let activeControllers = new Set();
+
+    // Fonction utilitaire : fetch avec timeout amélioré
+    async function fetchWithTimeout(url, options = {}, timeout = 5000) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => {
+            controller.abort();
+        }, timeout);
+
+        // Ajouter le controller aux actifs
+        activeControllers.add(controller);
+
+        try {
+            const response = await fetch(url, {
+                ...options,
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+            activeControllers.delete(controller);
+
+            return response;
+        } catch (error) {
+            clearTimeout(timeoutId);
+            activeControllers.delete(controller);
+            throw error;
+        }
+    }
 
     // Fonction utilitaire : parse JSON avec gestion d'erreurs
     async function safeJson(response) {
         try {
             return await response.json();
         } catch (error) {
-            console.warn("Réponse non JSON reçue :", error.message);
+            console.warn("Réponse non JSON reçue");
             return null;
         }
     }
 
-    // Fonction utilitaire : gestion des erreurs réseau
+    // Fonction utilitaire : gestion des erreurs réseau améliorée
     function handleNetworkError(error) {
-        // Éviter le spam d'erreurs dans la console pour les erreurs courantes
-        if (error.name !== 'AbortError' && !error.message.includes('NetworkError')) {
-            console.warn('Erreur réseau notifications:', error.message);
+        // Ignorer silencieusement les erreurs d'annulation (abort)
+        if (error.name === 'AbortError') {
+            return;
+        }
+
+        // Ignorer les erreurs réseau courantes sans spam
+        if (error.message && error.message.includes('NetworkError')) {
+            return;
+        }
+
+        // Logger uniquement les erreurs importantes
+        if (error.message && !error.message.includes('Failed to fetch')) {
+            console.warn('Erreur notifications:', error.message);
+        }
+    }
+
+    // Fonction de nettoyage des ressources
+    function cleanup() {
+        // Annuler toutes les requêtes en cours
+        activeControllers.forEach(controller => {
+            try {
+                controller.abort();
+            } catch (e) {
+                // Ignorer les erreurs d'annulation
+            }
+        });
+        activeControllers.clear();
+
+        // Arrêter l'intervalle
+        if (updateInterval) {
+            clearInterval(updateInterval);
+            updateInterval = null;
         }
     }
 
@@ -71,54 +128,65 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Met à jour le compteur de notifications avec timeout et contrôle d'abandon
-    const updateUnreadCount = () => {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 secondes
+    const updateUnreadCount = async () => {
+        // Ne pas faire de requête si le document n'est pas visible
+        if (!isDocumentVisible) {
+            return;
+        }
 
-        fetch(unreadCountUrl, {
-            headers: {
-                'Accept': 'application/json'
-            },
-            signal: controller.signal
-        })
-        .then(response => {
-            clearTimeout(timeoutId);
+        try {
+            const response = await fetchWithTimeout(
+                unreadCountUrl,
+                {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                },
+                5000
+            );
+
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
             }
-            return safeJson(response);
-        })
-        .then(data => {
+
+            const data = await safeJson(response);
+
             if (!data || typeof data.count === 'undefined') {
                 hideNotificationBadges();
                 return;
             }
+
             updateNotificationBadges(data.count);
-        })
-        .catch(handleNetworkError);
+        } catch (error) {
+            handleNetworkError(error);
+            // En cas d'erreur, ne pas modifier l'affichage actuel
+        }
     };
 
     // Charge les notifications récentes avec timeout
-    const loadRecentNotifications = (containerElement, isModal = false) => {
-        containerElement.innerHTML = '<p class="text-center text-muted my-4">Chargement...</p>';
-        
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 secondes
+    const loadRecentNotifications = async (containerElement, isModal = false) => {
+        if (!containerElement) {
+            return;
+        }
 
-        fetch(recentNotificationsUrl, {
-            headers: {
-                'Accept': 'application/json'
-            },
-            signal: controller.signal
-        })
-        .then(response => {
-            clearTimeout(timeoutId);
+        containerElement.innerHTML = '<p class="text-center text-muted my-4">Chargement...</p>';
+
+        try {
+            const response = await fetchWithTimeout(
+                recentNotificationsUrl,
+                {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                },
+                8000
+            );
+
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
             }
-            return safeJson(response);
-        })
-        .then(data => {
+
+            const data = await safeJson(response);
             containerElement.innerHTML = '';
 
             if (!data) {
@@ -167,17 +235,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 containerElement.appendChild(divider);
                 containerElement.appendChild(linkContainer);
             }
-        })
-        .catch(error => {
+        } catch (error) {
             handleNetworkError(error);
             containerElement.innerHTML = '<p class="text-center text-warning my-4">Connexion temporairement indisponible</p>';
-        });
+        }
     };
 
     // Gestion de la visibilité du document pour optimiser les performances
     function handleVisibilityChange() {
         isDocumentVisible = !document.hidden;
-        
+
         if (isDocumentVisible) {
             // Reprendre les mises à jour quand l'onglet redevient visible
             if (!updateInterval) {
@@ -220,10 +287,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Nettoyage des ressources à la fermeture de la page
-    window.addEventListener('beforeunload', function() {
-        if (updateInterval) {
-            clearInterval(updateInterval);
-            updateInterval = null;
-        }
-    });
+    // Utilisation uniquement de beforeunload (plus compatible)
+    window.addEventListener('beforeunload', cleanup);
+
+    // Alternative : utiliser pagehide qui est plus moderne et remplace unload
+    window.addEventListener('pagehide', cleanup);
 });

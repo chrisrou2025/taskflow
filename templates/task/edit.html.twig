@@ -18,29 +18,29 @@
 					<div class="card-body p-4">
 						<p class="text-muted mb-4">
 							Modifiez les informations de cette tâche.
-														Les changements seront appliqués immédiatement.
+							Les changements seront appliqués immédiatement.
 						</p>
 
 						{{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
 
 						<div class="mb-4">
-							{{ form_label(form.title, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+							{{ form_label(form.title, null, {'label_attr': {'class': 'form-label fw-semibold', 'for': 'task_title'}}) }}
 							<div class="input-group">
 								<span class="input-group-text bg-light">
 									<i class="fas fa-heading text-primary"></i>
 								</span>
-								{{ form_widget(form.title, {'attr': {'class': 'form-control', 'autofocus': 'autofocus'}}) }}
+								{{ form_widget(form.title, {'attr': {'class': 'form-control', 'autofocus': 'autofocus', 'id': 'task_title'}}) }}
 							</div>
 							{{ form_errors(form.title) }}
 						</div>
 
 						<div class="mb-4">
-							{{ form_label(form.description, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+							{{ form_label(form.description, null, {'label_attr': {'class': 'form-label fw-semibold', 'for': 'task_description'}}) }}
 							<div class="input-group">
 								<span class="input-group-text bg-light align-items-start pt-3">
 									<i class="fas fa-align-left text-primary"></i>
 								</span>
-								{{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 4}}) }}
+								{{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 4, 'id': 'task_description'}}) }}
 							</div>
 							{{ form_errors(form.description) }}
 						</div>
@@ -48,24 +48,24 @@
 						<div class="row mb-4">
 							<div class="col-sm-6">
 								<div class="mb-4 mb-sm-0">
-									{{ form_label(form.status, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+									{{ form_label(form.status, null, {'label_attr': {'class': 'form-label fw-semibold', 'for': 'task_status'}}) }}
 									<div class="input-group">
 										<span class="input-group-text bg-light">
 											<i class="fas fa-tasks text-primary"></i>
 										</span>
-										{{ form_widget(form.status, {'attr': {'class': 'form-select'}}) }}
+										{{ form_widget(form.status, {'attr': {'class': 'form-select', 'id': 'task_status'}}) }}
 									</div>
 									{{ form_errors(form.status) }}
 								</div>
 							</div>
 							<div class="col-sm-6">
 								<div>
-									{{ form_label(form.priority, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+									{{ form_label(form.priority, null, {'label_attr': {'class': 'form-label fw-semibold', 'for': 'task_priority'}}) }}
 									<div class="input-group">
 										<span class="input-group-text bg-light">
 											<i class="fas fa-exclamation-triangle text-primary"></i>
 										</span>
-										{{ form_widget(form.priority, {'attr': {'class': 'form-select'}}) }}
+										{{ form_widget(form.priority, {'attr': {'class': 'form-select', 'id': 'task_priority'}}) }}
 									</div>
 									{{ form_errors(form.priority) }}
 								</div>
@@ -73,7 +73,7 @@
 						</div>
 
 						<div class="mb-4">
-							{{ form_label(form.assignee, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+							{{ form_label(form.assignee, null, {'label_attr': {'class': 'form-label fw-semibold', 'for': 'task_assignee'}}) }}
 							<div class="input-group">
 								<span class="input-group-text bg-light">
 									<i class="fas fa-user-circle text-primary"></i>
@@ -84,19 +84,19 @@
 						</div>
 
 						<div class="mb-4">
-							{{ form_label(form.dueDate, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+							{{ form_label(form.dueDate, null, {'label_attr': {'class': 'form-label fw-semibold', 'for': 'task_dueDate'}}) }}
 							<div class="input-group">
 								<span class="input-group-text bg-light">
 									<i class="fas fa-calendar-alt text-primary"></i>
 								</span>
-								{{ form_widget(form.dueDate, {'attr': {'class': 'form-control'}}) }}
+								{{ form_widget(form.dueDate, {'attr': {'class': 'form-control', 'id': 'task_dueDate'}}) }}
 							</div>
 							{{ form_errors(form.dueDate) }}
 						</div>
 
 						{% if form.project is defined %}
 							<div class="mb-4">
-								{{ form_label(form.project, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+								{{ form_label(form.project, null, {'label_attr': {'class': 'form-label fw-semibold', 'for': 'task_project'}}) }}
 								<div class="input-group">
 									<span class="input-group-text bg-light">
 										<i class="fas fa-folder text-primary"></i>
@@ -140,74 +140,81 @@
 
 	<script>
 		document.addEventListener('DOMContentLoaded', () => {
-const projectSelect = document.getElementById('task_project');
-const assigneeSelect = document.getElementById('task_assignee');
+			const projectSelect = document.getElementById('task_project');
+			const assigneeSelect = document.getElementById('task_assignee');
 
-if (projectSelect && assigneeSelect) {
-const updateAssignees = () => {
-const projectId = projectSelect.value;
-const currentAssigneeId = assigneeSelect.value;
-// Sauvegarder la sélection actuelle
+			if (projectSelect && assigneeSelect) {
+				const updateAssignees = async () => {
+					const projectId = projectSelect.value;
+					const currentAssigneeId = assigneeSelect.value;
 
-// Effacer les options actuelles sauf la première
-assigneeSelect.innerHTML = '<option value="">Non attribuée</option>';
+					// Effacer les options actuelles sauf la première
+					assigneeSelect.innerHTML = '<option value="">Non attribuée</option>';
 
-if (projectId) {
-fetch (`/projects/api/${projectId}/collaborators`).then(response => {
-if (!response.ok) {
-throw new Error('Erreur réseau');
-}
-return response.json();
-}).then(collaborators => {
-collaborators.forEach(collaborator => {
-const option = document.createElement('option');
-option.value = collaborator.id;
-option.textContent = collaborator.fullName;
+					if (projectId) {
+						try {
+							const response = await fetch(`/projects/api/${projectId}/collaborators`);
+							
+							if (!response.ok) {
+								throw new Error('Erreur réseau');
+							}
+							
+							const collaborators = await response.json();
+							
+							collaborators.forEach(collaborator => {
+								const option = document.createElement('option');
+								option.value = collaborator.id;
+								option.textContent = collaborator.fullName;
 
-// Restaurer la sélection précédente si elle existe
-if (collaborator.id == currentAssigneeId) {
-option.selected = true;
-}
+								// Restaurer la sélection précédente si elle existe
+								if (collaborator.id == currentAssigneeId) {
+									option.selected = true;
+								}
 
-assigneeSelect.appendChild(option);
-});
-}).catch(error => {
-console.error('Erreur lors de la récupération des collaborateurs :', error);
-});
-}
-};
+								assigneeSelect.appendChild(option);
+							});
+						} catch (error) {
+							console.error('Erreur lors de la récupération des collaborateurs:', error);
+						}
+					}
+				};
 
-// Écoute l'événement de changement sur le menu déroulant des projets
-if (projectSelect) {
-projectSelect.addEventListener('change', updateAssignees);
-}
+				// Écoute l'événement de changement sur le menu déroulant des projets
+				if (projectSelect) {
+					projectSelect.addEventListener('change', updateAssignees);
+				}
 
-// Charger les collaborateurs au chargement de la page si un projet est sélectionné
-const initialProjectId = projectSelect ? projectSelect.value : null;
-if (initialProjectId || (typeof task !== 'undefined' && task.project)) { // Si nous sommes en mode édition, charger les collaborateurs du projet actuel
-const taskProjectId = initialProjectId || '{{ task.project ? task.project.id : "" }}';
-if (taskProjectId) {
-fetch (`/projects/api/${taskProjectId}/collaborators`).then(response => response.json()).then(collaborators => {
-const currentAssigneeId = assigneeSelect.value;
-assigneeSelect.innerHTML = '<option value="">Non attribuée</option>';
+				// Charger les collaborateurs au chargement de la page si un projet est sélectionné
+				const initialProjectId = projectSelect ? projectSelect.value : null;
+				
+				if (initialProjectId || (typeof task !== 'undefined' && task.project)) {
+					const taskProjectId = initialProjectId || '{{ task.project ? task.project.id : "" }}';
+					
+					if (taskProjectId) {
+						fetch(`/projects/api/${taskProjectId}/collaborators`)
+							.then(response => response.json())
+							.then(collaborators => {
+								const currentAssigneeId = assigneeSelect.value;
+								assigneeSelect.innerHTML = '<option value="">Non attribuée</option>';
 
-collaborators.forEach(collaborator => {
-const option = document.createElement('option');
-option.value = collaborator.id;
-option.textContent = collaborator.fullName;
+								collaborators.forEach(collaborator => {
+									const option = document.createElement('option');
+									option.value = collaborator.id;
+									option.textContent = collaborator.fullName;
 
-if (collaborator.id == currentAssigneeId) {
-option.selected = true;
-}
+									if (collaborator.id == currentAssigneeId) {
+										option.selected = true;
+									}
 
-assigneeSelect.appendChild(option);
-});
-}).catch(error => {
-console.error('Erreur lors du chargement initial des collaborateurs :', error);
-});
-}
-}
-}
-});
+									assigneeSelect.appendChild(option);
+								});
+							})
+							.catch(error => {
+								console.error('Erreur lors du chargement initial des collaborateurs:', error);
+							});
+					}
+				}
+			}
+		});
 	</script>
 {% endblock %}
