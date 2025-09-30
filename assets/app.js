@@ -1,10 +1,34 @@
-import './bootstrap.js';
-/*
- * Welcome to your app's main JavaScript file!
- *
- * This file will be included onto the page via the importmap() Twig function,
- * which should already be in your base.html.twig.
- */
+// Import des styles globaux
 import './styles/app.css';
 
-console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');
+/**
+ * Le point d'entrée principal de l'application.
+ * Ce script est exécuté sur toutes les pages.
+ */
+document.addEventListener('DOMContentLoaded', () => {
+
+    console.log('App.js chargé via AssetMapper 🎉');
+
+    // --- GESTION DES NOTIFICATIONS ---
+    // On vérifie si l'élément qui contient la configuration des notifications existe
+    const notificationConfigElement = document.getElementById('notification-config');
+    if (notificationConfigElement) {
+        // On récupère et on parse la configuration depuis les attributs data-*
+        const config = JSON.parse(notificationConfigElement.dataset.config);
+        
+        // On importe dynamiquement le module des notifications SEULEMENT si nécessaire
+        import('./js/notifications.js').then(({ initNotificationSystem }) => {
+            initNotificationSystem(config);
+        }).catch(error => console.error("Erreur lors du chargement du module de notifications:", error));
+    }
+
+    // --- GESTION DES FORMULAIRES D'AUTHENTIFICATION ---
+    // On vérifie si on est sur une page d'authentification (connexion, inscription, etc.)
+    if (document.querySelector('.auth-container')) {
+        // On importe dynamiquement le module d'authentification SEULEMENT sur ces pages
+        import('./js/auth.js').then(({ initAuthPage }) => {
+            initAuthPage();
+        }).catch(error => console.error("Erreur lors du chargement du module d'authentification:", error));
+    }
+
+});
