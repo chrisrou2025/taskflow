@@ -1,7 +1,8 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}
-	{{ user.fullName }} - Gestion des utilisateurs - TaskFlow
+	{{ user.fullName }}
+	- Gestion des utilisateurs - TaskFlow
 {% endblock %}
 
 {% block body %}
@@ -37,11 +38,13 @@
 							<h5 class="mb-1">{{ user.fullName }}</h5>
 							<p class="text-muted">{{ user.email }}</p>
 
-							{% if 'ROLE_ADMIN' in user.roles %}
-								<span class="badge bg-warning text-dark">Administrateur</span>
-							{% else %}
-								<span class="badge bg-secondary">Utilisateur</span>
-							{% endif %}
+							<span id="role-badge-{{ user.id }}">
+								{% if 'ROLE_ADMIN' in user.roles %}
+									<span class="badge bg-warning text-dark">Administrateur</span>
+								{% else %}
+									<span class="badge bg-secondary">Utilisateur</span>
+								{% endif %}
+							</span>
 
 							{% if user.id == app.user.id %}
 								<span class="badge bg-info">Votre compte</span>
@@ -79,7 +82,7 @@
 						</div>
 						<div class="card-body">
 							<div class="d-grid gap-2">
-								<button class="btn btn-outline-primary" onclick="toggleUserRole({{ user.id }}, '{{ user.fullName }}')">
+								<button type="button" class="btn btn-outline-primary" data-user-id="{{ user.id }}" data-user-name="{{ user.fullName|e('html_attr') }}" data-csrf-token="{{ csrf_token('toggle-role-' ~ user.id) }}" onclick="toggleUserRole(this)">
 									<i class="fas fa-user-cog me-2"></i>
 									{% if 'ROLE_ADMIN' in user.roles %}
 										Retirer les droits admin
@@ -98,7 +101,6 @@
 			</div>
 
 			<div class="col-lg-8">
-				{# MODIFICATION : Mise à jour des statistiques globales #}
 				<div class="row mb-4">
 					<div class="col-md-4 mb-3">
 						<div class="card border-0 bg-primary text-white">
@@ -155,7 +157,8 @@
 												<td>
 													<div>
 														<strong>{{ project.title }}</strong>
-														<br><small class="text-muted">Créé le {{ project.createdAt|date('d/m/Y') }}</small>
+														<br><small class="text-muted">Créé le
+															{{ project.createdAt|date('d/m/Y') }}</small>
 													</div>
 												</td>
 												<td>
@@ -184,7 +187,6 @@
 					</div>
 				</div>
 
-				{# NOUVEAU BLOC : Affichage des projets collaboratifs #}
 				<div class="card border-0 shadow-sm mb-4">
 					<div class="card-header bg-white">
 						<h5 class="card-title mb-0">
@@ -214,7 +216,8 @@
 												<td>
 													<div>
 														<strong>{{ project.title }}</strong>
-														<br><small class="text-muted">Créé le {{ project.createdAt|date('d/m/Y') }}</small>
+														<br><small class="text-muted">Créé le
+															{{ project.createdAt|date('d/m/Y') }}</small>
 													</div>
 												</td>
 												<td>{{ project.owner.fullName }}</td>
@@ -275,7 +278,6 @@
 		</div>
 	</div>
 
-	{# Le modal et le script restent identiques #}
 	<div class="modal fade" id="deleteUserModal" tabindex="-1">
 		<div class="modal-dialog">
 			<div class="modal-content">
@@ -315,22 +317,102 @@
 			</div>
 		</div>
 	</div>
+
 	<script>
 		function showDeleteModal(button) {
-			const userId = button.getAttribute('data-user-id');
-			const userName = button.getAttribute('data-user-name');
-			const projectsCount = button.getAttribute('data-projects-count');
-			const csrfToken = button.getAttribute('data-csrf-token');
-			document.getElementById('modal-user-name').innerText = `"${userName}"`;
-			document.getElementById('modal-projects-count').innerText = projectsCount;
-			const form = document.getElementById('delete-user-form');
-			form.action = `/admin/users/${userId}/delete`;
-			document.getElementById('delete-user-csrf').value = csrfToken;
-		}
+const userId = button.getAttribute('data-user-id');
+const userName = button.getAttribute('data-user-name');
+const projectsCount = button.getAttribute('data-projects-count');
+const csrfToken = button.getAttribute('data-csrf-token');
 
-		function toggleUserRole(userId, userName) {
-			// Le script existant pour changer le rôle peut être conservé tel quel.
-			// Assurez-vous simplement que le token CSRF est bien transmis.
-		}
+document.getElementById('modal-user-name').innerText = `"${userName}"`;
+document.getElementById('modal-projects-count').innerText = projectsCount;
+
+const form = document.getElementById('delete-user-form');
+form.action = `/admin/users/${userId}/delete`;
+document.getElementById('delete-user-csrf').value = csrfToken;
+}
+
+function toggleUserRole(buttonElement) {
+const userId = buttonElement.dataset.userId;
+const userName = buttonElement.dataset.userName;
+const csrfToken = buttonElement.dataset.csrfToken;
+
+if (! userId || ! userName || ! csrfToken) {
+alert('Erreur : données manquantes pour effectuer cette action.');
+console.error('Données manquantes:', {userId, userName, csrfToken});
+return;
+}
+
+if (!confirm (`Voulez-vous changer le rôle de ${userName} ?`)) {
+return;
+}
+
+buttonElement.disabled = true;
+const originalContent = buttonElement.innerHTML;
+buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+const formData = new FormData();
+formData.append('_token', csrfToken);
+
+fetch (`/admin/users/${userId}/toggle-role`, {
+method: 'POST',
+body: formData
+}).then(response => {
+if (!response.ok) {
+throw new Error (`Erreur HTTP: ${
+response.status
+}`);
+}
+return response.json();
+}).then(data => {
+if (data.success) {
+showAlert(data.message, 'success');
+updateRoleBadge(userId, data.new_role);
+setTimeout(() => {
+window.location.reload();
+}, 1500);
+} else {
+showAlert('Erreur : ' + data.message, 'error');
+}
+}).catch(error => {
+console.error('Erreur lors du changement de rôle:', error);
+showAlert('Une erreur inattendue est survenue. Veuillez réessayer.', 'error');
+}). finally(() => {
+buttonElement.disabled = false;
+buttonElement.innerHTML = originalContent;
+});
+}
+
+function updateRoleBadge(userId, newRole) {
+const roleBadgeElement = document.getElementById (`role-badge-${userId}`);
+if (roleBadgeElement) {
+if (newRole === 'Administrateur') {
+roleBadgeElement.innerHTML = '<span class="badge bg-warning text-dark">Administrateur</span>';
+} else {
+roleBadgeElement.innerHTML = '<span class="badge bg-secondary">Utilisateur</span>';
+}
+}
+}
+
+function showAlert(message, type = 'info') {
+const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+const alertHtml = `
+				<div class="alert ${alertClass} alert-dismissible fade show position-fixed" style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;" role="alert">
+					<i class="fas ${iconClass} me-2"></i>${message}
+					<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+				</div>
+			`;
+document.body.insertAdjacentHTML('beforeend', alertHtml);
+setTimeout(() => {
+const alerts = document.querySelectorAll('.alert.position-fixed');
+alerts.forEach(alert => {
+if (alert.textContent.includes(message)) {
+alert.remove();
+}
+});
+}, 5000);
+}
 	</script>
 {% endblock %}

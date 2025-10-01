@@ -22,8 +22,7 @@ class TaskController extends AbstractController
 {
     public function __construct(
         private NotificationService $notificationService
-    ) {
-    }
+    ) {}
 
     #[Route('/', name: 'task_index', methods: ['GET'])]
     public function index(
@@ -36,7 +35,6 @@ class TaskController extends AbstractController
         $status = $request->query->get('status');
         $priority = $request->query->get('priority');
 
-        // récupérer les projets dont l'utilisateur est owner OU collaborateur (assignee)
         $userProjects = $projectRepository->createQueryBuilder('p')
             ->leftJoin('p.tasks', 't')
             ->where('p.owner = :user OR t.assignee = :user')
@@ -51,12 +49,16 @@ class TaskController extends AbstractController
         if ($projectId) {
             $project = $projectRepository->find($projectId);
 
-            // accès si propriétaire ou collaborateur
-            if ($project && ($project->getOwner() === $user || $project->hasCollaborator($user))) {
-                $tasks = $taskRepository->findByProjectWithFilters($project, $status, $priority);
+            if ($project) {
+                try {
+                    $this->denyAccessUnlessGranted('PROJECT_VIEW', $project);
+                    $tasks = $taskRepository->findByProjectWithFilters($project, $status, $priority);
+                } catch (\Exception $e) {
+                    $this->addFlash('error', 'Vous n\'avez pas accès à ce projet.');
+                    return $this->redirectToRoute('task_index');
+                }
             }
         } else {
-            // toutes les tâches visibles (owner ou assignee)
             $qb = $taskRepository->createQueryBuilder('t')
                 ->join('t.project', 'p')
                 ->where('p.owner = :user OR t.assignee = :user')
@@ -66,7 +68,6 @@ class TaskController extends AbstractController
 
             $tasks = $qb->getQuery()->getResult();
 
-            // Appliquer les filtres si nécessaires
             if ($status || $priority) {
                 $tasks = array_filter($tasks, function ($task) use ($status, $priority) {
                     $statusMatch = !$status || $task->getStatus() === $status;
@@ -96,14 +97,18 @@ class TaskController extends AbstractController
         $task = new Task();
         $user = $this->getUser();
 
-        // Projet précisé dans l'URL
         $projectId = $request->query->get('project');
         if ($projectId) {
             $project = $projectRepository->find($projectId);
 
-            // autorisé si propriétaire ou collaborateur
-            if ($project && ($project->getOwner() === $user || $project->hasCollaborator($user))) {
-                $task->setProject($project);
+            if ($project) {
+                try {
+                    $this->denyAccessUnlessGranted('PROJECT_VIEW', $project);
+                    $task->setProject($project);
+                } catch (\Exception $e) {
+                    $this->addFlash('error', 'Vous n\'avez pas accès à ce projet.');
+                    return $this->redirectToRoute('project_index');
+                }
             }
         }
 
@@ -116,13 +121,11 @@ class TaskController extends AbstractController
             $entityManager->persist($task);
             $entityManager->flush();
 
-            // Envoyer une notification si une personne est assignée et ce n'est pas le créateur
             if ($task->getAssignee() && $task->getAssignee() !== $user) {
                 try {
                     $this->notificationService->createTaskAssignedNotification($task, $user);
                 } catch (\Exception $e) {
                     // Log l'erreur mais ne pas faire échouer la création de tâche
-                    // Vous pouvez ajouter un logger ici si nécessaire
                 }
             }
 
@@ -143,14 +146,9 @@ class TaskController extends AbstractController
     #[Route('/{id}', name: 'task_show', methods: ['GET'])]
     public function show(Task $task): Response
     {
+        $this->denyAccessUnlessGranted('TASK_VIEW', $task);
+
         $user = $this->getUser();
-
-        // accès si propriétaire du projet ou assignee de la tâche
-        if ($task->getProject()->getOwner() !== $user && $task->getAssignee() !== $user) {
-            $this->addFlash('error', 'Vous n\'avez pas l\'autorisation de consulter cette tâche.');
-            return $this->redirectToRoute('project_index');
-        }
-
         $isOwner = $user === $task->getProject()->getOwner();
 
         return $this->render('task/show.html.twig', [
@@ -162,21 +160,15 @@ class TaskController extends AbstractController
     #[Route('/{id}/edit', name: 'task_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Task $task, EntityManagerInterface $entityManager): Response
     {
+        $this->denyAccessUnlessGranted('TASK_EDIT', $task);
+
         $user = $this->getUser();
-
-        // propriétaire du projet ou assignee
-        if ($task->getAssignee() !== $user && $task->getProject()->getOwner() !== $user) {
-            $this->addFlash('error', 'Vous ne pouvez modifier que vos propres tâches.');
-            return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
-        }
-
-        // Stocker l'assignee original pour détecter les changements
         $originalAssignee = $task->getAssignee();
 
         $formOptions = ['user' => $user];
 
         if ($task->getAssignee() === $user && $task->getProject()->getOwner() !== $user) {
-            $formOptions['is_collaborator'] = true; // désactiver certains champs
+            $formOptions['is_collaborator'] = true;
         }
 
         $form = $this->createForm(TaskType::class, $task, $formOptions);
@@ -186,17 +178,14 @@ class TaskController extends AbstractController
             $task->setUpdatedAt(new \DateTimeImmutable());
             $entityManager->flush();
 
-            // Vérifier si l'assignation a changé
             $newAssignee = $task->getAssignee();
-            
-            // Envoyer notification si :
-            // - Une nouvelle personne est assignée
-            // - L'assignation a changé vers quelqu'un d'autre que l'utilisateur actuel
-            // - Ce n'est pas un auto-assignement
-            if ($newAssignee && 
-                $newAssignee !== $user && 
-                $originalAssignee !== $newAssignee) {
-                
+
+            if (
+                $newAssignee &&
+                $newAssignee !== $user &&
+                $originalAssignee !== $newAssignee
+            ) {
+
                 try {
                     $this->notificationService->createTaskAssignedNotification($task, $user);
                 } catch (\Exception $e) {
@@ -218,13 +207,7 @@ class TaskController extends AbstractController
     #[Route('/{id}', name: 'task_delete', methods: ['POST'])]
     public function delete(Request $request, Task $task, EntityManagerInterface $entityManager): Response
     {
-        $user = $this->getUser();
-
-        // seul le propriétaire du projet peut supprimer
-        if ($task->getProject()->getOwner() !== $user) {
-            $this->addFlash('error', 'Seul le propriétaire du projet peut supprimer une tâche.');
-            return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
-        }
+        $this->denyAccessUnlessGranted('TASK_DELETE', $task);
 
         if ($this->isCsrfTokenValid('delete' . $task->getId(), $request->request->get('_token'))) {
             $taskTitle = $task->getTitle();
@@ -248,20 +231,21 @@ class TaskController extends AbstractController
     #[Route('/{id}/toggle-status', name: 'task_toggle_status', methods: ['POST'])]
     public function toggleStatus(Request $request, Task $task, EntityManagerInterface $entityManager): Response
     {
-        $user = $this->getUser();
-
-        // propriétaire du projet ou assignee
-        if ($task->getAssignee() !== $user && $task->getProject()->getOwner() !== $user) {
-            $this->addFlash('error', 'Vous ne pouvez modifier que les tâches qui vous sont assignées.');
-            return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
-        }
+        $this->denyAccessUnlessGranted('TASK_MANAGE', $task);
 
         if ($this->isCsrfTokenValid('toggle-status' . $task->getId(), $request->request->get('_token'))) {
             switch ($task->getStatus()) {
-                case Task::STATUS_TODO: $newStatus = Task::STATUS_IN_PROGRESS; break;
-                case Task::STATUS_IN_PROGRESS: $newStatus = Task::STATUS_COMPLETED; break;
-                case Task::STATUS_COMPLETED: $newStatus = Task::STATUS_TODO; break;
-                default: $newStatus = Task::STATUS_TODO;
+                case Task::STATUS_TODO:
+                    $newStatus = Task::STATUS_IN_PROGRESS;
+                    break;
+                case Task::STATUS_IN_PROGRESS:
+                    $newStatus = Task::STATUS_COMPLETED;
+                    break;
+                case Task::STATUS_COMPLETED:
+                    $newStatus = Task::STATUS_TODO;
+                    break;
+                default:
+                    $newStatus = Task::STATUS_TODO;
             }
 
             $task->setStatus($newStatus);
@@ -292,10 +276,9 @@ class TaskController extends AbstractController
     #[Route('/project/{id}/quick-add', name: 'task_quick_add', methods: ['POST'])]
     public function quickAdd(Request $request, Project $project, EntityManagerInterface $entityManager): JsonResponse
     {
-        $user = $this->getUser();
-
-        // seul le propriétaire peut ajouter rapidement
-        if ($project->getOwner() !== $user) {
+        try {
+            $this->denyAccessUnlessGranted('PROJECT_EDIT', $project);
+        } catch (\Exception $e) {
             return new JsonResponse([
                 'success' => false,
                 'message' => 'Vous n\'avez pas l\'autorisation d\'ajouter une tâche à ce projet.'

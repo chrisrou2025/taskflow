@@ -25,9 +25,7 @@
 		<div class="row mb-4">
 			<div class="col-12">
 				<div class="card border-0 shadow-sm">
-					<div
-						class="card-body">
-						{# Le formulaire de recherche reste inchangé, il est déjà responsive #}
+					<div class="card-body">
 						<form method="get" class="row g-3 align-items-end">
 							<div class="col-md-6">
 								<label for="search" class="form-label">Rechercher</label>
@@ -165,9 +163,9 @@
 												</div>
 												<span id="role-badge-mobile-{{ user.id }}">
 													{% if 'ROLE_ADMIN' in user.roles %}
-														<span class="badge bg-warning text-dark">Admin</span>
+														<span class="badge bg-warning text-dark">Administrateur</span>
 													{% else %}
-														<span class="badge bg-secondary">User</span>
+														<span class="badge bg-secondary">Utilisateur</span>
 													{% endif %}
 												</span>
 											</div>
@@ -190,7 +188,6 @@
 											{% endif %}
 											<a href="{{ path('admin_user_show', {id: user.id}) }}" class="btn btn-sm btn-outline-primary" title="Voir le profil">
 												<i class="fas fa-eye"></i>
-												Voir
 											</a>
 											{% if user.id != app.user.id %}
 												<div class="btn-group btn-group-sm">
@@ -209,9 +206,7 @@
 
 							{% if total_pages > 1 %}
 								<div class="card-footer bg-white">
-									<nav
-										aria-label="Pagination des utilisateurs">
-										{# AMÉLIORATION : Pagination plus compacte #}
+									<nav aria-label="Pagination des utilisateurs">
 										<ul class="pagination pagination-sm justify-content-center mb-0">
 											{% if current_page > 1 %}
 												<li class="page-item">
@@ -303,54 +298,44 @@
 			</div>
 		</div>
 	</div>
+
 	<script>
-		/**
- * Affiche le modal de suppression et remplit dynamiquement les données
- */
-function showDeleteModal(button) {
+		function showDeleteModal(button) {
 const userId = button.getAttribute('data-user-id');
 const userName = button.getAttribute('data-user-name');
 const projectsCount = button.getAttribute('data-projects-count');
 const csrfToken = button.getAttribute('data-csrf-token');
 
-// Remplir les données dans le modal
 document.getElementById('modal-user-name').innerText = `"${userName}"`;
 document.getElementById('modal-projects-count').innerText = projectsCount;
 
-// Définir l'action du formulaire et le token CSRF
 const form = document.getElementById('delete-user-form');
 form.action = `/admin/users/${userId}/delete`;
 document.getElementById('delete-user-csrf').value = csrfToken;
 }
 
-/**
- * Toggle le rôle d'un utilisateur via AJAX
- */
-function toggleUserRole(buttonElement) { // Récupération des données depuis les attributs data
+function toggleUserRole(buttonElement) {
 const userId = buttonElement.dataset.userId;
 const userName = buttonElement.dataset.userName;
 const csrfToken = buttonElement.dataset.csrfToken;
 
-// Vérification des données requises
 if (! userId || ! userName || ! csrfToken) {
 alert('Erreur : données manquantes pour effectuer cette action.');
 console.error('Données manquantes:', {userId, userName, csrfToken});
 return;
 }
 
-// Confirmation de l'action
 if (!confirm (`Voulez-vous changer le rôle de ${userName} ?`)) {
 return;
 }
 
-// Désactivation temporaire du bouton pour éviter les clics multiples
 buttonElement.disabled = true;
 const originalContent = buttonElement.innerHTML;
 buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-// Création du FormData pour envoyer le token CSRF
+
 const formData = new FormData();
 formData.append('_token', csrfToken);
-// Requête AJAX
+
 fetch (`/admin/users/${userId}/toggle-role`, {
 method: 'POST',
 body: formData
@@ -362,13 +347,9 @@ response.status
 }
 return response.json();
 }).then(data => {
-if (data.success) { // Affichage du message de succès
+if (data.success) {
 showAlert(data.message, 'success');
-
-// Mise à jour du badge de rôle dans le tableau
 updateRoleBadge(userId, data.new_role);
-
-// Optionnel: recharger la page après un délai
 setTimeout(() => {
 window.location.reload();
 }, 1500);
@@ -378,41 +359,37 @@ showAlert('Erreur : ' + data.message, 'error');
 }).catch(error => {
 console.error('Erreur lors du changement de rôle:', error);
 showAlert('Une erreur inattendue est survenue. Veuillez réessayer.', 'error');
-}). finally(() => { // Réactivation du bouton
+}). finally(() => {
 buttonElement.disabled = false;
 buttonElement.innerHTML = originalContent;
 });
 }
 
-/**
- * Met à jour le badge de rôle dans le tableau
- */
 function updateRoleBadge(userId, newRole) {
 const roleBadgeElement = document.getElementById (`role-badge-${userId}`);
+const roleBadgeElementMobile = document.getElementById (`role-badge-mobile-${userId}`);
+
+const badgeHTML = newRole === 'Administrateur' ? '<span class="badge bg-warning text-dark">Administrateur</span>' : '<span class="badge bg-secondary">Utilisateur</span>';
+
 if (roleBadgeElement) {
-if (newRole === 'Administrateur') {
-roleBadgeElement.innerHTML = '<span class="badge bg-warning text-dark">Administrateur</span>';
-} else {
-roleBadgeElement.innerHTML = '<span class="badge bg-secondary">Utilisateur</span>';
+roleBadgeElement.innerHTML = badgeHTML;
 }
+
+if (roleBadgeElementMobile) {
+roleBadgeElementMobile.innerHTML = badgeHTML;
 }
 }
 
-/**
- * Affiche une alerte temporaire
- */
-function showAlert(message, type = 'info') { // Création de l'alerte Bootstrap
+function showAlert(message, type = 'info') {
 const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
 const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
 const alertHtml = `
-        <div class="alert ${alertClass} alert-dismissible fade show position-fixed" style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;" role="alert">
-            <i class="fas ${iconClass} me-2"></i>${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    `;
-// Ajout de l'alerte au DOM
+				<div class="alert ${alertClass} alert-dismissible fade show position-fixed" style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;" role="alert">
+					<i class="fas ${iconClass} me-2"></i>${message}
+					<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+				</div>
+			`;
 document.body.insertAdjacentHTML('beforeend', alertHtml);
-// Suppression automatique après 5 secondes
 setTimeout(() => {
 const alerts = document.querySelectorAll('.alert.position-fixed');
 alerts.forEach(alert => {

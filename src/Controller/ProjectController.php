@@ -60,16 +60,11 @@ class ProjectController extends AbstractController
         TaskRepository $taskRepository,
         CollaborationRequestRepository $collaborationRequestRepository
     ): Response {
+        $this->denyAccessUnlessGranted('PROJECT_VIEW', $project);
+
         $currentUser = $this->getUser();
-
-        if ($project->getOwner() !== $currentUser && !$project->hasCollaborator($currentUser)) {
-            $this->addFlash('error', 'Vous n\'avez pas les permissions pour accéder à ce projet.');
-            return $this->redirectToRoute('project_index');
-        }
-
         $tasks = $taskRepository->findByProjectWithFilters($project);
 
-        // Récupérer les demandes de collaboration en attente si l'utilisateur est propriétaire
         $pendingRequests = [];
         if ($project->getOwner() === $currentUser) {
             $pendingRequests = $collaborationRequestRepository->findBy([
@@ -90,10 +85,7 @@ class ProjectController extends AbstractController
     #[Route('/{id}/edit', name: 'project_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Project $project, EntityManagerInterface $entityManager): Response
     {
-        if ($project->getOwner() !== $this->getUser()) {
-            $this->addFlash('error', 'Seul le propriétaire du projet peut le modifier.');
-            return $this->redirectToRoute('project_show', ['id' => $project->getId()]);
-        }
+        $this->denyAccessUnlessGranted('PROJECT_EDIT', $project);
 
         $form = $this->createForm(ProjectType::class, $project);
         $form->handleRequest($request);
@@ -116,10 +108,7 @@ class ProjectController extends AbstractController
     #[Route('/{id}', name: 'project_delete', methods: ['POST'])]
     public function delete(Request $request, Project $project, EntityManagerInterface $entityManager): Response
     {
-        if ($project->getOwner() !== $this->getUser()) {
-            $this->addFlash('error', 'Seul le propriétaire du projet peut le supprimer.');
-            return $this->redirectToRoute('project_show', ['id' => $project->getId()]);
-        }
+        $this->denyAccessUnlessGranted('PROJECT_DELETE', $project);
 
         if ($this->isCsrfTokenValid('delete' . $project->getId(), $request->request->get('_token'))) {
             $title = $project->getTitle();
@@ -134,10 +123,7 @@ class ProjectController extends AbstractController
     #[Route('/{id}/duplicate', name: 'project_duplicate', methods: ['POST'])]
     public function duplicate(Request $request, Project $project, EntityManagerInterface $entityManager): Response
     {
-        if ($project->getOwner() !== $this->getUser() && !$project->hasCollaborator($this->getUser())) {
-            $this->addFlash('error', 'Vous ne pouvez pas dupliquer ce projet.');
-            return $this->redirectToRoute('project_index');
-        }
+        $this->denyAccessUnlessGranted('PROJECT_VIEW', $project);
 
         if ($this->isCsrfTokenValid('duplicate' . $project->getId(), $request->request->get('_token'))) {
             try {
@@ -153,7 +139,6 @@ class ProjectController extends AbstractController
                     $newTask->setCompletedAt(null);
                     $newTask->setCreatedAt(new \DateTimeImmutable());
                     $newTask->setUpdatedAt(null);
-                    // Réassigner la tâche seulement si l'assigné original est collaborateur du nouveau projet
                     if ($task->getAssignee() && $task->getAssignee() !== $this->getUser()) {
                         $newTask->setAssignee(null);
                     }
@@ -176,10 +161,7 @@ class ProjectController extends AbstractController
     #[Route('/{id}/archive', name: 'project_archive', methods: ['POST'])]
     public function archive(Request $request, Project $project, EntityManagerInterface $entityManager): Response
     {
-        if ($project->getOwner() !== $this->getUser()) {
-            $this->addFlash('error', 'Seul le propriétaire du projet peut l\'archiver.');
-            return $this->redirectToRoute('project_show', ['id' => $project->getId()]);
-        }
+        $this->denyAccessUnlessGranted('PROJECT_EDIT', $project);
 
         if ($this->isCsrfTokenValid('archive' . $project->getId(), $request->request->get('_token'))) {
             $project->setUpdatedAt(new \DateTimeImmutable());
@@ -190,22 +172,13 @@ class ProjectController extends AbstractController
         return $this->redirectToRoute('project_show', ['id' => $project->getId()]);
     }
 
-    /**
-     * API endpoint pour récupérer les collaborateurs d'un projet
-     */
     #[Route('/api/{id}/collaborators', name: 'api_project_collaborators', methods: ['GET'])]
     public function getCollaborators(Project $project): JsonResponse
     {
-        $user = $this->getUser();
-
-        // Vérifier que l'utilisateur a accès au projet
-        if ($project->getOwner() !== $user && !$project->hasCollaborator($user)) {
-            return new JsonResponse(['error' => 'Accès non autorisé'], 403);
-        }
+        $this->denyAccessUnlessGranted('PROJECT_VIEW', $project);
 
         $collaborators = [];
 
-        // Ajouter le propriétaire
         $collaborators[] = [
             'id' => $project->getOwner()->getId(),
             'fullName' => $project->getOwner()->getFullName() . ' (Propriétaire)',
@@ -213,7 +186,6 @@ class ProjectController extends AbstractController
             'role' => 'owner'
         ];
 
-        // Ajouter tous les collaborateurs
         foreach ($project->getCollaborators() as $collaborator) {
             $collaborators[] = [
                 'id' => $collaborator->getId(),
