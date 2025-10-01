@@ -15,7 +15,7 @@
 							<h1 class="h3 mb-2">{{ task.title }}</h1>
 							{% if task.isOverdue and not task.isCompleted %}
 								<div class="d-flex gap-3 align-items-center mb-3">
-									<span class="badge bg-danger fs-6">
+									<span class="badge bg-danger fs-6 fw-medium">
 										<i class="fas fa-exclamation-triangle me-1"></i>En retard
 									</span>
 								</div>
@@ -45,7 +45,8 @@
 
 						{# Boutons desktop #}
 						<div class="d-none d-lg-flex gap-2">
-							<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-primary">
+							<a href="{{ 
+path('task_edit', {id: task.id}) }}" class="btn btn-primary">
 								<i class="fas fa-edit me-2"></i>Modifier
 							</a>
 							<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
@@ -85,7 +86,8 @@
 			<div class="row">
 				<div
 					class="col-lg-8">
-					{# Description de la tâche #}
+					{# Description de 
+la tâche #}
 					<div class="card border-0 shadow-sm mb-4">
 						<div class="card-header bg-white">
 							<h5 class="card-title mb-0">
@@ -141,18 +143,29 @@
 						<div class="card-body">
 							<div class="d-flex justify-content-between mb-2">
 								<small class="text-muted">Statut :</small>
-								<span class="badge bg-{{ task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">
+								{# CORRECTION: Utilisation de la classe personnalisée 'table-badge' pour les couleurs vives #}
+								{% set status = task.status %}
+								{% set status_class = '' %}
+								{% if status == 'completed' %}
+									{% set status_class = 'success' %}
+								{% elseif status == 'in_progress' %}
+									{% set status_class = 'in-progress' %}
+								{% else %}
+									{% set status_class = 'secondary' %}
+								{% endif %}
+								<span class="table-badge {{ status_class }}">
 									{{ task.statusLabel }}
 								</span>
 							</div>
 							<div class="d-flex justify-content-between mb-2">
 								<small class="text-muted">Priorité :</small>
+								{# HARMONISATION: Utilisation de Bootstrap + fw-medium #}
 								{% if task.priority == 'high' %}
-									<span class="badge bg-danger">Haute</span>
+									<span class="badge bg-danger fw-medium">Haute</span>
 								{% elseif task.priority == 'medium' %}
-									<span class="badge bg-warning text-dark">Moyenne</span>
+									<span class="badge bg-warning text-dark fw-medium">Moyenne</span>
 								{% else %}
-									<span class="badge bg-info text-dark">Basse</span>
+									<span class="badge bg-info text-dark fw-medium">Basse</span>
 								{% endif %}
 							</div>
 							<div class="d-flex justify-content-between">
@@ -172,7 +185,8 @@
 						<div class="card-body text-center">
 							{% if task.assignee %}
 								<div class="d-flex flex-column align-items-center">
-									<div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 64px; height: 64px;">
+									<div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 64px;
+height: 64px;">
 										<span class="text-primary fw-bold fs-4">
 											{{ task.assignee.firstName|first }}{{ task.assignee.lastName|first }}
 										</span>
@@ -182,7 +196,8 @@
 								</div>
 							{% else %}
 								<div class="d-flex flex-column align-items-center">
-									<div class="bg-secondary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 64px; height: 64px;">
+									<div class="bg-secondary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 64px;
+height: 64px;">
 										<i class="fas fa-user text-secondary fs-4"></i>
 									</div>
 									<h5 class="mb-0">Non attribué</h5>
@@ -215,7 +230,7 @@
 						<i class="fas fa-exclamation-triangle me-2"></i>
 						<strong>Attention :</strong>
 						Cette action est irréversible.
-					</div>
+</div>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
@@ -230,4 +245,3 @@
 		</div>
 	</div>
 {% endblock %}
-

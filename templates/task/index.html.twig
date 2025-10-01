@@ -17,7 +17,8 @@
 				<div class="d-flex justify-content-between align-items-center flex-wrap">
 					<div class="mb-2 mb-md-0">
 						{% if project %}
-							<h1 class="h3 mb-1">Tâches de
+							<h1 class="h3 mb-1">
+								<i class="fas fa-tasks me-2 text-primary"></i>Tâches de
 								{{ project.title }}</h1>
 							<p class="text-muted mb-0">{{ project.title }}
 								compte
@@ -25,7 +26,8 @@
 								tâches ({{ project.completedTasksCount }}
 								terminées)</p>
 						{% else %}
-							<h1 class="h3 mb-1">Toutes mes tâches</h1>
+							<h1 class="h3 mb-1">
+								<i class="fas fa-tasks me-2 text-primary"></i>Toutes mes tâches</h1>
 							<p class="text-muted mb-0">Retrouvez toutes vos tâches ici</p>
 						{% endif %}
 					</div>
@@ -38,7 +40,8 @@
 				<div class="card task-filters-container border-0 shadow-sm">
 					<div class="card-header filter-header bg-transparent border-0 p-0">
 						<button class="task-filter-toggle btn w-100 text-start d-flex justify-content-between align-items-center p-3" type="button" data-bs-toggle="collapse" data-bs-target="#filtersContent" aria-expanded="false" aria-controls="filtersContent">
-							<span class="fw-medium text-dark">
+							<span 
+class="fw-medium text-dark">
 								<i class="fas fa-filter me-2"></i>
 								Filtrage des tâches
 							</span>
@@ -56,11 +59,14 @@
 											Statut
 										</div>
 										<div class="task-filter-buttons d-flex flex-wrap gap-2">
-											<a href="{{ path('task_index', {project: project ? project.id : null}) }}" class="btn btn-sm filter-btn {{ not current_status ? 'active' : '' }}">
+											<a href="{{ path('task_index', {project: project ?
+project.id : null}) }}" class="btn btn-sm filter-btn {{ not current_status ?
+'active' : '' }}">
 												Tous
 											</a>
 											{% for status_label, status_key in status_choices %}
-												<a href="{{ path('task_index', {project: project ? project.id : null, status: status_key, priority: current_priority}) }}" class="btn btn-sm filter-btn {{ current_status == status_key ? 'active' : '' }}">
+												<a href="{{ path('task_index', {project: project ? project.id : null, status: status_key, priority: current_priority}) }}" class="btn btn-sm filter-btn {{ current_status == status_key ?
+'active' : '' }}">
 													{{ status_label }}
 												</a>
 											{% endfor %}
@@ -73,11 +79,13 @@
 											Priorité
 										</div>
 										<div class="task-filter-buttons d-flex flex-wrap gap-2">
-											<a href="{{ path('task_index', {project: project ? project.id : null, status: current_status}) }}" class="btn btn-sm filter-btn {{ not current_priority ? 'active' : '' }}">
+											<a href="{{ path('task_index', {project: project ? project.id : null, status: current_status}) }}" class="btn btn-sm filter-btn {{ not current_priority ?
+'active' : '' }}">
 												Toutes
 											</a>
 											{% for priority_label, priority_key in priority_choices %}
-												<a href="{{ path('task_index', {project: project ? project.id : null, status: current_status, priority: priority_key}) }}" class="btn btn-sm filter-btn {{ current_priority == priority_key ? 'active' : '' }}">
+												<a href="{{ path('task_index', {project: project ? project.id : null, status: current_status, priority: priority_key}) }}" class="btn btn-sm filter-btn {{ current_priority == priority_key ?
+'active' : '' }}">
 													{{ priority_label }}
 												</a>
 											{% endfor %}
@@ -97,7 +105,8 @@
 												{% for user_project in projects %}
 													<a href="{{ path('task_index', {project: user_project.id}) }}" class="btn btn-sm btn-outline-info">
 														{{ user_project.title|slice(0, 15) }}
-														{% if user_project.title|length > 15 %}...{% endif %}
+														{% if user_project.title|length > 15 %}...
+														{% endif %}
 													</a>
 												{% endfor %}
 											</div>
@@ -110,7 +119,8 @@
 										<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
 											<div class="d-flex align-items-center gap-3">
 												{% if current_status or current_priority %}
-													<a href="{{ path('task_index', {project: project ? project.id : null}) }}" class="btn btn-outline-secondary btn-sm">
+													<a href="{{ path('task_index', {project: project ?
+project.id : null}) }}" class="btn btn-outline-secondary btn-sm">
 														<i class="fas fa-times me-1"></i>
 														Effacer les filtres
 													</a>
@@ -143,7 +153,7 @@
 											<th>Priorité</th>
 											<th>Date limite</th>
 											<th>Statut</th>
-											<th>Actions</th>
+											<th class="text-center">Actions</th>
 										</tr>
 									</thead>
 									<tbody>
@@ -161,22 +171,24 @@
 													{% endif %}
 												</td>
 												<td data-label="Priorité">
+													{# DÉBUT MODIFICATION PRIORITÉ - HARMONISATION #}
 													{% set priority = task.priority %}
-													{% set bootstrap_class = '' %}
+													{% set badge_class = '' %}
 													{% set priority_text = '' %}
 													{% if priority == 'high' %}
-														{% set bootstrap_class = 'danger' %}
+														{% set badge_class = 'danger' %}
 														{% set priority_text = 'Haute' %}
 													{% elseif priority == 'medium' %}
-														{% set bootstrap_class = 'warning text-dark' %}
+														{% set badge_class = 'warning' %}
 														{% set priority_text = 'Moyenne' %}
 													{% else %}
-														{% set bootstrap_class = 'info' %}
+														{% set badge_class = 'primary' %}
 														{% set priority_text = 'Basse' %}
 													{% endif %}
-													<span class="badge bg-{{ bootstrap_class }}">
+													<span class="table-badge {{ badge_class }}">
 														{{ priority_text }}
 													</span>
+													{# FIN MODIFICATION PRIORITÉ #}
 												</td>
 												<td data-label="Date limite">
 													{% if task.dueDate %}
@@ -186,21 +198,24 @@
 													{% endif %}
 												</td>
 												<td data-label="Statut">
+													{# DÉBUT MODIFICATION STATUT - HARMONISATION #}
 													{% set status = task.status %}
-													{% set bootstrap_class = '' %}
+													{% set badge_class = '' %}
 													{% if status == 'completed' %}
-														{% set bootstrap_class = 'success' %}
+														{% set badge_class = 'success' %}
 													{% elseif status == 'in_progress' %}
-														{% set bootstrap_class = 'info' %}
+														{% set badge_class = 'in-progress' %}
 													{% else %}
-														{% set bootstrap_class = 'secondary' %}
+														{% set badge_class = 'secondary' %}
 													{% endif %}
-													<span class="badge bg-{{ bootstrap_class }}">
+													<span class="table-badge {{ badge_class }}">
 														{{ task.statusLabel }}
 													</span>
+													{# FIN MODIFICATION STATUT #}
 												</td>
-												<td data-label="Actions" class="table-actions">
-													<div class="d-flex gap-2">
+												<td data-label="Actions" 
+class="table-actions">
+													<div class="d-flex justify-content-center gap-2">
 														<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-sm btn-outline-info" title="Voir les détails">
 															<i class="fas fa-eye me-1"></i>Voir
 														</a>
@@ -229,7 +244,8 @@
 												{% endif %}
 											{% endfor %}
 											Aucune tâche avec le statut "{{ status_label }}" trouvée pour ce projet
-										{% elseif current_priority %}
+										{% elseif current_priority 
+%}
 											{% set priority_label = '' %}
 											{% for label, key in priority_choices %}
 												{% if key == current_priority %}
@@ -265,7 +281,7 @@
 								<p class="mb-0 text-muted">
 									{% if current_status or current_priority %}
 										Essayez de modifier les filtres ou créez une nouvelle tâche.
-									{% else %}
+{% else %}
 										Commencez par créer une nouvelle tâche !
 									{% endif %}
 								</p>
@@ -306,22 +322,24 @@
 											</li>
 											<li class="mb-1">
 												<strong class="text-dark">Priorité :</strong>
+												{# DÉBUT MODIFICATION PRIORITÉ MOBILE - HARMONISATION #}
 												{% set priority = task.priority %}
-												{% set bootstrap_class = '' %}
+												{% set badge_class = '' %}
 												{% set priority_text = '' %}
 												{% if priority == 'high' %}
-													{% set bootstrap_class = 'danger' %}
+													{% set badge_class = 'danger' %}
 													{% set priority_text = 'Haute' %}
 												{% elseif priority == 'medium' %}
-													{% set bootstrap_class = 'warning text-dark' %}
+													{% set badge_class = 'warning' %}
 													{% set priority_text = 'Moyenne' %}
 												{% else %}
-													{% set bootstrap_class = 'info' %}
+													{% set badge_class = 'primary' %}
 													{% set priority_text = 'Basse' %}
 												{% endif %}
-												<span class="badge bg-{{ bootstrap_class }}">
+												<span class="table-badge {{ badge_class }}">
 													{{ priority_text }}
 												</span>
+												{# FIN MODIFICATION PRIORITÉ MOBILE #}
 											</li>
 											<li class="mb-1">
 												<strong class="text-dark">Date limite :</strong>
@@ -333,18 +351,21 @@
 											</li>
 											<li class="mb-1">
 												<strong class="text-dark">Statut :</strong>
+												{# DÉBUT MODIFICATION STATUT MOBILE - HARMONISATION #}
 												{% set status = task.status %}
-												{% set bootstrap_class = '' %}
+												{% set badge_class = '' %}
 												{% if status == 'completed' %}
-													{% set bootstrap_class = 'success' %}
+													{% set badge_class = 'success' %}
 												{% elseif status == 'in_progress' %}
-													{% set bootstrap_class = 'info' %}
+													{% set badge_class = 'in-progress' %}
 												{% else %}
-													{% set bootstrap_class = 'secondary' %}
+													{% set badge_class = 'secondary' %}
 												{% endif %}
-												<span class="badge bg-{{ bootstrap_class }}">
+												<span 
+class="table-badge {{ badge_class }}">
 													{{ task.statusLabel }}
 												</span>
+												{# FIN MODIFICATION STATUT MOBILE #}
 											</li>
 										</ul>
 										<div class="d-flex gap-2 mt-3">
@@ -376,7 +397,8 @@
 											{% set status_label = label %}
 										{% endif %}
 									{% endfor %}
-									Aucune tâche avec le statut "{{ status_label }}" trouvée pour ce projet
+									Aucune tâche avec le statut "{{ status_label }}" trouvée pour 
+ce projet
 								{% elseif current_priority %}
 									{% set priority_label = '' %}
 									{% for label, key in priority_choices %}
@@ -399,7 +421,8 @@
 									Aucune tâche avec le statut "{{ status_label }}" trouvée
 								{% elseif current_priority %}
 									{% set priority_label = '' %}
-									{% for label, key in priority_choices %}
+									{% for label, key in 
+priority_choices %}
 										{% if key == current_priority %}
 											{% set priority_label = label %}
 										{% endif %}
@@ -413,7 +436,7 @@
 						<p class="mb-0 text-muted">
 							{% if current_status or current_priority %}
 								Essayez de modifier les filtres ou créez une nouvelle tâche.
-							{% else %}
+{% else %}
 								Commencez par créer une nouvelle tâche !
 							{% endif %}
 						</p>
@@ -437,7 +460,7 @@
 						Êtes-vous sûr de vouloir supprimer la tâche
 						<strong id="taskTitlePlaceholder"></strong>
 						?
-					</p>
+</p>
 					<p class="text-danger small">Cette action est irréversible.</p>
 				</div>
 				<div class="modal-footer">
@@ -460,8 +483,7 @@
 const deleteTaskModalEl = document.getElementById('deleteTaskModal');
 if (deleteTaskModalEl) {
 const csrfTokens = {
-{% for task in tasks %}'{{ task.id }}': '{{ csrf_token('delete' ~ task.id) }}'{{ not loop.last ? ',' : '' }}
-{% endfor %}
+{% for task in tasks %}'{{ task.id }}' : '{{ csrf_token('delete' ~ task.id) }}'{{ not loop.last ? ',' : '' }}{% endfor %}
 };
 
 deleteTaskModalEl.addEventListener('show.bs.modal', function (event) {
