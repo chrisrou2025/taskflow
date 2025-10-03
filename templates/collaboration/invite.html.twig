@@ -16,20 +16,6 @@
                 </p>
             </div>
 
-            <div class="project-info mb-4">
-                <div class="d-flex align-items-center">
-                    <div class="project-icon">
-                        <i class="fas fa-folder fa-lg"></i>
-                    </div>
-                    <div>
-                        <h6 class="project-title mb-1">{{ project.title }}</h6>
-                        {% if project.description %}
-                            <small class="project-description">{{ project.description|length > 60 ? project.description|slice(0, 60) ~ '...' : project.description }}</small>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white border-0 pb-0">
                     <h5 class="card-title mb-0">
