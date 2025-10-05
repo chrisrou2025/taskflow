@@ -378,7 +378,14 @@
 													</td>
 													<td data-label="Responsable">
 														{% if task.assignee %}
-															{{ task.assignee.fullName }}
+															<div class="d-flex align-items-center">
+																<div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+																	<span class="text-primary fw-bold" style="font-size: 0.75rem;">
+																		{{ task.assignee.firstName|first }}{{ task.assignee.lastName|first }}
+																	</span>
+																</div>
+																<span>{{ task.assignee.fullName }}</span>
+															</div>
 														{% else %}
 															<span class="fst-italic">Non assigné</span>
 														{% endif %}
@@ -567,7 +574,7 @@
 								<div>
 									<strong>Attention :</strong>
 									Cette action supprimera définitivement le projet et toutes ses tâches
-									({{ project.tasksCount }}
+																		({{ project.tasksCount }}
 									tâche{{ project.tasksCount > 1 ? 's' : '' }}).
 								</div>
 							</div>
@@ -623,74 +630,72 @@
 	{{ parent() }}
 	{% if project.tasks|length > 0 and is_granted('PROJECT_EDIT', project) %}
 		<script>
-			document.addEventListener('DOMContentLoaded', function () {
-				// Vérification que Bootstrap modal est disponible
-				if (typeof bootstrap === 'undefined') {
-					console.error('Bootstrap n\'est pas chargé');
-					return;
-				}
+			document.addEventListener('DOMContentLoaded', function () { // Vérification que Bootstrap modal est disponible
+if (typeof bootstrap === 'undefined') {
+console.error('Bootstrap n\'est pas chargé');
+return;
+}
 
-				const deleteTaskModal = document.getElementById('deleteTaskModal');
-				const taskTitleElement = document.getElementById('taskTitle');
-				const deleteTaskForm = document.getElementById('deleteTaskForm');
-				const deleteTokenInput = document.getElementById('deleteToken');
+const deleteTaskModal = document.getElementById('deleteTaskModal');
+const taskTitleElement = document.getElementById('taskTitle');
+const deleteTaskForm = document.getElementById('deleteTaskForm');
+const deleteTokenInput = document.getElementById('deleteToken');
 
-				// Vérification que tous les éléments existent
-				if (!deleteTaskModal || !taskTitleElement || !deleteTaskForm || !deleteTokenInput) {
-					console.error('Éléments du modal de suppression introuvables');
-					return;
-				}
+// Vérification que tous les éléments existent
+if (! deleteTaskModal || ! taskTitleElement || ! deleteTaskForm || ! deleteTokenInput) {
+console.error('Éléments du modal de suppression introuvables');
+return;
+}
 
-				const csrfTokens = {
-					{% for task in project.tasks %}
-						'{{ task.id }}': '{{ csrf_token('delete' ~ task.id) }}'{{ not loop.last ? ',' : '' }}
-					{% endfor %}
-				};
+const csrfTokens = {
+{% for task in project.tasks %}
+'{{ task.id }}' : '{{ csrf_token('delete' ~ task.id) }}'{{ not loop.last ? ',' : '' }}{% endfor %}
+};
 
-				deleteTaskModal.addEventListener('show.bs.modal', function (event) {
-					const button = event.relatedTarget;
-					
-					if (!button) {
-						console.error('Bouton déclencheur introuvable');
-						return;
-					}
+deleteTaskModal.addEventListener('show.bs.modal', function (event) {
+const button = event.relatedTarget;
 
-					const taskId = button.getAttribute('data-task-id');
-					const taskTitle = button.getAttribute('data-task-title');
+if (! button) {
+console.error('Bouton déclencheur introuvable');
+return;
+}
 
-					if (!taskId || !taskTitle) {
-						console.error('Données de tâche manquantes');
-						return;
-					}
+const taskId = button.getAttribute('data-task-id');
+const taskTitle = button.getAttribute('data-task-title');
 
-					// Mise à jour du titre
-					taskTitleElement.textContent = '"' + taskTitle + '"';
+if (! taskId || ! taskTitle) {
+console.error('Données de tâche manquantes');
+return;
+}
 
-					// Mise à jour de l'URL de suppression
-					const deleteUrl = '{{ path('task_delete', {id: '__TASK_ID__'}) }}'.replace('__TASK_ID__', taskId);
-					deleteTaskForm.action = deleteUrl;
+// Mise à jour du titre
+taskTitleElement.textContent = '"' + taskTitle + '"';
 
-					// Mise à jour du token CSRF
-					const token = csrfTokens[taskId];
-					if (token) {
-						deleteTokenInput.value = token;
-					} else {
-						console.error('Token CSRF introuvable pour la tâche ID:', taskId);
-						const submitButton = deleteTaskForm.querySelector('button[type="submit"]');
-						if (submitButton) {
-							submitButton.disabled = true;
-						}
-					}
-				});
+// Mise à jour de l'URL de suppression
+const deleteUrl = '{{ path('task_delete', {id: '__TASK_ID__'}) }}'.replace('__TASK_ID__', taskId);
+deleteTaskForm.action = deleteUrl;
 
-				// Réactiver le bouton de soumission à la fermeture du modal
-				deleteTaskModal.addEventListener('hidden.bs.modal', function () {
-					const submitButton = deleteTaskForm.querySelector('button[type="submit"]');
-					if (submitButton) {
-						submitButton.disabled = false;
-					}
-				});
-			});
+// Mise à jour du token CSRF
+const token = csrfTokens[taskId];
+if (token) {
+deleteTokenInput.value = token;
+} else {
+console.error('Token CSRF introuvable pour la tâche ID:', taskId);
+const submitButton = deleteTaskForm.querySelector('button[type="submit"]');
+if (submitButton) {
+submitButton.disabled = true;
+}
+}
+});
+
+// Réactiver le bouton de soumission à la fermeture du modal
+deleteTaskModal.addEventListener('hidden.bs.modal', function () {
+const submitButton = deleteTaskForm.querySelector('button[type="submit"]');
+if (submitButton) {
+submitButton.disabled = false;
+}
+});
+});
 		</script>
 	{% endif %}
 {% endblock %}
