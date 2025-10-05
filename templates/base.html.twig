@@ -9,13 +9,17 @@
 		</title>
 		<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>📋</text></svg>">
 
+		{# Feuilles de style externes #}
 		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 		<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
+		{# ✅ Feuille de style locale gérée par AssetMapper #}
+		<link rel="stylesheet" href="{{ asset('styles/app.css') }}">
+
+		{# Scripts JavaScript gérés par AssetMapper #}
 		{% block javascripts %}
-            {# Point d'entrée unique pour tout le JavaScript via AssetMapper #}
-            {{ importmap('app') }}
-        {% endblock %}
+			{{ importmap('app') }}
+		{% endblock %}
 	</head>
 
 	<body>
@@ -126,7 +130,6 @@
 								</li>
 							{% endif %}
 
-							{# 🔔 Notifications desktop visibles uniquement connecté #}
 							<li class="nav-item dropdown d-none d-lg-block notification-desktop">
 								<a class="nav-link" href="#" id="notificationDropdownDesktop" role="button" data-bs-toggle="dropdown" aria-expanded="false">
 									<span class="notification-icon-wrapper">
@@ -200,17 +203,29 @@
 			</div>
 		</footer>
 
+		{# Modal des notifications pour mobile #}
 		{% if app.user %}
 			<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
-				<div class="modal-dialog modal-dialog-centered">
+				<div class="modal-dialog modal-dialog-scrollable">
 					<div class="modal-content">
 						<div class="modal-header">
-							<h5 class="modal-title" id="notificationModalLabel">Mes Notifications</h5>
-							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+							<h5 class="modal-title" id="notificationModalLabel">
+								<i class="fas fa-bell me-2"></i>
+								Notifications
+							</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
 						</div>
-						<div class="modal-body"></div>
+						<div class="modal-body" id="notification-list-mobile">
+							<div class="text-center py-4">
+								<div class="spinner-border text-primary" role="status">
+									<span class="visually-hidden">Chargement...</span>
+								</div>
+								<p class="text-muted mt-2 mb-0">Chargement des notifications...</p>
+							</div>
+						</div>
 						<div class="modal-footer">
-							<a href="{{ path('notification_index') }}" class="btn btn-outline-primary w-100">
+							<a href="{{ path('notification_index') }}" class="btn btn-primary w-100">
+								<i class="fas fa-list me-2"></i>
 								Voir toutes les notifications
 							</a>
 						</div>
@@ -219,9 +234,10 @@
 			</div>
 		{% endif %}
 
+		{# Scripts JavaScript externes #}
+
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-		{# NOUVELLE FAÇON DE PASSER LA CONFIGURATION À JAVASCRIPT #}
 		{% if app.user %}
 			{% set notification_config = {
 				unreadCountUrl: path('api_notification_unread_count'),

@@ -96,6 +96,7 @@ class TaskController extends AbstractController
     ): Response {
         $task = new Task();
         $user = $this->getUser();
+        $isCollaborator = false;
 
         $projectId = $request->query->get('project');
         if ($projectId) {
@@ -105,6 +106,9 @@ class TaskController extends AbstractController
                 try {
                     $this->denyAccessUnlessGranted('PROJECT_VIEW', $project);
                     $task->setProject($project);
+
+                    // Vérifier si l'utilisateur est collaborateur (pas propriétaire)
+                    $isCollaborator = $project->getOwner() !== $user;
                 } catch (\Exception $e) {
                     $this->addFlash('error', 'Vous n\'avez pas accès à ce projet.');
                     return $this->redirectToRoute('project_index');
@@ -113,8 +117,10 @@ class TaskController extends AbstractController
         }
 
         $form = $this->createForm(TaskType::class, $task, [
-            'user' => $user
+            'user' => $user,
+            'is_collaborator' => $isCollaborator
         ]);
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -143,58 +149,68 @@ class TaskController extends AbstractController
         ]);
     }
 
+    /**
+     * Affiche les détails d'une tâche
+     */
     #[Route('/{id}', name: 'task_show', methods: ['GET'])]
     public function show(Task $task): Response
     {
-        $this->denyAccessUnlessGranted('TASK_VIEW', $task);
+        $currentUser = $this->getUser();
 
-        $user = $this->getUser();
-        $isOwner = $user === $task->getProject()->getOwner();
+        // Vérifier que l'utilisateur a accès à cette tâche
+        if (!$this->isGranted('TASK_VIEW', $task)) {
+            $this->addFlash('danger', 'Vous n\'êtes pas autorisé à voir cette tâche.');
+            return $this->redirectToRoute('task_index');
+        }
+
+        // Déterminer si l'utilisateur est propriétaire du projet
+        $isOwner = $task->getProject()->getOwner() === $currentUser;
+
+        // Déterminer si l'utilisateur peut modifier (propriétaire OU assigné)
+        $canEdit = $isOwner || $task->getAssignee() === $currentUser;
 
         return $this->render('task/show.html.twig', [
             'task' => $task,
             'isOwner' => $isOwner,
+            'canEdit' => $canEdit,
         ]);
     }
 
+    /**
+     * Modifie une tâche
+     */
+    /**
+     * Modifie une tâche
+     */
     #[Route('/{id}/edit', name: 'task_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Task $task, EntityManagerInterface $entityManager): Response
     {
-        $this->denyAccessUnlessGranted('TASK_EDIT', $task);
+        $currentUser = $this->getUser();
 
-        $user = $this->getUser();
-        $originalAssignee = $task->getAssignee();
+        // Vérification personnalisée avant d'afficher le formulaire
+        $isOwner = $task->getProject()->getOwner() === $currentUser;
+        $isAssignee = $task->getAssignee() === $currentUser;
 
-        $formOptions = ['user' => $user];
-
-        if ($task->getAssignee() === $user && $task->getProject()->getOwner() !== $user) {
-            $formOptions['is_collaborator'] = true;
+        if (!$isOwner && !$isAssignee) {
+            $this->addFlash('danger', 'Action interdite : Vous n\'êtes pas autorisé à modifier cette tâche.');
+            return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
         }
 
-        $form = $this->createForm(TaskType::class, $task, $formOptions);
+        // Déterminer si l'utilisateur est un simple collaborateur (pas propriétaire)
+        $isCollaborator = !$isOwner && $isAssignee;
+
+        $form = $this->createForm(TaskType::class, $task, [
+            'user' => $currentUser,
+            'is_collaborator' => $isCollaborator
+        ]);
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $task->setUpdatedAt(new \DateTimeImmutable());
             $entityManager->flush();
 
-            $newAssignee = $task->getAssignee();
-
-            if (
-                $newAssignee &&
-                $newAssignee !== $user &&
-                $originalAssignee !== $newAssignee
-            ) {
-
-                try {
-                    $this->notificationService->createTaskAssignedNotification($task, $user);
-                } catch (\Exception $e) {
-                    // Log l'erreur mais ne pas faire échouer la modification
-                }
-            }
-
-            $this->addFlash('success', 'La tâche "' . $task->getTitle() . '" a été modifiée avec succès !');
-
+            $this->addFlash('success', 'La tâche a été modifiée avec succès.');
             return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
         }
 
@@ -203,74 +219,85 @@ class TaskController extends AbstractController
             'form' => $form,
         ]);
     }
-
-    #[Route('/{id}', name: 'task_delete', methods: ['POST'])]
-    public function delete(Request $request, Task $task, EntityManagerInterface $entityManager): Response
-    {
-        $this->denyAccessUnlessGranted('TASK_DELETE', $task);
-
-        if ($this->isCsrfTokenValid('delete' . $task->getId(), $request->request->get('_token'))) {
-            $taskTitle = $task->getTitle();
-            $project = $task->getProject();
-
-            $entityManager->remove($task);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'La tâche "' . $taskTitle . '" a été supprimée.');
-
-            if ($project) {
-                return $this->redirectToRoute('task_index', ['project' => $project->getId()]);
-            }
-            return $this->redirectToRoute('task_index');
-        }
-
-        $this->addFlash('error', 'Token CSRF invalide. La suppression a échoué.');
-        return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
-    }
-
+    /**
+     * Change le statut d'une tâche (Toggle entre les statuts)
+     */
+    /**
+     * Change le statut d'une tâche (Toggle entre les statuts)
+     */
     #[Route('/{id}/toggle-status', name: 'task_toggle_status', methods: ['POST'])]
     public function toggleStatus(Request $request, Task $task, EntityManagerInterface $entityManager): Response
     {
-        $this->denyAccessUnlessGranted('TASK_MANAGE', $task);
+        $currentUser = $this->getUser();
 
-        if ($this->isCsrfTokenValid('toggle-status' . $task->getId(), $request->request->get('_token'))) {
-            switch ($task->getStatus()) {
-                case Task::STATUS_TODO:
-                    $newStatus = Task::STATUS_IN_PROGRESS;
-                    break;
-                case Task::STATUS_IN_PROGRESS:
-                    $newStatus = Task::STATUS_COMPLETED;
-                    break;
-                case Task::STATUS_COMPLETED:
-                    $newStatus = Task::STATUS_TODO;
-                    break;
-                default:
-                    $newStatus = Task::STATUS_TODO;
-            }
+        // Vérification personnalisée
+        $isOwner = $task->getProject()->getOwner() === $currentUser;
+        $isAssignee = $task->getAssignee() === $currentUser;
 
-            $task->setStatus($newStatus);
-            $task->setUpdatedAt(new \DateTimeImmutable());
-            $entityManager->flush();
-
-            if ($request->isXmlHttpRequest()) {
-                return new JsonResponse([
-                    'success' => true,
-                    'status' => $newStatus,
-                    'status_label' => $task->getStatusLabel(),
-                    'message' => 'Statut mis à jour avec succès'
-                ]);
-            }
-
-            $this->addFlash('success', 'Statut mis à jour avec succès');
+        if (!$isOwner && !$isAssignee) {
+            $this->addFlash('danger', 'Action interdite : Vous n\'êtes pas autorisé à actualiser cette tâche.');
             return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
         }
 
-        if ($request->isXmlHttpRequest()) {
-            return new JsonResponse(['success' => false, 'message' => 'Token CSRF invalide'], 400);
+        // Vérification du token CSRF
+        if (!$this->isCsrfTokenValid('toggle-status' . $task->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Token CSRF invalide.');
+            return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
         }
 
-        $this->addFlash('error', 'Token CSRF invalide. Le changement de statut a échoué.');
+        // Cycle des statuts : todo -> in_progress -> completed -> todo
+        $currentStatus = $task->getStatus();
+
+        switch ($currentStatus) {
+            case Task::STATUS_TODO:  // Utilisation de la constante
+                $task->setStatus(Task::STATUS_IN_PROGRESS);
+                $message = 'La tâche est maintenant en cours.';
+                break;
+            case Task::STATUS_IN_PROGRESS:
+                $task->setStatus(Task::STATUS_COMPLETED);
+                $message = 'La tâche a été marquée comme terminée.';
+                break;
+            case Task::STATUS_COMPLETED:
+                $task->setStatus(Task::STATUS_TODO);  // Utilisation de la constante
+                $message = 'La tâche a été remise à faire.';
+                break;
+            default:
+                $task->setStatus(Task::STATUS_TODO);  // Utilisation de la constante
+                $message = 'Le statut de la tâche a été mis à jour.';
+        }
+
+        $entityManager->flush();
+
+        $this->addFlash('success', $message);
         return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
+    }
+
+    /**
+     * Supprime une tâche
+     */
+    #[Route('/{id}', name: 'task_delete', methods: ['POST'])]
+    public function delete(Request $request, Task $task, EntityManagerInterface $entityManager): Response
+    {
+        // Vérification avec le voter
+        if (!$this->isGranted('TASK_DELETE', $task)) {
+            $this->addFlash('danger', 'Action interdite : Vous n\'êtes pas autorisé à supprimer cette tâche.');
+            return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
+        }
+
+        // Vérification du token CSRF
+        if (!$this->isCsrfTokenValid('delete' . $task->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Token CSRF invalide.');
+            return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
+        }
+
+        $projectId = $task->getProject()->getId();
+        $taskTitle = $task->getTitle();
+
+        $entityManager->remove($task);
+        $entityManager->flush();
+
+        $this->addFlash('success', sprintf('La tâche "%s" a été supprimée avec succès.', $taskTitle));
+        return $this->redirectToRoute('project_show', ['id' => $projectId]);
     }
 
     #[Route('/project/{id}/quick-add', name: 'task_quick_add', methods: ['POST'])]

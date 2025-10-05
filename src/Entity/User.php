@@ -315,9 +315,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getAssignedTasksByStatus(string $status): Collection
     {
         return $this->assignedTasks->filter(
-            function (Task $task) use ($status) {
-                return $task->getStatus() === $status;
-            }
+            fn(Task $task) => $task->getStatus() === $status
         );
     }
 
@@ -351,9 +349,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getAssignedTasksInProject(Project $project): Collection
     {
         return $this->assignedTasks->filter(
-            function (Task $task) use ($project) {
-                return $task->getProject() === $project;
-            }
+            fn(Task $task) => $task->getProject() === $project
         );
     }
 
@@ -366,44 +362,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * Retourne les projets où l'utilisateur est collaborateur (a des tâches assignées)
+     * MODIFIÉ : Retourne les projets où l'utilisateur est un collaborateur direct.
+     * Cette méthode utilise maintenant la relation ManyToMany, ce qui est correct.
+     * @return Collection<int, Project>
      */
     public function getCollaboratingProjects(): Collection
     {
-        $projects = new ArrayCollection();
-        
-        foreach ($this->assignedTasks as $task) {
-            $project = $task->getProject();
-            if (!$projects->contains($project)) {
-                $projects->add($project);
-            }
-        }
-        
-        return $projects;
+        return $this->collaborations;
     }
 
     /**
-     * Retourne tous les projets auxquels l'utilisateur participe (propriétaire ou collaborateur)
+     * MODIFIÉ : Retourne tous les projets auxquels l'utilisateur participe (propriétaire ou collaborateur).
+     * @return Collection<int, Project>
      */
     public function getAllRelatedProjects(): Collection
     {
-        $allProjects = new ArrayCollection();
+        $ownedProjects = $this->projects->toArray();
+        $collaboratingProjects = $this->collaborations->toArray();
+
+        // Fusionne et dédoublonne les projets
+        $allProjectsArray = array_unique(array_merge($ownedProjects, $collaboratingProjects), SORT_REGULAR);
         
-        // Ajouter les projets possédés
-        foreach ($this->projects as $project) {
-            if (!$allProjects->contains($project)) {
-                $allProjects->add($project);
-            }
-        }
-        
-        // Ajouter les projets où on collabore
-        foreach ($this->getCollaboratingProjects() as $project) {
-            if (!$allProjects->contains($project)) {
-                $allProjects->add($project);
-            }
-        }
-        
-        return $allProjects;
+        return new ArrayCollection($allProjectsArray);
     }
 
     /**
@@ -425,9 +405,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getOverdueTasks(): Collection
     {
         return $this->assignedTasks->filter(
-            function (Task $task) {
-                return $task->isOverdue();
-            }
+            fn(Task $task) => $task->isOverdue()
         );
     }
 
@@ -439,9 +417,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $tasks = $this->assignedTasks->toArray();
         
         // Trier par date de création décroissante
-        usort($tasks, function (Task $a, Task $b) {
-            return $b->getCreatedAt() <=> $a->getCreatedAt();
-        });
+        usort($tasks, fn(Task $a, Task $b) => $b->getCreatedAt() <=> $a->getCreatedAt());
         
         return array_slice($tasks, 0, $limit);
     }
@@ -457,15 +433,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         $completedTasks = $this->getCompletedAssignedTasksCount();
-        return round(($completedTasks / $totalTasks) * 100);
+        return (int) round(($completedTasks / $totalTasks) * 100);
     }
 
     /**
-     * Vérifie si l'utilisateur collabore sur un projet spécifique
+     * MODIFIÉ : Vérifie si l'utilisateur collabore sur un projet spécifique.
+     * La vérification se fait maintenant sur la collection de collaborations.
      */
     public function collaboratesOnProject(Project $project): bool
     {
-        return $this->getAssignedTasksCountInProject($project) > 0;
+        return $this->collaborations->contains($project);
     }
 
     /**

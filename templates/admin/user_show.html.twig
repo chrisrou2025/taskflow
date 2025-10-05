@@ -85,9 +85,9 @@
 								<button type="button" class="btn btn-outline-primary" data-user-id="{{ user.id }}" data-user-name="{{ user.fullName|e('html_attr') }}" data-csrf-token="{{ csrf_token('toggle-role-' ~ user.id) }}" onclick="toggleUserRole(this)">
 									<i class="fas fa-user-cog me-2"></i>
 									{% if 'ROLE_ADMIN' in user.roles %}
-										Retirer les droits admin
+										Retirer les droits administrateur
 									{% else %}
-										Donner les droits admin
+										Donner les droits administrateur
 									{% endif %}
 								</button>
 

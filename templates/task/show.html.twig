@@ -45,16 +45,22 @@
 
 						{# Boutons desktop #}
 						<div class="d-none d-lg-flex gap-2">
-							<a href="{{ 
-path('task_edit', {id: task.id}) }}" class="btn btn-primary">
-								<i class="fas fa-edit me-2"></i>Modifier
-							</a>
-							<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
-								<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
-								<button type="submit" class="btn btn-outline-secondary" title="Actualiser la tâche">
-									<i class="fas fa-sync me-2"></i>Actualiser
-								</button>
-							</form>
+							{% if canEdit %}
+								<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-primary">
+									<i class="fas fa-edit me-2"></i>Modifier
+								</a>
+								<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
+									<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
+									<button type="submit" class="btn btn-outline-secondary" title="Actualiser la tâche">
+										<i class="fas fa-sync me-2"></i>Actualiser
+									</button>
+								</form>
+							{% else %}
+								<div class="alert alert-info mb-0 py-2 px-3">
+									<i class="fas fa-info-circle me-2"></i>
+									<small>Seul le propriétaire du projet ou le responsable de la tâche peut la modifier</small>
+								</div>
+							{% endif %}
 							{% if isOwner %}
 								<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
 									<i class="fas fa-trash me-2"></i>Supprimer
@@ -64,15 +70,17 @@ path('task_edit', {id: task.id}) }}" class="btn btn-primary">
 
 						{# Boutons mobile #}
 						<div class="d-lg-none d-flex gap-2">
-							<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-primary btn-sm btn-icon">
-								<i class="fas fa-edit"></i>
-							</a>
-							<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
-								<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
-								<button type="submit" class="btn btn-outline-secondary btn-sm btn-icon">
-									<i class="fas fa-sync"></i>
-								</button>
-							</form>
+							{% if canEdit %}
+								<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-primary btn-sm btn-icon">
+									<i class="fas fa-edit"></i>
+								</a>
+								<form method="post" action="{{ path('task_toggle_status', {id: task.id}) }}" class="d-inline">
+									<input type="hidden" name="_token" value="{{ csrf_token('toggle-status' ~ task.id) }}">
+									<button type="submit" class="btn btn-outline-secondary btn-sm btn-icon">
+										<i class="fas fa-sync"></i>
+									</button>
+								</form>
+							{% endif %}
 							{% if isOwner %}
 								<button type="button" class="btn btn-danger btn-sm btn-icon" data-bs-toggle="modal" data-bs-target="#deleteModal">
 									<i class="fas fa-trash"></i>
@@ -87,7 +95,7 @@ path('task_edit', {id: task.id}) }}" class="btn btn-primary">
 				<div
 					class="col-lg-8">
 					{# Description de 
-la tâche #}
+					la tâche #}
 					<div class="card border-0 shadow-sm mb-4">
 						<div class="card-header bg-white">
 							<h5 class="card-title mb-0">
@@ -186,7 +194,7 @@ la tâche #}
 							{% if task.assignee %}
 								<div class="d-flex flex-column align-items-center">
 									<div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 64px;
-height: 64px;">
+											height: 64px;">
 										<span class="text-primary fw-bold fs-4">
 											{{ task.assignee.firstName|first }}{{ task.assignee.lastName|first }}
 										</span>
@@ -197,7 +205,7 @@ height: 64px;">
 							{% else %}
 								<div class="d-flex flex-column align-items-center">
 									<div class="bg-secondary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 64px;
-height: 64px;">
+											height: 64px;">
 										<i class="fas fa-user text-secondary fs-4"></i>
 									</div>
 									<h5 class="mb-0">Non attribué</h5>
@@ -230,7 +238,7 @@ height: 64px;">
 						<i class="fas fa-exclamation-triangle me-2"></i>
 						<strong>Attention :</strong>
 						Cette action est irréversible.
-</div>
+					</div>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>

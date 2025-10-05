@@ -65,6 +65,7 @@ class ProjectVoter extends Voter
             'user_id' => $user->getId(),
             'user_email' => $user->getEmail(),
             'is_owner' => $project->getOwner() === $user,
+            'is_collaborator' => $project->hasCollaborator($user),
             'decision' => $result ? 'GRANTED' : 'DENIED'
         ]);
 
@@ -73,10 +74,12 @@ class ProjectVoter extends Voter
 
     private function canView(Project $project, User $user): bool
     {
+        // Le propriétaire peut voir son projet
         if ($project->getOwner() === $user) {
             return true;
         }
 
+        // Les collaborateurs peuvent voir le projet
         if ($project->hasCollaborator($user)) {
             return true;
         }
@@ -86,11 +89,13 @@ class ProjectVoter extends Voter
 
     private function canEdit(Project $project, User $user): bool
     {
+        // Seul le propriétaire peut modifier le projet
         return $project->getOwner() === $user;
     }
 
     private function canDelete(Project $project, User $user): bool
     {
+        // Seul le propriétaire peut supprimer le projet
         return $project->getOwner() === $user;
     }
 }

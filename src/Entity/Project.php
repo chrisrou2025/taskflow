@@ -168,17 +168,22 @@ class Project
         return $this->collaborators;
     }
 
+    // CORRECTION : Ajout de la synchronisation de l'autre côté de la relation
     public function addCollaborator(User $collaborator): static
     {
         if (!$this->collaborators->contains($collaborator)) {
             $this->collaborators->add($collaborator);
+            $collaborator->addCollaboration($this); // Synchronisation
         }
         return $this;
     }
 
+    // CORRECTION : Ajout de la synchronisation de l'autre côté de la relation
     public function removeCollaborator(User $collaborator): static
     {
-        $this->collaborators->removeElement($collaborator);
+        if ($this->collaborators->removeElement($collaborator)) {
+            $collaborator->removeCollaboration($this); // Synchronisation
+        }
         return $this;
     }
 
@@ -223,9 +228,7 @@ class Project
     public function getTasksByStatus(string $status): Collection
     {
         return $this->tasks->filter(
-            function (Task $task) use ($status) {
-                return $task->getStatus() === $status;
-            }
+            fn(Task $task) => $task->getStatus() === $status
         );
     }
 
@@ -288,9 +291,7 @@ class Project
     public function getTasksForCollaborator(User $collaborator): Collection
     {
         return $this->tasks->filter(
-            function (Task $task) use ($collaborator) {
-                return $task->getAssignee() === $collaborator;
-            }
+            fn(Task $task) => $task->getAssignee() === $collaborator
         );
     }
 

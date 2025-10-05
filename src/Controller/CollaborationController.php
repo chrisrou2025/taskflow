@@ -3,15 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\CollaborationRequest;
-use App\Entity\Notification;
 use App\Entity\Project;
 use App\Entity\User;
 use App\Form\CollaborationRequestType;
 use App\Repository\CollaborationRequestRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\UserRepository;
-use App\Repository\TaskRepository;
 use App\Service\NotificationService;
+use App\Service\CollaborationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,6 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
 #[Route('/collaboration')]
 #[IsGranted('ROLE_USER')]
@@ -26,9 +26,9 @@ class CollaborationController extends AbstractController
 {
     public function __construct(
         private NotificationService $notificationService,
-        private EntityManagerInterface $entityManager
-    ) {
-    }
+        private EntityManagerInterface $entityManager,
+        private CollaborationService $collaborationService
+    ) {}
 
     /**
      * Affiche toutes les demandes de collaboration pour l'utilisateur connecté
@@ -37,6 +37,10 @@ class CollaborationController extends AbstractController
     public function requests(CollaborationRequestRepository $collaborationRequestRepository): Response
     {
         $currentUser = $this->getUser();
+
+        if (!$currentUser instanceof User) {
+            throw $this->createAccessDeniedException('Vous devez être connecté.');
+        }
 
         // Demandes reçues
         $receivedRequests = $collaborationRequestRepository->findBy(
@@ -68,18 +72,19 @@ class CollaborationController extends AbstractController
     ): Response {
         $currentUser = $this->getUser();
 
+        if (!$currentUser instanceof User) {
+            throw $this->createAccessDeniedException('Vous devez être connecté.');
+        }
+
         // Vérifier que l'utilisateur est propriétaire du projet
-        if (!$currentUser || $project->getOwner() !== $currentUser) {
+        if ($project->getOwner() !== $currentUser) {
             $this->addFlash('danger', 'Vous ne pouvez pas inviter de collaborateurs sur ce projet.');
             return $this->redirectToRoute('project_show', ['id' => $project->getId()]);
         }
 
         // Récupérer tous les utilisateurs (sauf l'actuel et ceux qui ont déjà une demande en cours)
-        $excludedIds = [];
-        if ($currentUser instanceof User) {
-            $excludedIds[] = $currentUser->getId();
-        }
-        
+        $excludedIds = [$currentUser->getId()];
+
         $existingRequests = $collaborationRequestRepository->findBy(
             ['project' => $project, 'status' => CollaborationRequest::STATUS_PENDING]
         );
@@ -110,22 +115,25 @@ class CollaborationController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $invitedUser = $form->get('invitedUser')->getData();
 
-            if ($invitedUser) {
-                $collaborationRequest->setProject($project);
-                $collaborationRequest->setSender($currentUser);
-                $collaborationRequest->setInvitedUser($invitedUser);
-                $collaborationRequest->setStatus(CollaborationRequest::STATUS_PENDING);
+            if (!$invitedUser instanceof User) {
+                $this->addFlash('danger', 'Utilisateur introuvable.');
+                return $this->redirectToRoute('collaboration_invite', ['id' => $project->getId()]);
+            }
 
-                $this->entityManager->persist($collaborationRequest);
-                $this->entityManager->flush();
-
-                // Envoyer la notification
-                $this->notificationService->createCollaborationRequestNotification($collaborationRequest);
+            try {
+                $this->collaborationService->createCollaborationRequest(
+                    $project,
+                    $currentUser,
+                    $invitedUser,
+                    $collaborationRequest->getMessage()
+                );
 
                 $this->addFlash('success', 'Votre demande de collaboration a bien été envoyée.');
                 return $this->redirectToRoute('project_show', ['id' => $project->getId()]);
-            } else {
-                $this->addFlash('danger', 'Utilisateur introuvable.');
+            } catch (BadRequestException $e) {
+                $this->addFlash('danger', $e->getMessage());
+            } catch (\Exception $e) {
+                $this->addFlash('danger', 'Une erreur est survenue lors de l\'envoi de la demande.');
             }
         }
 
@@ -140,28 +148,36 @@ class CollaborationController extends AbstractController
      * Accepte une demande de collaboration
      */
     #[Route('/accept/{id}', name: 'collaboration_request_accept', methods: ['POST'])]
-    public function accept(CollaborationRequest $collaborationRequest): Response
+    public function accept(Request $request, CollaborationRequest $collaborationRequest): Response
     {
         $currentUser = $this->getUser();
 
-        if (!$collaborationRequest->canBeAnsweredBy($currentUser)) {
-            $this->addFlash('danger', 'Vous ne pouvez pas accepter cette demande.');
+        if (!$currentUser instanceof User) {
+            throw $this->createAccessDeniedException('Vous devez être connecté.');
+        }
+
+        // Vérification du token CSRF
+        if (!$this->isCsrfTokenValid('accept-request-' . $collaborationRequest->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Token CSRF invalide.');
             return $this->redirectToRoute('collaboration_requests');
         }
 
-        // Ajouter l'utilisateur au projet comme collaborateur
-        $project = $collaborationRequest->getProject();
-        $project->addCollaborator($currentUser);
+        try {
+            $this->collaborationService->acceptCollaborationRequest(
+                $collaborationRequest,
+                $currentUser,
+                'Demande acceptée.'
+            );
 
-        $collaborationRequest->accept('Demande acceptée.');
+            $this->addFlash('success', 'Vous êtes maintenant collaborateur sur ce projet !');
+            return $this->redirectToRoute('project_show', ['id' => $collaborationRequest->getProject()->getId()]);
+        } catch (BadRequestException $e) {
+            $this->addFlash('danger', $e->getMessage());
+        } catch (\Exception $e) {
+            $this->addFlash('danger', 'Une erreur est survenue lors de l\'acceptation de la demande.');
+        }
 
-        $this->entityManager->flush();
-
-        // Envoyer une notification à l'expéditeur
-        $this->notificationService->createCollaborationAcceptedNotification($collaborationRequest);
-
-        $this->addFlash('success', 'Vous êtes maintenant collaborateur sur ce projet !');
-        return $this->redirectToRoute('project_show', ['id' => $project->getId()]);
+        return $this->redirectToRoute('collaboration_requests');
     }
 
     /**
@@ -172,20 +188,31 @@ class CollaborationController extends AbstractController
     {
         $currentUser = $this->getUser();
 
-        if (!$collaborationRequest->canBeAnsweredBy($currentUser)) {
-            $this->addFlash('danger', 'Vous ne pouvez pas refuser cette demande.');
+        if (!$currentUser instanceof User) {
+            throw $this->createAccessDeniedException('Vous devez être connecté.');
+        }
+
+        // Vérification du token CSRF
+        if (!$this->isCsrfTokenValid('refuse-request-' . $collaborationRequest->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Token CSRF invalide.');
             return $this->redirectToRoute('collaboration_requests');
         }
 
-        $response = $request->request->get('response', 'Demande refusée.');
-        $collaborationRequest->refuse($response);
+        try {
+            $response = $request->request->get('response', 'Demande refusée.');
+            $this->collaborationService->refuseCollaborationRequest(
+                $collaborationRequest,
+                $currentUser,
+                $response
+            );
 
-        $this->entityManager->flush();
+            $this->addFlash('success', 'La demande a bien été refusée.');
+        } catch (BadRequestException $e) {
+            $this->addFlash('danger', $e->getMessage());
+        } catch (\Exception $e) {
+            $this->addFlash('danger', 'Une erreur est survenue lors du refus de la demande.');
+        }
 
-        // Envoyer une notification à l'expéditeur
-        $this->notificationService->createCollaborationRefusedNotification($collaborationRequest);
-
-        $this->addFlash('success', 'La demande a bien été refusée.');
         return $this->redirectToRoute('collaboration_requests');
     }
 
@@ -193,60 +220,125 @@ class CollaborationController extends AbstractController
      * Annule une demande de collaboration par l'expéditeur
      */
     #[Route('/cancel/{id}', name: 'collaboration_request_cancel', methods: ['POST'])]
-    public function cancel(CollaborationRequest $collaborationRequest): Response
+    public function cancel(Request $request, CollaborationRequest $collaborationRequest): Response
     {
         $currentUser = $this->getUser();
 
-        if (!$collaborationRequest->canBeCancelledBy($currentUser)) {
-            $this->addFlash('danger', 'Vous ne pouvez pas annuler cette demande.');
+        if (!$currentUser instanceof User) {
+            throw $this->createAccessDeniedException('Vous devez être connecté.');
+        }
+
+        // Vérification du token CSRF
+        if (!$this->isCsrfTokenValid('cancel-request-' . $collaborationRequest->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Token CSRF invalide.');
             return $this->redirectToRoute('collaboration_requests');
         }
 
-        $collaborationRequest->cancel();
-        $this->entityManager->flush();
+        try {
+            $this->collaborationService->cancelCollaborationRequest($collaborationRequest, $currentUser);
+            $this->addFlash('success', 'La demande de collaboration a bien été annulée.');
+        } catch (BadRequestException $e) {
+            $this->addFlash('danger', $e->getMessage());
+        } catch (\Exception $e) {
+            $this->addFlash('danger', 'Une erreur est survenue lors de l\'annulation de la demande.');
+        }
 
-        $this->addFlash('success', 'La demande de collaboration a bien été annulée.');
         return $this->redirectToRoute('collaboration_requests');
     }
 
     /**
-     * NOUVELLE ROUTE - Supprime définitivement une demande de collaboration
+     * Retire un collaborateur d'un projet
+     */
+    #[Route('/project/{projectId}/remove-collaborator/{userId}', name: 'collaboration_remove_collaborator', methods: ['POST'])]
+    public function removeCollaborator(
+        Request $request,
+        int $projectId,
+        int $userId,
+        ProjectRepository $projectRepository,
+        UserRepository $userRepository
+    ): Response {
+        $currentUser = $this->getUser();
+
+        if (!$currentUser instanceof User) {
+            throw $this->createAccessDeniedException('Vous devez être connecté.');
+        }
+
+        $project = $projectRepository->find($projectId);
+        $collaborator = $userRepository->find($userId);
+
+        if (!$project || !$collaborator) {
+            $this->addFlash('danger', 'Projet ou utilisateur introuvable.');
+            return $this->redirectToRoute('project_index');
+        }
+
+        // Vérification du token CSRF
+        if (!$this->isCsrfTokenValid('remove-collaborator-' . $projectId . '-' . $userId, $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Token CSRF invalide.');
+            return $this->redirectToRoute('project_show', ['id' => $projectId]);
+        }
+
+        try {
+            $this->collaborationService->removeCollaborator($project, $collaborator, $currentUser);
+
+            $this->addFlash('success', sprintf(
+                '%s a été retiré du projet avec succès.',
+                $collaborator->getFullName()
+            ));
+        } catch (BadRequestException $e) {
+            $this->addFlash('danger', $e->getMessage());
+        } catch (\Exception $e) {
+            $this->addFlash('danger', 'Une erreur est survenue lors du retrait du collaborateur.');
+        }
+
+        return $this->redirectToRoute('project_show', ['id' => $projectId]);
+    }
+
+    /**
+     * Supprime définitivement une demande de collaboration
      */
     #[Route('/request/{id}/delete', name: 'collaboration_request_delete', methods: ['POST'])]
     public function delete(Request $request, CollaborationRequest $collaborationRequest): Response
     {
         $currentUser = $this->getUser();
 
+        if (!$currentUser instanceof User) {
+            throw $this->createAccessDeniedException('Vous devez être connecté.');
+        }
+
         // Vérifier que l'utilisateur est concerné par cette demande
-        if ($collaborationRequest->getSender() !== $currentUser && 
-            $collaborationRequest->getInvitedUser() !== $currentUser) {
+        if (
+            $collaborationRequest->getSender() !== $currentUser &&
+            $collaborationRequest->getInvitedUser() !== $currentUser
+        ) {
             $this->addFlash('danger', 'Vous ne pouvez pas supprimer cette demande.');
             return $this->redirectToRoute('collaboration_requests');
         }
 
         // Vérifier le token CSRF
-        if ($this->isCsrfTokenValid('delete-request-' . $collaborationRequest->getId(), 
-            $request->request->get('_token'))) {
-            
-            $projectTitle = $collaborationRequest->getProject()->getTitle();
-            
-            // Supprimer la demande
-            $this->entityManager->remove($collaborationRequest);
-            $this->entityManager->flush();
-
-            $this->addFlash('success', sprintf(
-                'La demande de collaboration pour le projet "%s" a été supprimée définitivement.',
-                $projectTitle
-            ));
-        } else {
+        if (!$this->isCsrfTokenValid(
+            'delete-request-' . $collaborationRequest->getId(),
+            $request->request->get('_token')
+        )) {
             $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('collaboration_requests');
         }
+
+        $projectTitle = $collaborationRequest->getProject()->getTitle();
+
+        // Supprimer la demande
+        $this->entityManager->remove($collaborationRequest);
+        $this->entityManager->flush();
+
+        $this->addFlash('success', sprintf(
+            'La demande de collaboration pour le projet "%s" a été supprimée définitivement.',
+            $projectTitle
+        ));
 
         return $this->redirectToRoute('collaboration_requests');
     }
 
     /**
-     * NOUVELLE ROUTE - Supprime toutes les demandes reçues traitées (acceptées/refusées)
+     * Supprime toutes les demandes reçues traitées (acceptées/refusées)
      */
     #[Route('/bulk-clear-processed-received', name: 'collaboration_bulk_clear_processed_received', methods: ['POST'])]
     public function bulkClearProcessedReceived(
@@ -254,6 +346,10 @@ class CollaborationController extends AbstractController
         CollaborationRequestRepository $collaborationRequestRepository
     ): JsonResponse {
         $currentUser = $this->getUser();
+
+        if (!$currentUser instanceof User) {
+            return new JsonResponse(['success' => false, 'message' => 'Non authentifié'], 401);
+        }
 
         if (!$this->isCsrfTokenValid('bulk-clear-processed-received', $request->request->get('_token'))) {
             return new JsonResponse(['success' => false, 'message' => 'Token CSRF invalide'], 400);
@@ -271,8 +367,8 @@ class CollaborationController extends AbstractController
             ->getResult();
 
         $clearedCount = 0;
-        foreach ($processedRequests as $request) {
-            $this->entityManager->remove($request);
+        foreach ($processedRequests as $processedRequest) {
+            $this->entityManager->remove($processedRequest);
             $clearedCount++;
         }
 
@@ -292,7 +388,7 @@ class CollaborationController extends AbstractController
     }
 
     /**
-     * NOUVELLE ROUTE - Supprime toutes les demandes envoyées traitées
+     * Supprime toutes les demandes envoyées traitées
      */
     #[Route('/bulk-clear-processed-sent', name: 'collaboration_bulk_clear_processed_sent', methods: ['POST'])]
     public function bulkClearProcessedSent(
@@ -300,6 +396,10 @@ class CollaborationController extends AbstractController
         CollaborationRequestRepository $collaborationRequestRepository
     ): JsonResponse {
         $currentUser = $this->getUser();
+
+        if (!$currentUser instanceof User) {
+            return new JsonResponse(['success' => false, 'message' => 'Non authentifié'], 401);
+        }
 
         if (!$this->isCsrfTokenValid('bulk-clear-processed-sent', $request->request->get('_token'))) {
             return new JsonResponse(['success' => false, 'message' => 'Token CSRF invalide'], 400);
@@ -318,8 +418,8 @@ class CollaborationController extends AbstractController
             ->getResult();
 
         $clearedCount = 0;
-        foreach ($processedRequests as $request) {
-            $this->entityManager->remove($request);
+        foreach ($processedRequests as $processedRequest) {
+            $this->entityManager->remove($processedRequest);
             $clearedCount++;
         }
 
@@ -337,26 +437,28 @@ class CollaborationController extends AbstractController
             'count' => $clearedCount
         ]);
     }
-    
+
     /**
-     * Recherche les utilisateurs par nom, prénom ou email.
+     * Recherche les utilisateurs par nom, prénom ou email
      */
     #[Route('/search-users', name: 'collaboration_search_users', methods: ['GET'])]
     public function searchUsers(Request $request, UserRepository $userRepository): JsonResponse
     {
+        $currentUser = $this->getUser();
+
+        if (!$currentUser instanceof User) {
+            return new JsonResponse(['error' => 'Non authentifié'], 401);
+        }
+
         $query = $request->query->get('q');
         $projectId = $request->query->get('projectId');
-        $currentUser = $this->getUser();
 
         if (!$query) {
             return new JsonResponse([]);
         }
 
-        $excludedIds = [];
-        if ($currentUser instanceof User) {
-            $excludedIds[] = $currentUser->getId();
-        }
-    
+        $excludedIds = [$currentUser->getId()];
+
         if ($projectId) {
             $project = $this->entityManager->getRepository(Project::class)->find($projectId);
             if ($project) {

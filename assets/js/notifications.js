@@ -1,11 +1,5 @@
-/**
- * Module pour gérer le système de notifications en temps réel.
- * Il est initialisé avec une configuration contenant les URLs de l'API,
- * passée par le fichier app.js.
- */
 export function initNotificationSystem(config) {
 
-    // Vérification de la présence de la configuration
     if (!config || !config.unreadCountUrl) {
         console.warn('Configuration des notifications invalide, notifications désactivées.');
         return;
@@ -16,7 +10,7 @@ export function initNotificationSystem(config) {
     const notificationCountElDesktop = document.getElementById('notification-count-desktop');
     const notificationListElDesktop = document.getElementById('notification-list-desktop');
     const notificationModal = document.getElementById('notificationModal');
-    const notificationModalBody = document.querySelector('#notificationModal .modal-body');
+    const notificationModalBody = document.getElementById('notification-list-mobile'); // AJOUT
     const notificationDropdownDesktop = document.getElementById('notificationDropdownDesktop');
 
     // URLs des API depuis la configuration passée en paramètre
@@ -172,9 +166,13 @@ export function initNotificationSystem(config) {
 
     // Écouteurs d'événements
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    if (notificationModal) {
+    
+    // Modal mobile
+    if (notificationModal && notificationModalBody) {
         notificationModal.addEventListener('show.bs.modal', () => loadRecentNotifications(notificationModalBody, true));
     }
+    
+    // Dropdown desktop
     if (notificationDropdownDesktop) {
         notificationDropdownDesktop.addEventListener('show.bs.dropdown', () => loadRecentNotifications(notificationListElDesktop, false));
     }
@@ -182,7 +180,7 @@ export function initNotificationSystem(config) {
     // Démarrage initial
     updateUnreadCount();
     if (isDocumentVisible) {
-        updateInterval = setInterval(updateUnreadCount, 120000); // 2 minutes
+        updateInterval = setInterval(updateUnreadCount, 120000);
     }
 
     // Nettoyage à la fermeture
