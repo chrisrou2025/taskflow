@@ -120,12 +120,9 @@ function initDeleteAccountLogic() {
 }
 
 /**
- * Fonction principale exportée, appelée par app.js
+ * Vide les champs du formulaire de connexion
  */
-export function initAuthPage() {
-    console.log('Module auth.js initialisé');
-
-    // PARTIE 1 : Vider les champs sur la page de connexion
+function clearLoginFields() {
     const emailField = document.getElementById('inputEmail');
     const passwordFieldLogin = document.getElementById('inputPassword');
     const rememberField = document.getElementById('remember_me');
@@ -135,8 +132,12 @@ export function initAuthPage() {
         passwordFieldLogin.value = '';
         rememberField.checked = false;
     }
+}
 
-    // PARTIE 2 : Logique de mot de passe pour inscription, réinitialisation ET changement
+/**
+ * Détecte et initialise la logique de mot de passe selon le type de page
+ */
+function detectAndInitPasswordFields() {
     let passwordFieldId = null;
     let confirmFieldId = null;
 
@@ -161,15 +162,29 @@ export function initAuthPage() {
     if (passwordFieldId && confirmFieldId) {
         initPasswordLogic(passwordFieldId, confirmFieldId);
     }
+}
+
+/**
+ * Fonction principale exportée, appelée par app.js
+ */
+export function initAuthPage() {
+    console.log('Module auth.js initialisé');
+
+    // PARTIE 1 : Vider les champs sur la page de connexion
+    clearLoginFields();
+
+    // PARTIE 2 : Logique de mot de passe pour inscription, réinitialisation ET changement
+    detectAndInitPasswordFields();
 
     // PARTIE 3 : Logique de suppression de compte
     if (document.querySelector('.delete-account-page')) {
         initDeleteAccountLogic();
     }
 
-    // PARTIE 4 : Validation des formulaires Bootstrap
-    const forms = document.querySelectorAll('.needs-validation');
-    Array.from(forms).forEach(form => {
+    // PARTIE 4 : Validation Bootstrap pour les formulaires d'authentification uniquement
+    // Le module form-validation.js gère les formulaires métier (projets, tâches)
+    const authForms = document.querySelectorAll('.auth-container .needs-validation');
+    Array.from(authForms).forEach(form => {
         form.addEventListener('submit', event => {
             if (!form.checkValidity()) {
                 event.preventDefault();
