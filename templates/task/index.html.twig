@@ -58,13 +58,11 @@
 											Statut
 										</div>
 										<div class="task-filter-buttons d-flex flex-wrap gap-2">
-											<a href="{{ path('task_index', {project: project ? project.id : null}) }}" class="btn btn-sm filter-btn {{ not current_status ?
-																																							'active' : '' }}">
+											<a href="{{ path('task_index', {project: project ? project.id : null}) }}" class="btn btn-sm filter-btn {{ not current_status ? 'active' : '' }}">
 												Tous
 											</a>
 											{% for status_label, status_key in status_choices %}
-												<a href="{{ path('task_index', {project: project ? project.id : null, status: status_key, priority: current_priority}) }}" class="btn btn-sm filter-btn {{ current_status == status_key ?
-																																										'active' : '' }}">
+												<a href="{{ path('task_index', {project: project ? project.id : null, status: status_key, priority: current_priority}) }}" class="btn btn-sm filter-btn {{ current_status == status_key ? 'active' : '' }}">
 													{{ status_label }}
 												</a>
 											{% endfor %}
@@ -77,13 +75,11 @@
 											Priorité
 										</div>
 										<div class="task-filter-buttons d-flex flex-wrap gap-2">
-											<a href="{{ path('task_index', {project: project ? project.id : null, status: current_status}) }}" class="btn btn-sm filter-btn {{ not current_priority ?
-																																							'active' : '' }}">
+											<a href="{{ path('task_index', {project: project ? project.id : null, status: current_status}) }}" class="btn btn-sm filter-btn {{ not current_priority ? 'active' : '' }}">
 												Toutes
 											</a>
 											{% for priority_label, priority_key in priority_choices %}
-												<a href="{{ path('task_index', {project: project ? project.id : null, status: current_status, priority: priority_key}) }}" class="btn btn-sm filter-btn {{ current_priority == priority_key ?
-																																										'active' : '' }}">
+												<a href="{{ path('task_index', {project: project ? project.id : null, status: current_status, priority: priority_key}) }}" class="btn btn-sm filter-btn {{ current_priority == priority_key ? 'active' : '' }}">
 													{{ priority_label }}
 												</a>
 											{% endfor %}
@@ -168,21 +164,8 @@
 													{% endif %}
 												</td>
 												<td data-label="Priorité">
-													{% set priority = task.priority %}
-													{% set badge_class = '' %}
-													{% set priority_text = '' %}
-													{% if priority == 'high' %}
-														{% set badge_class = 'danger' %}
-														{% set priority_text = 'Haute' %}
-													{% elseif priority == 'medium' %}
-														{% set badge_class = 'warning' %}
-														{% set priority_text = 'Moyenne' %}
-													{% else %}
-														{% set badge_class = 'primary' %}
-														{% set priority_text = 'Basse' %}
-													{% endif %}
-													<span class="table-badge {{ badge_class }}">
-														{{ priority_text }}
+													<span class="badge bg-{{ task.priority == 'high' ? 'danger' : (task.priority == 'medium' ? 'warning' : 'secondary') }} badge-sm">
+														{{ task.priorityLabel }}
 													</span>
 												</td>
 												<td data-label="Date limite">
@@ -196,16 +179,7 @@
 													{% endif %}
 												</td>
 												<td data-label="Statut">
-													{% set status = task.status %}
-													{% set badge_class = '' %}
-													{% if status == 'completed' %}
-														{% set badge_class = 'success' %}
-													{% elseif status == 'in_progress' %}
-														{% set badge_class = 'in-progress' %}
-													{% else %}
-														{% set badge_class = 'secondary' %}
-													{% endif %}
-													<span class="table-badge {{ badge_class }}">
+													<span class="badge {% if task.status == 'todo' %}badge-todo{% elseif task.status in ['in_progress', 'en_cours'] %}badge-progress{% elseif task.status == 'completed' %}badge-completed{% else %}badge-secondary{% endif %} badge-sm">
 														{{ task.statusLabel }}
 													</span>
 												</td>
@@ -239,8 +213,7 @@
 												{% endif %}
 											{% endfor %}
 											Aucune tâche avec le statut "{{ status_label }}" trouvée pour ce projet
-										{% elseif current_priority 
-%}
+										{% elseif current_priority %}
 											{% set priority_label = '' %}
 											{% for label, key in priority_choices %}
 												{% if key == current_priority %}
@@ -316,23 +289,10 @@
 												{% endif %}
 											</li>
 											<li class="mb-1">
-												<strong class="text-dark">Priorité :</strong>												
-												{% set priority = task.priority %}
-												{% set badge_class = '' %}
-												{% set priority_text = '' %}
-												{% if priority == 'high' %}
-													{% set badge_class = 'danger' %}
-													{% set priority_text = 'Haute' %}
-												{% elseif priority == 'medium' %}
-													{% set badge_class = 'warning' %}
-													{% set priority_text = 'Moyenne' %}
-												{% else %}
-													{% set badge_class = 'primary' %}
-													{% set priority_text = 'Basse' %}
-												{% endif %}
-												<span class="table-badge {{ badge_class }}">
-													{{ priority_text }}
-												</span>												
+												<strong class="text-dark">Priorité :</strong>
+												<span class="badge bg-{{ task.priority == 'high' ? 'danger' : (task.priority == 'medium' ? 'warning' : 'secondary') }} badge-sm">
+													{{ task.priorityLabel }}
+												</span>
 											</li>
 											<li class="mb-1">
 												<strong class="text-dark">Date limite :</strong>
@@ -346,19 +306,10 @@
 												{% endif %}
 											</li>
 											<li class="mb-1">
-												<strong class="text-dark">Statut :</strong>												
-												{% set status = task.status %}
-												{% set badge_class = '' %}
-												{% if status == 'completed' %}
-													{% set badge_class = 'success' %}
-												{% elseif status == 'in_progress' %}
-													{% set badge_class = 'in-progress' %}
-												{% else %}
-													{% set badge_class = 'secondary' %}
-												{% endif %}
-												<span class="table-badge {{ badge_class }}">
+												<strong class="text-dark">Statut :</strong>
+												<span class="badge {% if task.status == 'todo' %}badge-todo{% elseif task.status in ['in_progress', 'en_cours'] %}badge-progress{% elseif task.status == 'completed' %}badge-completed{% else %}badge-secondary{% endif %} badge-sm">
 													{{ task.statusLabel }}
-												</span>												
+												</span>
 											</li>
 										</ul>
 										<div class="d-flex gap-2 mt-3">
@@ -390,8 +341,7 @@
 											{% set status_label = label %}
 										{% endif %}
 									{% endfor %}
-									Aucune tâche avec le statut "{{ status_label }}" trouvée pour 
-																											ce projet
+									Aucune tâche avec le statut "{{ status_label }}" trouvée pour ce projet
 								{% elseif current_priority %}
 									{% set priority_label = '' %}
 									{% for label, key in priority_choices %}
@@ -414,8 +364,7 @@
 									Aucune tâche avec le statut "{{ status_label }}" trouvée
 								{% elseif current_priority %}
 									{% set priority_label = '' %}
-									{% for label, key in 
-priority_choices %}
+									{% for label, key in priority_choices %}
 										{% if key == current_priority %}
 											{% set priority_label = label %}
 										{% endif %}

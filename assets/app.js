@@ -7,7 +7,7 @@ import './styles/app.css';
  */
 document.addEventListener('DOMContentLoaded', () => {
 
-    console.log('App.js chargé via AssetMapper 🎉');
+    console.log('App.js chargé via AssetMapper');
 
     // --- GESTION DES NOTIFICATIONS ---
     // On vérifie si l'élément qui contient la configuration des notifications existe
@@ -20,6 +20,19 @@ document.addEventListener('DOMContentLoaded', () => {
         import('./js/notifications.js').then(({ initNotificationSystem }) => {
             initNotificationSystem(config);
         }).catch(error => console.error("Erreur lors du chargement du module de notifications:", error));
+    }
+
+    // --- GESTION DU DASHBOARD ---
+    // On vérifie si on est sur la page du dashboard
+    const dashboardConfigElement = document.getElementById('dashboard-config');
+    if (dashboardConfigElement) {
+        // On récupère et on parse la configuration depuis les attributs data-*
+        const config = JSON.parse(dashboardConfigElement.dataset.config);
+        
+        // On importe dynamiquement le module du dashboard SEULEMENT si nécessaire
+        import('./js/dashboard.js').then(({ initDashboard }) => {
+            initDashboard(config);
+        }).catch(error => console.error("Erreur lors du chargement du module dashboard:", error));
     }
 
     // --- GESTION DES FORMULAIRES D'AUTHENTIFICATION ---

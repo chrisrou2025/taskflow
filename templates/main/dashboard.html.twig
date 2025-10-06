@@ -9,6 +9,9 @@
 {% endblock %}
 
 {% block body %}
+	{# Configuration pour le système de mise à jour du dashboard #}
+	<div id="dashboard-config" data-config='{"recentTasksUrl": "{{ path('api_dashboard_recent_tasks') }}"}' style="display: none;"></div>
+
 	<div class="container-fluid px-3 px-lg-4">
 		<div class="row g-3 mb-4">
 			<div class="col-6 col-lg-3">
@@ -192,10 +195,12 @@
 													<td>
 														<div class="btn-group btn-group-sm">
 															<a href="{{ path('project_show', {id: project.id}) }}" class="btn btn-outline-primary btn-sm">
-																<i class="fas fa-eye"></i><span class="d-none d-lg-inline ms-1">Voir</span>
+																<i class="fas fa-eye"></i>
+																<span class="d-none d-lg-inline ms-1">Voir</span>
 															</a>
 															<a href="{{ path('task_index', {project: project.id}) }}" class="btn btn-outline-success btn-sm">
-																<i class="fas fa-tasks"></i><span class="d-none d-lg-inline ms-1">Tâches</span>
+																<i class="fas fa-tasks"></i>
+																<span class="d-none d-lg-inline ms-1">Tâches</span>
 															</a>
 														</div>
 													</td>
@@ -210,6 +215,7 @@
 				</div>
 			</div>
 
+			{# Version mobile de l'activité récente #}
 			<div class="col-12 d-lg-none mt-4">
 				<div class="card border-0 shadow-sm">
 					<div class="card-header bg-white border-bottom">
@@ -238,11 +244,11 @@
 													<div class="d-flex align-items-center mb-1">
 														<span class="me-1 small text-muted">Statut:</span>
 														<span class="badge
-																                                                            {% if task.status == 'todo' %}badge-todo
-																                                                            {% elseif task.status in ['in_progress', 'en_cours'] %}badge-progress
-																                                                            {% elseif task.status == 'completed' %}badge-completed
-																                                                            {% else %}badge-secondary
-																                                                            {% endif %} badge-sm">
+																																																																																															{% if task.status == 'todo' %}badge-todo
+																																																																																															{% elseif task.status in ['in_progress', 'en_cours'] %}badge-progress
+																																																																																															{% elseif task.status == 'completed' %}badge-completed
+																																																																																															{% else %}badge-secondary
+																																																																																															{% endif %} badge-sm">
 															{{ task.statusLabel }}
 														</span>
 													</div>
@@ -255,7 +261,9 @@
 												</div>
 											</div>
 											<div class="text-end">
-												<small class="text-muted">{{ task.createdAt|date('d/m H:i') }}</small>
+												<small class="text-muted">
+													{{ task.updatedAt ? task.updatedAt|date('d/m H:i', timezone="Europe/Paris") : task.createdAt|date('d/m H:i', timezone="Europe/Paris") }}
+												</small>
 											</div>
 										</div>
 									</div>
@@ -266,6 +274,7 @@
 				</div>
 			</div>
 
+			{# Version desktop de l'activité récente #}
 			<div class="col-lg-4 d-none d-lg-block">
 				<div class="card border-0 shadow-sm">
 					<div class="card-header bg-white border-bottom">
@@ -294,11 +303,11 @@
 													<div class="d-flex align-items-center mb-1">
 														<span class="me-1 small text-muted">Statut:</span>
 														<span class="badge
-																                                                            {% if task.status == 'todo' %}badge-todo
-																                                                            {% elseif task.status in ['in_progress', 'en_cours'] %}badge-progress
-																                                                            {% elseif task.status == 'completed' %}badge-completed
-																                                                            {% else %}badge-secondary
-																                                                            {% endif %} badge-sm">
+																																																																																															{% if task.status == 'todo' %}badge-todo
+																																																																																															{% elseif task.status in ['in_progress', 'en_cours'] %}badge-progress
+																																																																																															{% elseif task.status == 'completed' %}badge-completed
+																																																																																															{% else %}badge-secondary
+																																																																																															{% endif %} badge-sm">
 															{{ task.statusLabel }}
 														</span>
 													</div>
@@ -311,7 +320,9 @@
 												</div>
 											</div>
 											<div class="text-end">
-												<small class="text-muted">{{ task.createdAt|date('d/m H:i') }}</small>
+												<small class="text-muted">
+													{{ task.updatedAt ? task.updatedAt|date('d/m H:i', timezone="Europe/Paris") : task.createdAt|date('d/m H:i', timezone="Europe/Paris") }}
+												</small>
 											</div>
 										</div>
 									</div>

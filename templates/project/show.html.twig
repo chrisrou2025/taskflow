@@ -185,8 +185,7 @@
 						{% if collaborators|length == 0 %}
 							<p class="text-muted mb-0 small">
 								{% if project.owner == app.user %}
-									Aucun collaborateur pour le moment.
-									<a href="{{ path('collaboration_invite', {id: project.id}) }}" class="text-decoration-none">Inviter des utilisateurs</a>
+									Aucun collaborateur pour le moment. <a href="{{ path('collaboration_invite', {id: project.id}) }}" class="text-decoration-none">Inviter des utilisateurs</a>
 									pour collaborer sur ce projet.
 								{% else %}
 									Vous collaborez sur ce projet.
@@ -215,38 +214,44 @@
 			<div class="row g-2 mt-2">
 				<div class="col-12">
 					<div class="card border-0 shadow-sm">
-						<div class="card-header bg-white py-3">
-							<h5 class="mb-0">
-								<i class="fas fa-cog me-2 text-primary"></i>
-								Gérer les collaborateurs
-							</h5>
+						<div class="card-header bg-transparent border-0 p-0">
+							<button class="btn w-100 text-start d-flex justify-content-between align-items-center p-3" type="button" data-bs-toggle="collapse" data-bs-target="#collaboratorsContent" aria-expanded="false" aria-controls="collaboratorsContent">
+								<span class="fw-medium text-dark">
+									<i class="fas fa-cog me-2 text-primary"></i>
+									Gérer les collaborateurs
+								</span>
+								<i class="fas fa-chevron-down text-muted"></i>
+							</button>
 						</div>
-						<div class="card-body">
-							<div class="row">
-								{% for collaborator in collaborators %}
-									<div class="col-6 col-md-4 col-lg-2 mb-4">
-										<div class="card h-100 text-center shadow-sm">
-											<div class="card-body d-flex flex-column align-items-center justify-content-center p-2">
-												<div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px;">
-													<span class="text-primary fw-bold fs-6">
-														{{ collaborator.firstName|first }}{{ collaborator.lastName|first }}
-													</span>
+
+						<div class="collapse" id="collaboratorsContent">
+							<div class="card-body pt-0">
+								<div class="row">
+									{% for collaborator in collaborators %}
+										<div class="col-6 col-md-4 col-lg-2 mb-4">
+											<div class="card h-100 text-center shadow-sm">
+												<div class="card-body d-flex flex-column align-items-center justify-content-center p-2">
+													<div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px;">
+														<span class="text-primary fw-bold fs-6">
+															{{ collaborator.firstName|first }}{{ collaborator.lastName|first }}
+														</span>
+													</div>
+
+													<h6 class="card-title mb-1 small">{{ collaborator.fullName }}</h6>
+													<small class="text-muted mb-2" style="font-size: 0.75rem;">
+														<i class="fas fa-tasks me-1"></i>
+														{{ project.getTasksForCollaborator(collaborator)|length }}
+														tâche(s)
+													</small>
+
+													<button type="button" class="btn btn-sm btn-outline-danger mt-auto" data-bs-toggle="modal" data-bs-target="#removeCollaboratorModal{{ collaborator.id }}">
+														<i class="fas fa-user-minus me-1"></i>Retirer
+													</button>
 												</div>
-
-												<h6 class="card-title mb-1 small">{{ collaborator.fullName }}</h6>
-												<small class="text-muted mb-2" style="font-size: 0.75rem;">
-													<i class="fas fa-tasks me-1"></i>
-													{{ project.getTasksForCollaborator(collaborator)|length }}
-													tâche(s)
-												</small>
-
-												<button type="button" class="btn btn-sm btn-outline-danger mt-auto" data-bs-toggle="modal" data-bs-target="#removeCollaboratorModal{{ collaborator.id }}">
-													<i class="fas fa-user-minus me-1"></i>Retirer
-												</button>
 											</div>
 										</div>
-									</div>
-								{% endfor %}
+									{% endfor %}
+								</div>
 							</div>
 						</div>
 					</div>
@@ -391,21 +396,8 @@
 														{% endif %}
 													</td>
 													<td data-label="Priorité">
-														{% set priority = task.priority %}
-														{% set badge_class = '' %}
-														{% set priority_text = '' %}
-														{% if priority == 'high' %}
-															{% set badge_class = 'danger' %}
-															{% set priority_text = 'Haute' %}
-														{% elseif priority == 'medium' %}
-															{% set badge_class = 'warning' %}
-															{% set priority_text = 'Moyenne' %}
-														{% else %}
-															{% set badge_class = 'primary' %}
-															{% set priority_text = 'Basse' %}
-														{% endif %}
-														<span class="table-badge {{ badge_class }}">
-															{{ priority_text }}
+														<span class="badge bg-{{ task.priority == 'high' ? 'danger' : (task.priority == 'medium' ? 'warning' : 'secondary') }} badge-sm">
+															{{ task.priorityLabel }}
 														</span>
 													</td>
 													<td data-label="Date limite">
@@ -419,16 +411,7 @@
 														{% endif %}
 													</td>
 													<td data-label="Statut">
-														{% set status = task.status %}
-														{% set status_class = '' %}
-														{% if status == 'completed' %}
-															{% set status_class = 'success' %}
-														{% elseif status == 'in_progress' %}
-															{% set status_class = 'in-progress' %}
-														{% else %}
-															{% set status_class = 'secondary' %}
-														{% endif %}
-														<span class="table-badge {{ status_class }}">
+														<span class="badge {% if task.status == 'todo' %}badge-todo{% elseif task.status in ['in_progress', 'en_cours'] %}badge-progress{% elseif task.status == 'completed' %}badge-completed{% else %}badge-secondary{% endif %} badge-sm">
 															{{ task.statusLabel }}
 														</span>
 													</td>
@@ -487,21 +470,8 @@
 										</li>
 										<li class="mb-1">
 											<strong class="text-dark">Priorité :</strong>
-											{% set priority = task.priority %}
-											{% set badge_class = '' %}
-											{% set priority_text = '' %}
-											{% if priority == 'high' %}
-												{% set badge_class = 'danger' %}
-												{% set priority_text = 'Haute' %}
-											{% elseif priority == 'medium' %}
-												{% set badge_class = 'warning' %}
-												{% set priority_text = 'Moyenne' %}
-											{% else %}
-												{% set badge_class = 'primary' %}
-												{% set priority_text = 'Basse' %}
-											{% endif %}
-											<span class="table-badge {{ badge_class }}">
-												{{ priority_text }}
+											<span class="badge bg-{{ task.priority == 'high' ? 'danger' : (task.priority == 'medium' ? 'warning' : 'secondary') }} badge-sm">
+												{{ task.priorityLabel }}
 											</span>
 										</li>
 										<li class="mb-1">
@@ -514,16 +484,7 @@
 										</li>
 										<li>
 											<strong class="text-dark">Statut :</strong>
-											{% set status = task.status %}
-											{% set status_class = '' %}
-											{% if status == 'completed' %}
-												{% set status_class = 'success' %}
-											{% elseif status == 'in_progress' %}
-												{% set status_class = 'in-progress' %}
-											{% else %}
-												{% set status_class = 'secondary' %}
-											{% endif %}
-											<span class="table-badge {{ status_class }}">
+											<span class="badge {% if task.status == 'todo' %}badge-todo{% elseif task.status in ['in_progress', 'en_cours'] %}badge-progress{% elseif task.status == 'completed' %}badge-completed{% else %}badge-secondary{% endif %} badge-sm">
 												{{ task.statusLabel }}
 											</span>
 										</li>
@@ -573,8 +534,7 @@
 								<i class="fas fa-exclamation-triangle me-2 mt-1 flex-shrink-0"></i>
 								<div>
 									<strong>Attention :</strong>
-									Cette action supprimera définitivement le projet et toutes ses tâches
-																		({{ project.tasksCount }}
+									Cette action supprimera définitivement le projet et toutes ses tâches ({{ project.tasksCount }}
 									tâche{{ project.tasksCount > 1 ? 's' : '' }}).
 								</div>
 							</div>
@@ -649,7 +609,8 @@ return;
 
 const csrfTokens = {
 {% for task in project.tasks %}
-'{{ task.id }}' : '{{ csrf_token('delete' ~ task.id) }}'{{ not loop.last ? ',' : '' }}{% endfor %}
+'{{ task.id }}' : '{{ csrf_token('delete' ~ task.id) }}'{{ not loop.last ?
+',' : '' }}{% endfor %}
 };
 
 deleteTaskModal.addEventListener('show.bs.modal', function (event) {
@@ -687,7 +648,6 @@ submitButton.disabled = true;
 }
 }
 });
-
 // Réactiver le bouton de soumission à la fermeture du modal
 deleteTaskModal.addEventListener('hidden.bs.modal', function () {
 const submitButton = deleteTaskForm.querySelector('button[type="submit"]');
