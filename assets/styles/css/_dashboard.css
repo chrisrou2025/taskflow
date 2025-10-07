@@ -1,23 +1,6 @@
-/* Badges pour les statuts des tâches */
-.badge-todo {
-    background-color: #6c757d;
-}
+/* _dashboard.css - Styles pour le tableau de bord */
 
-.badge-progress {
-    background-color: #fd7e14;
-}
-
-.badge-completed {
-    background-color: #198754;
-}
-
-/* Badges plus petits pour mobile */
-.badge-sm {
-    font-size: 0.75em;
-    padding: 0.25em 0.5em;
-}
-
-/* Cards de statistiques */
+/* ===== CARDS DE STATISTIQUES ===== */
 .stats-card {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
@@ -27,7 +10,7 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Responsive typography pour dashboard */
+/* ===== RESPONSIVE TYPOGRAPHY POUR DASHBOARD ===== */
 @media(min-width: 992px) {
     .h2-lg {
         font-size: 2.5rem;
@@ -38,7 +21,7 @@
     }
 }
 
-/* Projets mobiles */
+/* ===== PROJETS MOBILES ===== */
 .card-project-mobile {
     transition: background-color 0.2s ease;
 }
@@ -51,7 +34,7 @@
     border-bottom: none !important;
 }
 
-/* Barres de progression personnalisées */
+/* ===== BARRES DE PROGRESSION PERSONNALISÉES ===== */
 .progress {
     height: 8px;
     border-radius: 4px;
@@ -63,7 +46,7 @@
     transition: width 0.6s ease;
 }
 
-/* Tables responsive */
+/* ===== TABLES RESPONSIVE ===== */
 .table-responsive {
     border-radius: 8px;
     overflow: hidden;
@@ -88,7 +71,7 @@
     background-color: rgba(0, 123, 255, 0.05);
 }
 
-/* Liste des tâches récentes */
+/* ===== LISTE DES TÂCHES RÉCENTES ===== */
 .list-group-item {
     border-color: #e9ecef;
     padding: 1rem;
@@ -109,14 +92,14 @@
     border-bottom-right-radius: 8px;
 }
 
-/* Boutons groupés */
+/* ===== BOUTONS GROUPÉS ===== */
 .btn-group-sm > .btn {
     padding: 0.25rem 0.5rem;
     font-size: 0.75rem;
     border-radius: 4px;
 }
 
-/* Centrage des icônes dans les boutons petits */
+/* ===== CENTRAGE DES ICÔNES DANS LES BOUTONS PETITS ===== */
 .btn-sm {
     display: inline-flex;
     align-items: center;
@@ -132,7 +115,7 @@
     justify-content: center;
 }
 
-/* Corrections spécifiques pour mobile */
+/* ===== CORRECTIONS SPÉCIFIQUES POUR MOBILE ===== */
 @media(max-width: 768px) {
     .btn-group-sm > .btn {
         padding: 0.375rem 0.5rem;
@@ -149,7 +132,7 @@
     }
 }
 
-/* États vides */
+/* ===== ÉTATS VIDES ===== */
 .text-center i.fa-2x,
 .text-center i.fa-3x-lg {
     opacity: 0.6;
@@ -161,9 +144,8 @@
     }
 }
 
-/* Cards avec header */
+/* ===== CARDS AVEC HEADER ===== */
 .card-header {
-    /* La ligne "background-color: #fff !important;" a été retirée ici */
     border-bottom: 1px solid #e9ecef;
     padding: 1rem 1.25rem;
     font-weight: 600;
@@ -174,7 +156,7 @@
     color: #495057;
 }
 
-/* Optimisations mobiles pour dashboard */
+/* ===== OPTIMISATIONS MOBILES POUR DASHBOARD ===== */
 @media(max-width: 991.98px) {
     .container-fluid {
         padding-left: 1rem;
@@ -196,7 +178,7 @@
     }
 }
 
-/* Animations pour les compteurs */
+/* ===== ANIMATIONS POUR LES COMPTEURS ===== */
 @keyframes countUp {
     from {
         opacity: 0;
@@ -212,21 +194,7 @@
     animation: countUp 0.6s ease-out;
 }
 
-/* Badges de priorité pour les tâches */
-.badge.bg-danger {
-    background-color: #dc3545 !important;
-}
-
-.badge.bg-warning {
-    background-color: #ffc107 !important;
-    color: #212529 !important;
-}
-
-.badge.bg-secondary {
-    background-color: #6c757d !important;
-}
-
-/* Amélioration des espacements */
+/* ===== AMÉLIORATION DES ESPACEMENTS ===== */
 .row.g-3 > * {
     padding: 0.5rem;
 }
@@ -235,7 +203,7 @@
     padding: 0.75rem;
 }
 
-/* Cards sans ombre sur mobile pour performance */
+/* ===== CARDS SANS OMBRE SUR MOBILE POUR PERFORMANCE ===== */
 @media(max-width: 768px) {
     .card {
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
@@ -246,14 +214,14 @@
     }
 }
 
-/* Amélioration de l'accessibilité */
+/* ===== AMÉLIORATION DE L'ACCESSIBILITÉ ===== */
 .btn:focus,
 .card:focus {
     outline: 2px solid #0d6efd;
     outline-offset: 2px;
 }
 
-/* États de chargement */
+/* ===== ÉTATS DE CHARGEMENT ===== */
 .loading {
     opacity: 0.6;
     pointer-events: none;
@@ -278,7 +246,7 @@
     100% { transform: rotate(360deg); }
 }
 
-/* Responsive pour très petits écrans */
+/* ===== RESPONSIVE POUR TRÈS PETITS ÉCRANS ===== */
 @media(max-width: 576px) {
     .col-6:nth-child(odd) {
         padding-right: 0.25rem;

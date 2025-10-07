@@ -56,7 +56,8 @@
 
 		<div class="row">
 			<div class="col-12">
-				<div class="card border-0 shadow-sm">
+				<div class="card 
+border-0 shadow-sm">
 					<div class="card-header bg-white border-bottom">
 						<h5 class="card-title mb-0">
 							<i class="fas fa-users me-2 text-primary"></i>
@@ -99,7 +100,8 @@
 													<div>
 														<strong>{{ user.fullName }}</strong>
 														{% if user.id == app.user.id %}
-															<span class="badge bg-info">Vous</span>
+															{# Ancien: badge bg-info #}
+															<span class="badge badge-progress">Vous</span>
 														{% endif %}
 													</div>
 												</td>
@@ -107,9 +109,12 @@
 												<td>
 													<span id="role-badge-{{ user.id }}">
 														{% if 'ROLE_ADMIN' in user.roles %}
-															<span class="badge bg-warning text-dark">Administrateur</span>
-														{% else %}
-															<span class="badge bg-secondary">Utilisateur</span>
+															{# Ancien: badge bg-warning text-dark #}
+															<span class="badge badge-priority-high">Administrateur</span>
+														{% else 
+%}
+															{# Ancien: badge bg-secondary #}
+															<span class="badge badge-todo">Utilisateur</span>
 														{% endif %}
 													</span>
 												</td>
@@ -143,7 +148,8 @@
 															<button type="button" class="btn btn-outline-danger" title="Supprimer l'utilisateur" data-bs-toggle="modal" data-bs-target="#deleteUserModal" data-user-id="{{ user.id }}" data-user-name="{{ user.fullName|e('html_attr') }}" data-projects-count="{{ user.projects|length }}" data-csrf-token="{{ csrf_token('delete-user-' ~ user.id) }}" onclick="showDeleteModal(this)">
 																<i class="fas fa-trash"></i>
 															</button>
-														{% endif %}
+														{% endif 
+%}
 													</div>
 												</td>
 											</tr>
@@ -163,9 +169,11 @@
 												</div>
 												<span id="role-badge-mobile-{{ user.id }}">
 													{% if 'ROLE_ADMIN' in user.roles %}
-														<span class="badge bg-warning text-dark">Administrateur</span>
+														{# Ancien: badge bg-warning text-dark #}
+														<span class="badge badge-priority-high">Administrateur</span>
 													{% else %}
-														<span class="badge bg-secondary">Utilisateur</span>
+														{# Ancien: badge bg-secondary #}
+														<span class="badge badge-todo">Utilisateur</span>
 													{% endif %}
 												</span>
 											</div>
@@ -184,14 +192,16 @@
 										</div>
 										<div class="card-footer bg-light d-flex justify-content-end gap-2">
 											{% if user.id == app.user.id %}
-												<span class="badge bg-info align-self-center me-auto">C'est vous</span>
+												{# Ancien: badge bg-info #}
+												<span class="badge badge-progress align-self-center me-auto">C'est vous</span>
 											{% endif %}
 											<a href="{{ path('admin_user_show', {id: user.id}) }}" class="btn btn-sm btn-outline-primary" title="Voir le profil">
 												<i class="fas fa-eye"></i>
 											</a>
 											{% if user.id != app.user.id %}
 												<div class="btn-group btn-group-sm">
-													<button type="button" class="btn btn-outline-warning" title="Changer le rôle" data-user-id="{{ user.id }}" data-user-name="{{ user.fullName|e('html_attr') }}" data-csrf-token="{{ csrf_token('toggle-role-' ~ user.id) }}" onclick="toggleUserRole(this)">
+													<button type="button" class="btn btn-outline-warning" title="Changer le rôle" data-user-id="{{ user.id 
+}}" data-user-name="{{ user.fullName|e('html_attr') }}" data-csrf-token="{{ csrf_token('toggle-role-' ~ user.id) }}" onclick="toggleUserRole(this)">
 														<i class="fas fa-user-cog"></i>
 													</button>
 													<button type="button" class="btn btn-outline-danger" title="Supprimer" data-bs-toggle="modal" data-bs-target="#deleteUserModal" data-user-id="{{ user.id }}" data-user-name="{{ user.fullName|e('html_attr') }}" data-projects-count="{{ user.projects|length }}" data-csrf-token="{{ csrf_token('delete-user-' ~ user.id) }}" onclick="showDeleteModal(this)">
@@ -221,7 +231,8 @@
 													<li class="page-item active" aria-current="page">
 														<span class="page-link">{{ page }}</span>
 													</li>
-												{% elseif page == 1 or page == total_pages or (page >= current_page - 1 and page <= current_page + 1) %}
+												{% elseif page == 1 or page == total_pages or (page >= 
+current_page - 1 and page <= current_page + 1) %}
 													<li class="page-item">
 														<a class="page-link" href="{{ path('admin_users', {page: page, search: search}) }}">{{ page }}</a>
 													</li>
@@ -273,7 +284,8 @@
 						<strong id="modal-user-name"></strong>
 						?</p>
 					<div class="alert alert-danger">
-						<i class="fas fa-exclamation-triangle me-2"></i>
+						<i class="fas 
+fa-exclamation-triangle me-2"></i>
 						<strong>Attention :</strong>
 						Cette action supprimera définitivement :
 						<ul class="mb-0 mt-2">
@@ -308,7 +320,6 @@ const csrfToken = button.getAttribute('data-csrf-token');
 
 document.getElementById('modal-user-name').innerText = `"${userName}"`;
 document.getElementById('modal-projects-count').innerText = projectsCount;
-
 const form = document.getElementById('delete-user-form');
 form.action = `/admin/users/${userId}/delete`;
 document.getElementById('delete-user-csrf').value = csrfToken;
@@ -335,7 +346,6 @@ buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
 const formData = new FormData();
 formData.append('_token', csrfToken);
-
 fetch (`/admin/users/${userId}/toggle-role`, {
 method: 'POST',
 body: formData
@@ -359,7 +369,8 @@ showAlert('Erreur : ' + data.message, 'error');
 }).catch(error => {
 console.error('Erreur lors du changement de rôle:', error);
 showAlert('Une erreur inattendue est survenue. Veuillez réessayer.', 'error');
-}). finally(() => {
+}).
+finally(() => {
 buttonElement.disabled = false;
 buttonElement.innerHTML = originalContent;
 });
@@ -369,7 +380,8 @@ function updateRoleBadge(userId, newRole) {
 const roleBadgeElement = document.getElementById (`role-badge-${userId}`);
 const roleBadgeElementMobile = document.getElementById (`role-badge-mobile-${userId}`);
 
-const badgeHTML = newRole === 'Administrateur' ? '<span class="badge bg-warning text-dark">Administrateur</span>' : '<span class="badge bg-secondary">Utilisateur</span>';
+{# L'Administrateur utilise badge-priority-high (rouge/danger) et l'Utilisateur utilise badge-todo (gris/secondaire) #}
+const badgeHTML = newRole === 'Administrateur' ? '<span class="badge badge-priority-high">Administrateur</span>' : '<span class="badge badge-todo">Utilisateur</span>';
 
 if (roleBadgeElement) {
 roleBadgeElement.innerHTML = badgeHTML;
@@ -384,7 +396,8 @@ function showAlert(message, type = 'info') {
 const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
 const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
 const alertHtml = `
-				<div class="alert ${alertClass} alert-dismissible fade show position-fixed" style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;" role="alert">
+				<div class="alert ${alertClass} alert-dismissible fade show position-fixed" style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;"
+role="alert">
 					<i class="fas ${iconClass} me-2"></i>${message}
 					<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
 				</div>

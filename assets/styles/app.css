@@ -1,17 +1,18 @@
 /* app.css - Fichier principal de styles */
 
-   /* Import des styles de base et layout */
-   @import url('./css/_base.css');
+/* Import des styles de base et layout */
+@import url('./css/_base.css');
 
-   /* Import des composants réutilisables */
-   @import url('./css/components/_auth.css');
-   @import url('./css/components/_forms.css');
-   @import url('./css/components/_tables.css');
+/* Import des composants réutilisables */
+@import url('./css/components/_auth.css');
+@import url('./css/components/_badges.css');
+@import url('./css/components/_forms.css');
+@import url('./css/components/_tables.css');
 
-   /* Import des pages spécifiques */
-   @import url('./css/_home.css');
-   @import url('./css/_dashboard.css');
-   @import url('./css/_filters.css');
-   @import url('./css/pages/_tasks.css');
-   @import url('./css/pages/_admin.css');
-   @import url('./css/pages/_collaboration.css');
+/* Import des pages spécifiques */
+@import url('./css/_home.css');
+@import url('./css/_dashboard.css');
+@import url('./css/_filters.css');
+@import url('./css/pages/_tasks.css');
+@import url('./css/pages/_admin.css');
+@import url('./css/pages/_collaboration.css');

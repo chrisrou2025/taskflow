@@ -40,14 +40,17 @@
 
 							<span id="role-badge-{{ user.id }}">
 								{% if 'ROLE_ADMIN' in user.roles %}
-									<span class="badge bg-warning text-dark">Administrateur</span>
+									{# Ancienne classe : badge bg-warning text-dark #}
+									<span class="badge badge-priority-high">Administrateur</span>
 								{% else %}
-									<span class="badge bg-secondary">Utilisateur</span>
+									{# Ancienne classe : badge bg-secondary #}
+									<span class="badge badge-todo">Utilisateur</span>
 								{% endif %}
 							</span>
 
 							{% if user.id == app.user.id %}
-								<span class="badge bg-info">Votre compte</span>
+								{# Ancienne classe : badge bg-info #}
+								<span class="badge badge-progress">Votre compte</span>
 							{% endif %}
 						</div>
 
@@ -222,7 +225,8 @@
 												</td>
 												<td>{{ project.owner.fullName }}</td>
 												<td>
-													<span class="badge bg-info">{{ project.tasks.filter(t => t.assignee == user)|length }}</span>
+													{# Ancienne classe : badge bg-info #}
+													<span class="badge badge-progress">{{ project.tasks.filter(t => t.assignee == user)|length }}</span>
 												</td>
 												<td>
 													<a href="{{ path('project_show', {id: project.id}) }}" class="btn btn-outline-primary btn-sm" target="_blank">
@@ -262,7 +266,9 @@
 													{{ task.project.title }}</small>
 											</div>
 											<div class="text-end">
-												<span class="badge bg-{{ task.status == 'completed' ? 'success' : (task.status == 'in_progress' ? 'warning' : 'secondary') }}">
+												{# Utilisation des classes de statut de _badges.css #}
+												{% set status_class = task.status == 'completed' ? 'badge-completed' : (task.status == 'in_progress' ? 'badge-progress' : 'badge-todo') %}
+												<span class="badge {{ status_class }}">
 													{{ task.statusLabel }}
 												</span>
 												<br><small class="text-muted">{{ task.createdAt|date('d/m/Y') }}</small>
@@ -327,7 +333,6 @@ const csrfToken = button.getAttribute('data-csrf-token');
 
 document.getElementById('modal-user-name').innerText = `"${userName}"`;
 document.getElementById('modal-projects-count').innerText = projectsCount;
-
 const form = document.getElementById('delete-user-form');
 form.action = `/admin/users/${userId}/delete`;
 document.getElementById('delete-user-csrf').value = csrfToken;
@@ -354,7 +359,6 @@ buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
 const formData = new FormData();
 formData.append('_token', csrfToken);
-
 fetch (`/admin/users/${userId}/toggle-role`, {
 method: 'POST',
 body: formData
@@ -378,7 +382,7 @@ showAlert('Erreur : ' + data.message, 'error');
 }).catch(error => {
 console.error('Erreur lors du changement de rôle:', error);
 showAlert('Une erreur inattendue est survenue. Veuillez réessayer.', 'error');
-}). finally(() => {
+}).finally(() => {
 buttonElement.disabled = false;
 buttonElement.innerHTML = originalContent;
 });
@@ -388,9 +392,11 @@ function updateRoleBadge(userId, newRole) {
 const roleBadgeElement = document.getElementById (`role-badge-${userId}`);
 if (roleBadgeElement) {
 if (newRole === 'Administrateur') {
-roleBadgeElement.innerHTML = '<span class="badge bg-warning text-dark">Administrateur</span>';
+// Mise à jour de la classe ici également
+roleBadgeElement.innerHTML = '<span class="badge badge-priority-high">Administrateur</span>';
 } else {
-roleBadgeElement.innerHTML = '<span class="badge bg-secondary">Utilisateur</span>';
+// Mise à jour de la classe ici également
+roleBadgeElement.innerHTML = '<span class="badge badge-todo">Utilisateur</span>';
 }
 }
 }

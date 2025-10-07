@@ -92,8 +92,7 @@
 			</div>
 
 			<div class="row">
-				<div
-					class="col-lg-8">
+				<div class="col-lg-8">
 					{# Description de la tâche #}
 					<div class="card border-0 shadow-sm mb-4">
 						<div class="card-header bg-white">
@@ -138,8 +137,7 @@
 				</div>
 
 				{# Colonne droite #}
-				<div
-					class="col-lg-4">
+				<div class="col-lg-4">
 					{# États de la tâche #}
 					<div class="card border-0 shadow-sm mb-4">
 						<div class="card-header bg-white">
@@ -150,13 +148,13 @@
 						<div class="card-body">
 							<div class="d-flex justify-content-between mb-2">
 								<small class="text-muted">Statut :</small>
-								<span class="badge {% if task.status == 'todo' %}badge-todo{% elseif task.status in ['in_progress', 'en_cours'] %}badge-progress{% elseif task.status == 'completed' %}badge-completed{% else %}badge-secondary{% endif %} badge-sm">
+								<span class="badge {{ task.status == 'todo' ? 'badge-todo' : (task.status in ['in_progress', 'en_cours'] ? 'badge-progress' : (task.status == 'completed' ? 'badge-completed' : 'badge-secondary')) }} badge-sm">
 									{{ task.statusLabel }}
 								</span>
 							</div>
 							<div class="d-flex justify-content-between mb-2">
 								<small class="text-muted">Priorité :</small>
-								<span class="badge bg-{{ task.priority == 'high' ? 'danger' : (task.priority == 'medium' ? 'warning' : 'secondary') }} badge-sm">
+								<span class="badge {{ task.priority == 'high' ? 'badge-priority-high' : (task.priority == 'medium' ? 'badge-priority-medium' : 'badge-priority-low') }} badge-sm">
 									{{ task.priorityLabel }}
 								</span>
 							</div>

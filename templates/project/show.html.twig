@@ -396,7 +396,7 @@
 														{% endif %}
 													</td>
 													<td data-label="Priorité">
-														<span class="badge bg-{{ task.priority == 'high' ? 'danger' : (task.priority == 'medium' ? 'warning' : 'secondary') }} badge-sm">
+														<span class="badge {{ task.priority == 'high' ? 'badge-priority-high' : (task.priority == 'medium' ? 'badge-priority-medium' : 'badge-priority-low') }} badge-sm">
 															{{ task.priorityLabel }}
 														</span>
 													</td>
@@ -470,7 +470,7 @@
 										</li>
 										<li class="mb-1">
 											<strong class="text-dark">Priorité :</strong>
-											<span class="badge bg-{{ task.priority == 'high' ? 'danger' : (task.priority == 'medium' ? 'warning' : 'secondary') }} badge-sm">
+											<span class="badge {{ task.priority == 'high' ? 'badge-priority-high' : (task.priority == 'medium' ? 'badge-priority-medium' : 'badge-priority-low') }} badge-sm">
 												{{ task.priorityLabel }}
 											</span>
 										</li>

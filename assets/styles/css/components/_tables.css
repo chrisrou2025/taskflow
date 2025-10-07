@@ -172,47 +172,6 @@
     background-color: var(--danger-color);
 }
 
-/* ===== BADGES DANS TABLEAUX (Harmonisation Couleurs Vives et Semi-bold) ===== */
-.table-badge {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 6px;
-    font-weight: 500; /* Semi-Bold pour tous les badges (Harmonisation) */
-    text-transform: none; /* Casse normale pour le texte (Harmonisation) */
-    letter-spacing: 0.5px;
-    display: inline-block; 
-}
-
-/* 🔵 PRIORITY LOW (Vivid Primary) */
-.table-badge.primary {
-    background-color: var(--primary-color);
-    color: white;
-}
-
-/* 🟢 STATUS COMPLETED (Vivid Success) */
-.table-badge.success { 
-    background-color: var(--success-color);
-    color: white;
-}
-
-/* 🟡 STATUS IN-PROGRESS / PRIORITY MEDIUM (Vivid Warning) */
-.table-badge.in-progress, .table-badge.warning { 
-    background-color: var(--warning-color);
-    color: var(--dark-text); /* Texte foncé pour lisibilité sur fond jaune/orange */
-}
-
-/* 🔴 PRIORITY HIGH (Vivid Danger) */
-.table-badge.danger { 
-    background-color: var(--danger-color);
-    color: white;
-}
-
-/* ⚫ STATUS TO DO (Vivid Secondary) */
-.table-badge.secondary {
-    background-color: var(--secondary-color);
-    color: white;
-}
-
 /* ===== TABLEAUX DE DONNÉES ===== */
 .data-table {
     font-size: 0.875rem;

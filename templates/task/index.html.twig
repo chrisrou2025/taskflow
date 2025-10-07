@@ -164,7 +164,7 @@
 													{% endif %}
 												</td>
 												<td data-label="Priorité">
-													<span class="badge bg-{{ task.priority == 'high' ? 'danger' : (task.priority == 'medium' ? 'warning' : 'secondary') }} badge-sm">
+													<span class="badge {{ task.priority == 'high' ? 'badge-priority-high' : (task.priority == 'medium' ? 'badge-priority-medium' : 'badge-priority-low') }} badge-sm">
 														{{ task.priorityLabel }}
 													</span>
 												</td>
@@ -179,18 +179,18 @@
 													{% endif %}
 												</td>
 												<td data-label="Statut">
-													<span class="badge {% if task.status == 'todo' %}badge-todo{% elseif task.status in ['in_progress', 'en_cours'] %}badge-progress{% elseif task.status == 'completed' %}badge-completed{% else %}badge-secondary{% endif %} badge-sm">
+													<span class="badge {{ task.status == 'todo' ? 'badge-todo' : (task.status in ['in_progress', 'en_cours'] ? 'badge-progress' : (task.status == 'completed' ? 'badge-completed' : 'badge-secondary')) }} badge-sm">
 														{{ task.statusLabel }}
 													</span>
 												</td>
-												<td data-label="Actions" class="table-actions">
-													<div class="d-flex justify-content-center gap-2">
-														<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-sm btn-outline-info" title="Voir les détails">
-															<i class="fas fa-eye me-1"></i>Voir
+												<td data-label="Actions" class="text-center">
+													<div class="d-flex gap-2 justify-content-center">
+														<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-sm btn-outline-info">
+															<i class="fas fa-eye"></i>
 														</a>
 														{% if is_granted('delete', task) %}
 															<button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}">
-																<i class="fas fa-trash me-1"></i>Supprimer
+																<i class="fas fa-trash"></i>
 															</button>
 														{% endif %}
 													</div>
@@ -259,131 +259,72 @@
 				</div>
 			</div>
 		</div>
-		<div class="row d-lg-none">
+
+		<div class="row mb-4 d-lg-none">
 			<div class="col-12">
-				{% if tasks|length > 0 %}
-					<div class="row g-3">
-						{% for task in tasks %}
-							<div class="col-12 col-md-6 col-lg-4">
-								<div class="card task-card border-0 shadow-sm">
-									<div class="card-body">
-										<h5 class="card-title fw-bold">
-											{{ task.title }}
-										</h5>
-										<ul class="list-unstyled mb-0 small text-muted">
-											{% if not project %}
-												<li class="mb-1">
-													<strong class="text-dark">Projet :</strong>
-													<span class="text-muted">
-														<i class="fas fa-folder me-1"></i>
-														{{ task.project.title }}
-													</span>
-												</li>
-											{% endif %}
-											<li class="mb-1">
-												<strong class="text-dark">Responsable :</strong>
-												{% if task.assignee %}
-													{{ task.assignee.fullName }}
-												{% else %}
-													<span class="fst-italic">Non assigné</span>
-												{% endif %}
-											</li>
-											<li class="mb-1">
-												<strong class="text-dark">Priorité :</strong>
-												<span class="badge bg-{{ task.priority == 'high' ? 'danger' : (task.priority == 'medium' ? 'warning' : 'secondary') }} badge-sm">
-													{{ task.priorityLabel }}
-												</span>
-											</li>
-											<li class="mb-1">
-												<strong class="text-dark">Date limite :</strong>
-												{% if task.dueDate %}
-													{{ task.dueDate|date('d/m/Y') }}
-													{% if task.isOverdue and not task.isCompleted %}
-														<i class="fas fa-exclamation-triangle text-danger ms-1" title="En retard"></i>
-													{% endif %}
-												{% else %}
-													<span class="fst-italic">Non définie</span>
-												{% endif %}
-											</li>
-											<li class="mb-1">
-												<strong class="text-dark">Statut :</strong>
-												<span class="badge {% if task.status == 'todo' %}badge-todo{% elseif task.status in ['in_progress', 'en_cours'] %}badge-progress{% elseif task.status == 'completed' %}badge-completed{% else %}badge-secondary{% endif %} badge-sm">
-													{{ task.statusLabel }}
-												</span>
-											</li>
-										</ul>
-										<div class="d-flex gap-2 mt-3">
-											<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-sm btn-outline-info w-100">
-												<i class="fas fa-eye me-1"></i>
-												Voir
-											</a>
-											{% if is_granted('delete', task) %}
-												<button type="button" class="btn btn-sm btn-outline-danger w-100" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}">
-													<i class="fas fa-trash me-1"></i>
-													Supprimer
-												</button>
-											{% endif %}
-										</div>
-									</div>
-								</div>
+				{% for task in tasks %}
+					<div class="card border-0 shadow-sm mb-3">
+						<div class="card-body">
+							<h5 class="card-title mb-3">
+								<a href="{{ path('task_show', {id: task.id}) }}" class="text-decoration-none text-dark">{{ task.title }}</a>
+							</h5>
+							<ul class="list-unstyled mb-0 small text-muted">
+								{% if not project %}
+									<li class="mb-1">
+										<strong class="text-dark">Projet :</strong>
+										<span class="text-muted">
+											<i class="fas fa-folder me-1"></i>
+											{{ task.project.title }}
+										</span>
+									</li>
+								{% endif %}
+								<li class="mb-1">
+									<strong class="text-dark">Responsable :</strong>
+									{% if task.assignee %}
+										{{ task.assignee.fullName }}
+									{% else %}
+										<span class="fst-italic">Non assigné</span>
+									{% endif %}
+								</li>
+								<li class="mb-1">
+									<strong class="text-dark">Priorité :</strong>
+									<span class="badge {{ task.priority == 'high' ? 'badge-priority-high' : (task.priority == 'medium' ? 'badge-priority-medium' : 'badge-priority-low') }} badge-sm">
+										{{ task.priorityLabel }}
+									</span>
+								</li>
+								<li class="mb-1">
+									<strong class="text-dark">Date limite :</strong>
+									{% if task.dueDate %}
+										{{ task.dueDate|date('d/m/Y') }}
+										{% if task.isOverdue and not task.isCompleted %}
+											<i class="fas fa-exclamation-triangle text-danger ms-1" title="En retard"></i>
+										{% endif %}
+									{% else %}
+										<span class="fst-italic">Non définie</span>
+									{% endif %}
+								</li>
+								<li class="mb-1">
+									<strong class="text-dark">Statut :</strong>
+									<span class="badge {{ task.status == 'todo' ? 'badge-todo' : (task.status in ['in_progress', 'en_cours'] ? 'badge-progress' : (task.status == 'completed' ? 'badge-completed' : 'badge-secondary')) }} badge-sm">
+										{{ task.statusLabel }}
+									</span>
+								</li>
+							</ul>
+							<div class="d-flex gap-2 mt-3">
+								<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-sm btn-outline-info w-100">
+									<i class="fas fa-eye me-1"></i>
+									Voir
+								</a>
+								{% if is_granted('delete', task) %}
+									<button type="button" class="btn btn-sm btn-outline-danger w-100" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}">
+										<i class="fas fa-trash me-1"></i>
+										Supprimer
+									</button>
+								{% endif %}
 							</div>
-						{% endfor %}
+						</div>
 					</div>
-				{% else %}
-					<div class="p-4 text-center text-muted">
-						<i class="fas fa-tasks fa-3x mb-3 text-muted" style="opacity: 0.4;"></i>
-						<h5 class="mb-3 fw-semibold text-dark">
-							{% if project %}
-								{% if current_status %}
-									{% set status_label = '' %}
-									{% for label, key in status_choices %}
-										{% if key == current_status %}
-											{% set status_label = label %}
-										{% endif %}
-									{% endfor %}
-									Aucune tâche avec le statut "{{ status_label }}" trouvée pour ce projet
-								{% elseif current_priority %}
-									{% set priority_label = '' %}
-									{% for label, key in priority_choices %}
-										{% if key == current_priority %}
-											{% set priority_label = label %}
-										{% endif %}
-									{% endfor %}
-									Aucune tâche avec la priorité "{{ priority_label }}" trouvée pour ce projet
-								{% else %}
-									Aucune tâche trouvée pour ce projet
-								{% endif %}
-							{% else %}
-								{% if current_status %}
-									{% set status_label = '' %}
-									{% for label, key in status_choices %}
-										{% if key == current_status %}
-											{% set status_label = label %}
-										{% endif %}
-									{% endfor %}
-									Aucune tâche avec le statut "{{ status_label }}" trouvée
-								{% elseif current_priority %}
-									{% set priority_label = '' %}
-									{% for label, key in priority_choices %}
-										{% if key == current_priority %}
-											{% set priority_label = label %}
-										{% endif %}
-									{% endfor %}
-									Aucune tâche avec la priorité "{{ priority_label }}" trouvée
-								{% else %}
-									Aucune tâche trouvée
-								{% endif %}
-							{% endif %}
-						</h5>
-						<p class="mb-0 text-muted">
-							{% if current_status or current_priority %}
-								Essayez de modifier les filtres ou créez une nouvelle tâche.
-							{% else %}
-								Commencez par créer une nouvelle tâche !
-							{% endif %}
-						</p>
-					</div>
-				{% endif %}
+				{% endfor %}
 			</div>
 		</div>
 	</div>
@@ -415,42 +356,41 @@
 			</div>
 		</div>
 	</div>
-
 {% endblock %}
 
 {% block javascripts %}
 	{{ parent() }}
 	<script>
 		document.addEventListener('DOMContentLoaded', function () {
-const deleteTaskModalEl = document.getElementById('deleteTaskModal');
-if (deleteTaskModalEl) {
-const csrfTokens = {
-{% for task in tasks %}'{{ task.id }}' : '{{ csrf_token('delete' ~ task.id) }}'{{ not loop.last ? ',' : '' }}{% endfor %}
-};
+			const deleteTaskModalEl = document.getElementById('deleteTaskModal');
+			if (deleteTaskModalEl) {
+				const csrfTokens = {
+					{% for task in tasks %}'{{ task.id }}' : '{{ csrf_token('delete' ~ task.id) }}'{{ not loop.last ? ',' : '' }}{% endfor %}
+				};
 
-deleteTaskModalEl.addEventListener('show.bs.modal', function (event) {
-const button = event.relatedTarget;
-const taskId = button.getAttribute('data-task-id');
-const taskTitle = button.getAttribute('data-task-title');
+				deleteTaskModalEl.addEventListener('show.bs.modal', function (event) {
+					const button = event.relatedTarget;
+					const taskId = button.getAttribute('data-task-id');
+					const taskTitle = button.getAttribute('data-task-title');
 
-const modalTitle = deleteTaskModalEl.querySelector('#taskTitlePlaceholder');
-const deleteForm = deleteTaskModalEl.querySelector('#deleteTaskForm');
-const tokenInput = deleteTaskModalEl.querySelector('#deleteTaskToken');
+					const modalTitle = deleteTaskModalEl.querySelector('#taskTitlePlaceholder');
+					const deleteForm = deleteTaskModalEl.querySelector('#deleteTaskForm');
+					const tokenInput = deleteTaskModalEl.querySelector('#deleteTaskToken');
 
-if (modalTitle) {
-modalTitle.textContent = '"' + taskTitle + '"';
-}
+					if (modalTitle) {
+						modalTitle.textContent = '"' + taskTitle + '"';
+					}
 
-if (deleteForm) {
-const deletePath = "{{ path('task_delete', {id: 'TASK_ID'}) }}";
-deleteForm.action = deletePath.replace('TASK_ID', taskId);
-}
+					if (deleteForm) {
+						const deletePath = "{{ path('task_delete', {id: 'TASK_ID'}) }}";
+						deleteForm.action = deletePath.replace('TASK_ID', taskId);
+					}
 
-if (tokenInput) {
-tokenInput.value = csrfTokens[taskId] || '';
-}
-});
-}
-});
+					if (tokenInput) {
+						tokenInput.value = csrfTokens[taskId] || '';
+					}
+				});
+			}
+		});
 	</script>
 {% endblock %}
