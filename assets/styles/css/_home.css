@@ -60,6 +60,20 @@
     margin: 0 auto;
 }
 
+/**
+ * Correction pour le centrage et la dimension des icônes
+ * dans les cercles de la page d'accueil.
+ * Ce style cible spécifiquement les icônes (balises <i>) à l'intérieur
+ * des conteneurs .feature-icon pour annuler les styles "skeleton"
+ * qui fixent une largeur et hauteur de 1em.
+ */
+.feature-icon i {
+    width: auto;
+    height: auto;
+    line-height: 1;
+    /* Améliore l'alignement vertical */
+}
+
 @media(min-width: 992px) {
     .feature-icon {
         width: 70px;

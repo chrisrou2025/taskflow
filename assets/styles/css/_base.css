@@ -37,6 +37,17 @@ body {
     font-size: 1.5rem;
 }
 
+/**
+ * Ajoute un espacement entre les icônes et le texte
+ * dans les liens de la barre de navigation pour une meilleure lisibilité.
+ * Le sélecteur d'enfant direct (>) assure que seule les icônes
+ * directement dans le lien sont affectées, ignorant celles comme la cloche.
+ */
+.navbar .nav-link>i {
+    margin-right: 0.5rem;
+}
+
+
 /* Dimensions uniformes pour les boutons navbar */
 .navbar-toggler,
 .notification-bell-btn {
@@ -181,6 +192,7 @@ footer {
         opacity: 0;
         transform: translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
