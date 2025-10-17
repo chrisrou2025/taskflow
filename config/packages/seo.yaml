@@ -1,0 +1,40 @@
+# config/packages/seo.yaml
+# Configuration centralisée des métadonnées SEO
+
+parameters:
+    # Configuration générale du site
+    app.site_name: 'TaskFlow'
+    app.site_description: 'Application de gestion de projets et tâches collaboratives'
+    app.site_url: '%env(APP_URL)%'
+    
+    # Métadonnées par page
+    seo.pages:
+        home:
+            title: 'TaskFlow - Gestion de projets et tâches collaboratives'
+            description: "Gérez efficacement vos projets et tâches avec TaskFlow. Solution simple et intuitive pour organiser votre travail, suivre votre progression et booster votre productivité."
+            keywords: 'gestion projet, tâches, productivité, collaboration, organisation'
+            
+        dashboard:
+            title: 'Tableau de bord - TaskFlow'
+            description: "Accédez à votre tableau de bord TaskFlow et consultez vos projets, tâches en cours et statistiques de productivité en temps réel."
+            keywords: 'dashboard, statistiques, projets, tâches'
+            
+        projects:
+            title: 'Mes Projets - TaskFlow'
+            description: "Gérez tous vos projets en un seul endroit. Créez, organisez et suivez l'avancement de vos projets professionnels et personnels."
+            keywords: 'projets, gestion, organisation, suivi'
+            
+        tasks:
+            title: 'Mes Tâches - TaskFlow'
+            description: "Organisez vos tâches par priorité et statut. Définissez des échéances et ne manquez plus aucune deadline importante."
+            keywords: 'tâches, todo, priorités, deadlines'
+            
+        login:
+            title: 'Connexion - TaskFlow'
+            description: "Connectez-vous à votre compte TaskFlow pour accéder à vos projets et tâches."
+            keywords: 'connexion, login, authentification'
+            
+        register:
+            title: 'Inscription gratuite - TaskFlow'
+            description: "Créez votre compte TaskFlow gratuit et commencez à organiser vos projets dès maintenant. Inscription simple et rapide."
+            keywords: 'inscription, créer compte, gratuit'
