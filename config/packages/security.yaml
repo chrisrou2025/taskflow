@@ -12,9 +12,17 @@ security:
                 property: email
 
     firewalls:
+        # Assets statiques - pas de sécurité pour performances
+        assets:
+            pattern: ^/(css|js|images|fonts|build|bundles)/
+            security: false
+        
+        # Profiler Symfony en dev
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+        
+        # Firewall principal
         main:
             lazy: true
             provider: app_user_provider
@@ -22,9 +30,7 @@ security:
                 login_path: app_login
                 check_path: app_login
                 default_target_path: app_dashboard
-                # CORRECTION : Forcer la redirection vers le dashboard
                 always_use_default_target_path: true
-                # CORRECTION : Ne pas utiliser la page précédente
                 use_referer: false
                 username_parameter: _username
                 password_parameter: _password
@@ -52,6 +58,8 @@ security:
         - { path: ^/projects, roles: ROLE_USER }
         - { path: ^/tasks, roles: ROLE_USER }
         - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/collaboration, roles: ROLE_USER }
+        - { path: ^/notifications, roles: ROLE_USER }
         
         # Pages administrateur
         - { path: ^/admin, roles: ROLE_ADMIN }

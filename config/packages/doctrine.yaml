@@ -38,9 +38,15 @@ when@prod:
         orm:
             auto_generate_proxy_classes: false
             proxy_dir: '%kernel.build_dir%/doctrine/orm/Proxies'
+            # AJOUT : Cache des métadonnées (le plus important)
+            metadata_cache_driver:
+                type: pool
+                pool: doctrine.system_cache_pool
+            # Cache des requêtes DQL compilées
             query_cache_driver:
                 type: pool
                 pool: doctrine.system_cache_pool
+            # Cache des résultats de requêtes
             result_cache_driver:
                 type: pool
                 pool: doctrine.result_cache_pool
