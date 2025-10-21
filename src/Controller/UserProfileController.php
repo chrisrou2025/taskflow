@@ -190,17 +190,7 @@ class UserProfileController extends AbstractController
                 foreach ($ownedProjects as $project) {
                     // Option 1: Supprimer complètement les projets
                     $entityManager->remove($project);
-                    
-                    // Option 2: Transférer à un autre utilisateur (décommentez si préféré)
-                    // $firstCollaborator = $project->getCollaborators()->first();
-                    // if ($firstCollaborator) {
-                    //     $project->setOwner($firstCollaborator);
-                    // } else {
-                    //     $entityManager->remove($project);
-                    // }
                 }
-
-                // 5. Les tâches assignées seront automatiquement mises à NULL grâce à ON DELETE SET NULL
                 
                 // 6. Enfin, supprimer l'utilisateur
                 $entityManager->remove($user);

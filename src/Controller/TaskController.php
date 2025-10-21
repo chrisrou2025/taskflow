@@ -179,9 +179,6 @@ class TaskController extends AbstractController
     /**
      * Modifie une tâche
      */
-    /**
-     * Modifie une tâche
-     */
     #[Route('/{id}/edit', name: 'task_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Task $task, EntityManagerInterface $entityManager): Response
     {
@@ -219,9 +216,6 @@ class TaskController extends AbstractController
             'form' => $form,
         ]);
     }
-    /**
-     * Change le statut d'une tâche (Toggle entre les statuts)
-     */
     /**
      * Change le statut d'une tâche (Toggle entre les statuts)
      */
@@ -298,48 +292,5 @@ class TaskController extends AbstractController
 
         $this->addFlash('success', sprintf('La tâche "%s" a été supprimée avec succès.', $taskTitle));
         return $this->redirectToRoute('project_show', ['id' => $projectId]);
-    }
-
-    #[Route('/project/{id}/quick-add', name: 'task_quick_add', methods: ['POST'])]
-    public function quickAdd(Request $request, Project $project, EntityManagerInterface $entityManager): JsonResponse
-    {
-        try {
-            $this->denyAccessUnlessGranted('PROJECT_EDIT', $project);
-        } catch (\Exception $e) {
-            return new JsonResponse([
-                'success' => false,
-                'message' => 'Vous n\'avez pas l\'autorisation d\'ajouter une tâche à ce projet.'
-            ], 403);
-        }
-
-        $title = $request->request->get('title');
-        if (empty(trim($title))) {
-            return new JsonResponse(['success' => false, 'message' => 'Le titre ne peut pas être vide'], 400);
-        }
-
-        if ($this->isCsrfTokenValid('quick-add', $request->request->get('_token'))) {
-            $task = new Task();
-            $task->setTitle(trim($title));
-            $task->setProject($project);
-            $task->setStatus(Task::STATUS_TODO);
-            $task->setPriority(Task::PRIORITY_MEDIUM);
-
-            $entityManager->persist($task);
-            $entityManager->flush();
-
-            return new JsonResponse([
-                'success' => true,
-                'task' => [
-                    'id' => $task->getId(),
-                    'title' => $task->getTitle(),
-                    'status' => $task->getStatus(),
-                    'status_label' => $task->getStatusLabel(),
-                    'priority_label' => $task->getPriorityLabel()
-                ],
-                'message' => 'Tâche créée avec succès'
-            ]);
-        }
-
-        return new JsonResponse(['success' => false, 'message' => 'Token CSRF invalide'], 400);
     }
 }

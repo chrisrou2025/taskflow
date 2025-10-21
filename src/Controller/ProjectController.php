@@ -120,58 +120,6 @@ class ProjectController extends AbstractController
         return $this->redirectToRoute('project_index');
     }
 
-    #[Route('/{id}/duplicate', name: 'project_duplicate', methods: ['POST'])]
-    public function duplicate(Request $request, Project $project, EntityManagerInterface $entityManager): Response
-    {
-        $this->denyAccessUnlessGranted('PROJECT_VIEW', $project);
-
-        if ($this->isCsrfTokenValid('duplicate' . $project->getId(), $request->request->get('_token'))) {
-            try {
-                $newProject = new Project();
-                $newProject->setTitle($project->getTitle() . ' (Copie)');
-                $newProject->setDescription($project->getDescription());
-                $newProject->setOwner($this->getUser());
-
-                foreach ($project->getTasks() as $task) {
-                    $newTask = clone $task;
-                    $newTask->setProject($newProject);
-                    $newTask->setStatus(Task::STATUS_TODO);
-                    $newTask->setCompletedAt(null);
-                    $newTask->setCreatedAt(new \DateTimeImmutable());
-                    $newTask->setUpdatedAt(null);
-                    if ($task->getAssignee() && $task->getAssignee() !== $this->getUser()) {
-                        $newTask->setAssignee(null);
-                    }
-                    $newProject->addTask($newTask);
-                }
-
-                $entityManager->persist($newProject);
-                $entityManager->flush();
-
-                $this->addFlash('success', 'Le projet a été dupliqué avec succès !');
-                return $this->redirectToRoute('project_show', ['id' => $newProject->getId()]);
-            } catch (\Exception $e) {
-                $this->addFlash('error', 'Une erreur est survenue lors de la duplication du projet.');
-            }
-        }
-
-        return $this->redirectToRoute('project_show', ['id' => $project->getId()]);
-    }
-
-    #[Route('/{id}/archive', name: 'project_archive', methods: ['POST'])]
-    public function archive(Request $request, Project $project, EntityManagerInterface $entityManager): Response
-    {
-        $this->denyAccessUnlessGranted('PROJECT_EDIT', $project);
-
-        if ($this->isCsrfTokenValid('archive' . $project->getId(), $request->request->get('_token'))) {
-            $project->setUpdatedAt(new \DateTimeImmutable());
-            $entityManager->flush();
-            $this->addFlash('success', 'Projet archivé avec succès.');
-        }
-
-        return $this->redirectToRoute('project_show', ['id' => $project->getId()]);
-    }
-
     #[Route('/api/{id}/collaborators', name: 'api_project_collaborators', methods: ['GET'])]
     public function getCollaborators(Project $project): JsonResponse
     {
